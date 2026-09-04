@@ -1,7 +1,7 @@
-import {contactForm, messyForm, namesakeForm} from 'sanity-form-fixtures'
+import {contactForm, fieldTypeEdgesForm, fieldTypesForm, messyForm, namesakeForm} from 'sanity-form-fixtures'
 import {describe, expect, test} from 'vitest'
 
-import {toJsonSchema} from '../src'
+import {COLOR_PATTERN, DATETIME_LOCAL_PATTERN, TIME_PATTERN, toJsonSchema} from '../src'
 
 describe('toJsonSchema: contact form', () => {
   const {schema, messages, diagnostics} = toJsonSchema(contactForm)
@@ -54,9 +54,11 @@ describe('toJsonSchema: contact form', () => {
     })
   })
 
-  test('contains nothing renderer-specific', () => {
-    const text = JSON.stringify(schema)
-    expect(text).not.toMatch(/"ui:|errorMessage|\$id|enumNames/u)
+  test('contains nothing renderer-specific and no validator extension', () => {
+    for (const form of [contactForm, messyForm, namesakeForm, fieldTypesForm, fieldTypeEdgesForm]) {
+      const text = JSON.stringify(toJsonSchema(form).schema)
+      expect(text).not.toMatch(/"ui:|errorMessage|\$id|enumNames|formatMinimum|formatMaximum|formatExclusive|\$data/u)
+    }
   })
 
   test('collects the authored messages beside the schema', () => {
@@ -78,7 +80,7 @@ describe('toJsonSchema: contact form', () => {
   })
 
   test('diagnostics name no renderer', () => {
-    for (const form of [contactForm, messyForm]) {
+    for (const form of [contactForm, messyForm, fieldTypesForm, fieldTypeEdgesForm]) {
       for (const d of toJsonSchema(form).diagnostics) {
         expect(d.message).not.toMatch(/rjsf|json forms|surveyjs|adapter/iu)
       }
@@ -117,21 +119,21 @@ describe('toJsonSchema: messy content', () => {
     expect(codes).toStrictEqual(
       expect.arrayContaining([
         ['fields[0]', 'unsupported-field-type', 'error'],
-        ['fields[3]', 'unknown-field-type', 'error'],
-        ['fields[4]', 'invalid-field-name', 'error'],
-        ['fields[5]', 'invalid-field-name', 'error'],
-        ['fields[7]', 'duplicate-field-name', 'error'],
-        ['fields[8]', 'missing-label', 'info'],
-        ['fields[11]', 'missing-choices', 'error'],
-        ['fields[14]', 'ignored-placeholder', 'info'],
-        ['fields[15]', 'ignored-default-value', 'info'],
+        ['fields[1]', 'unknown-field-type', 'error'],
+        ['fields[2]', 'invalid-field-name', 'error'],
+        ['fields[3]', 'invalid-field-name', 'error'],
+        ['fields[5]', 'duplicate-field-name', 'error'],
+        ['fields[6]', 'missing-label', 'info'],
+        ['fields[9]', 'missing-choices', 'error'],
+        ['fields[12]', 'ignored-placeholder', 'info'],
+        ['fields[13]', 'ignored-default-value', 'info'],
       ]),
     )
   })
 
   test('a dropped field does not reserve its name', () => {
     expect(schema.properties?.empty).toStrictEqual({title: 'Empty again', type: 'string'})
-    expect(codes.filter(([path]) => path === 'fields[12]')).toStrictEqual([])
+    expect(codes.filter(([path]) => path === 'fields[10]')).toStrictEqual([])
   })
 
   test('a dropped choice field does not reserve its name from a later choice field', () => {
@@ -163,9 +165,128 @@ describe('toJsonSchema: messy content', () => {
 
   test('a lone required checkbox is const true; group rules do not apply to it', () => {
     expect(schema.properties?.boolRules).toStrictEqual({const: true, title: 'Bool', type: 'boolean'})
-    expect(diagnostics.filter((d) => d.path === 'fields[16]').map((d) => d.code)).toStrictEqual([
+    expect(diagnostics.filter((d) => d.path === 'fields[14]').map((d) => d.code)).toStrictEqual([
       'invalid-default-value',
       'inapplicable-validation-rule',
     ])
+  })
+})
+
+describe('toJsonSchema: field types added in 0.2', () => {
+  const {schema, messages, diagnostics} = toJsonSchema(fieldTypesForm)
+
+  test('compiles every type to a portable Draft 7 shape', () => {
+    expect(schema).toStrictEqual({
+      $schema: 'http://json-schema.org/draft-07/schema#',
+      properties: {
+        brandColor: {default: '#ff8800', pattern: COLOR_PATTERN, title: 'Brand colour', type: 'string'},
+        campaign: {default: 'spring-2026', title: 'campaign', type: 'string'},
+        phone: {pattern: '^\\+?[0-9 ]+$', title: 'Phone', type: 'string'},
+        pickup: {default: '2026-09-04T18:30', pattern: DATETIME_LOCAL_PATTERN, title: 'Pickup', type: 'string'},
+        preferredTime: {default: '18:30', pattern: TIME_PATTERN, title: 'Preferred time', type: 'string'},
+        satisfaction: {default: 6, maximum: 10, minimum: 0, multipleOf: 2, title: 'Satisfaction', type: 'number'},
+        startDate: {default: '2026-09-04', format: 'date', title: 'Start date', type: 'string'},
+        website: {default: 'https://example.com', format: 'uri', pattern: '^https://', title: 'Website', type: 'string'},
+      },
+      required: ['website', 'startDate'],
+      title: 'Field types',
+      type: 'object',
+    })
+  })
+
+  test('the temporal and colour patterns are the exported constants', () => {
+    expect(COLOR_PATTERN).toBe('^#[0-9A-Fa-f]{6}$')
+    expect(TIME_PATTERN).toBe('^(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d{1,3})?)?$')
+    expect(DATETIME_LOCAL_PATTERN.startsWith('^\\d{4}-')).toBe(true)
+    expect(DATETIME_LOCAL_PATTERN.endsWith(TIME_PATTERN.slice(1))).toBe(true)
+  })
+
+  test('step becomes multipleOf only with an aligned base, and carries its message', () => {
+    expect(messages).toStrictEqual({
+      phone: {pattern: 'Digits, spaces and a leading + only.'},
+      satisfaction: {maximum: 'At most 10.', minimum: 'At least 0.', multipleOf: 'Even numbers only.'},
+      website: {pattern: 'Only https links.'},
+    })
+  })
+
+  test('date bounds are reported as lossy, never encoded as a validator extension', () => {
+    expect(diagnostics.map((d) => [d.path, d.field, d.code, d.severity])).toStrictEqual([
+      ['fields[4]', 'startDate', 'lossy-validation-rule', 'warning'],
+      ['fields[4]', 'startDate', 'lossy-validation-rule', 'warning'],
+      ['fields[5]', 'pickup', 'lossy-validation-rule', 'warning'],
+      ['form', undefined, 'lossy-submit-position', 'info'],
+    ])
+    expect(diagnostics[0]?.message).toContain('"2026-01-01"')
+  })
+
+  test('a hidden field without a label gets no missing-label diagnostic', () => {
+    expect(diagnostics.some((d) => d.field === 'campaign')).toBe(false)
+  })
+})
+
+describe('toJsonSchema: field type edges', () => {
+  const {schema, messages, diagnostics} = toJsonSchema(fieldTypeEdgesForm)
+  const codes = diagnostics.map((d) => [d.field, d.code, d.severity] as const)
+
+  test('every field still compiles', () => {
+    expect(Object.keys(schema.properties ?? {})).toHaveLength(fieldTypeEdgesForm.fields?.length ?? 0)
+    expect(schema.required).toStrictEqual(['requiredHidden'])
+  })
+
+  test('a default the native input would refuse is dropped', () => {
+    expect(codes.filter(([, code]) => code === 'invalid-default-value').map(([field]) => field)).toStrictEqual([
+      'badUrl',
+      'unicodeUrl',
+      'namedColor',
+      'shortColor',
+      'badDate',
+      'utcPickup',
+      'badTime',
+      'wordRating',
+    ])
+    for (const name of ['badUrl', 'unicodeUrl', 'namedColor', 'shortColor', 'badDate', 'utcPickup', 'badTime', 'wordRating']) {
+      expect(schema.properties?.[name]).not.toHaveProperty('default')
+    }
+  })
+
+  test('a required hidden field with no default is a warning, not a manufactured value', () => {
+    expect(schema.properties?.requiredHidden).toStrictEqual({title: 'Token', type: 'string'})
+    expect(codes).toContainEqual(['requiredHidden', 'missing-default-value', 'warning'])
+  })
+
+  test('placeholders on hidden, colour and range fields are reported as ignored', () => {
+    expect(codes.filter(([, code]) => code === 'ignored-placeholder').map(([field]) => field)).toStrictEqual([
+      'hiddenPlaceholder',
+      'shortColor',
+      'wordRating',
+    ])
+  })
+
+  test('date bounds are checked before they are declared lossy', () => {
+    expect(codes.filter(([field]) => field === 'badDate')).toStrictEqual([
+      ['badDate', 'invalid-default-value', 'warning'],
+      ['badDate', 'invalid-validation-rule', 'warning'],
+      ['badDate', 'invalid-validation-rule', 'warning'],
+      ['badDate', 'inapplicable-validation-rule', 'warning'],
+    ])
+  })
+
+  test('step: min is the step base, then the default, then 0', () => {
+    expect(schema.properties?.offsetStep).toStrictEqual({maximum: 9, minimum: 1, title: 'Rating', type: 'number'})
+    expect(schema.properties?.defaultBase).toStrictEqual({default: 3, title: 'Rating', type: 'number'})
+    expect(schema.properties?.alignedDefaultBase).toStrictEqual({default: 4, multipleOf: 2, title: 'Rating', type: 'number'})
+    expect(schema.properties?.noBaseStep).toStrictEqual({multipleOf: 5, title: 'Rating', type: 'number'})
+    expect(codes.filter(([field]) => field === 'offsetStep')).toStrictEqual([['offsetStep', 'lossy-validation-rule', 'warning']])
+    expect(codes.filter(([field]) => field === 'defaultBase')).toStrictEqual([['defaultBase', 'lossy-validation-rule', 'warning']])
+    expect(codes.filter(([field]) => field === 'alignedDefaultBase')).toStrictEqual([])
+    expect(messages.offsetStep).toStrictEqual({maximum: 'max', minimum: 'min'})
+    expect(messages.alignedDefaultBase).toStrictEqual({multipleOf: 'x'})
+  })
+
+  test('step: fractional is lossy, "any" is a no-op, 0 is invalid', () => {
+    expect(schema.properties?.fractionStep).toStrictEqual({title: 'Rating', type: 'number'})
+    expect(codes.filter(([field]) => field === 'fractionStep')).toStrictEqual([['fractionStep', 'lossy-validation-rule', 'warning']])
+    expect(codes.filter(([field]) => field === 'anyStep')).toStrictEqual([['anyStep', 'lossy-validation-rule', 'info']])
+    expect(codes.filter(([field]) => field === 'zeroStep')).toStrictEqual([['zeroStep', 'invalid-validation-rule', 'warning']])
   })
 })
