@@ -9,7 +9,7 @@ import type {FormToolkitForm} from '../types'
  * carry: which input the editor chose (a textarea and a text field share one
  * schema) and its placeholder. Deliberately nothing else, and deliberately
  * not exported from any package entry: this is the whole "intermediate model"
- * both adapters share, and its size is part of the spike's evidence.
+ * the adapters share.
  */
 export interface PresentationField {
   name: string

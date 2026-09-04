@@ -1,3 +1,5 @@
+> Research record, spike 3 (tag `surveyjs-spike-v3`, 2026-09-04). Kept because it is the strongest evidence for the decisions in [architecture.md](../architecture.md).
+
 # Assessment 3: SurveyJS against the JSON Schema contract
 
 Spike run 2026-09-04 in `packages/sanity-json-schema` as a third subpath

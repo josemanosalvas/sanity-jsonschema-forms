@@ -1,6 +1,6 @@
 # The JSON Schema contract
 
-What `toJsonSchema(form)` from `sanity-json-schema` produces from a
+What `toJsonSchema(form)` produces from a
 `@sanity/form-toolkit` form document, and what it deliberately leaves out.
 Verified against `@sanity/form-toolkit` 3.0.17, plain `ajv` 8.20 with
 `ajv-formats`, `@rjsf/*` 6.8.0 and `@jsonforms/*` 3.8.0.
@@ -11,7 +11,7 @@ const {schema, messages, diagnostics} = toJsonSchema(form)
 
 - `schema` is draft-07 JSON Schema typed as `JSONSchema7` from `@types/json-schema`. It validates on its own with any draft-07 validator. It contains no `ui:*` key, no `errorMessage`, no `$id`.
 - `messages` is `Record<field, Record<keyword, text>>`: the error messages editors wrote, keyed by the AJV keyword whose failure they describe.
-- `diagnostics` uses the same codes and wording as spike 1 (`sanity-rjsf`); the parity test holds them equal.
+- `diagnostics` lists everything that did not map one-to-one, in source order; codes are stable and listed in [compatibility.md](compatibility.md).
 
 ## Field types
 
@@ -24,7 +24,7 @@ const {schema, messages, diagnostics} = toJsonSchema(form)
 | `checkbox` without choices | `{type: "boolean"}`; required adds `const: true` | see "Required" |
 | `checkbox` with choices | `{type: "array", uniqueItems: true, items: {type: "string", oneOf: [...]}}` | |
 | `select`, `radio` | `{type: "string", oneOf: [{const, title}, ...]}` | indistinguishable in the schema; the widget is presentation |
-| nine others | not compiled in this spike | same list and known mappings as [mapping.md](mapping.md) |
+| nine others | not compiled yet | listed with their planned mappings in [compatibility.md](compatibility.md) |
 
 ## Choices: `oneOf` with `const` and `title`
 
@@ -51,10 +51,9 @@ the value. A choice field with no usable choice is dropped
 | lone checkbox | `required: [name]` and `const: true` | `required` checks presence; an unticked box is `false`, which is present |
 | checkbox group | `required: [name]` and `minItems: 1` | an empty array is present; an authored `minSelectedCount` of 1 or more takes precedence |
 
-`const: true` is the idiomatic constraint. The earlier formworks project
-used `not: {const: false}` to dodge renderers that read `const` as a
-default; this contract prefers the plain form and leaves that dodge to the
-one renderer that needs it.
+`const: true` is the idiomatic constraint. Some renderers read a `const` as
+a default; the contract keeps the plain form and leaves that concern to the
+adapter of the renderer that needs it.
 
 ## Validation rules
 
@@ -88,7 +87,7 @@ validator's `text`. All are built by the adapters from this map.
 
 **Submissions must be validated with AJV against this schema on the server,
 whatever rendered the form.** SurveyJS in particular validates what its
-widgets can produce, not an arbitrary payload (see assessment 3).
+widgets can produce, not an arbitrary payload (see [adapters/surveyjs.md](adapters/surveyjs.md)).
 
 ## Deliberately not in the schema
 
@@ -107,5 +106,5 @@ widgets can produce, not an arbitrary payload (see assessment 3).
 All three adapters (RJSF, JSON Forms, SurveyJS) read `form.fields` again through one internal helper,
 `presentationFields(form, schema)`, which returns for every property in the
 schema the source `type` and `placeholder` and nothing else. That helper is
-the entire "intermediate model" shared between renderers. Its size, and each
-adapter's, is reported in [assessment-2.md](assessment-2.md).
+the entire "intermediate model" shared between renderers; see
+[architecture.md](architecture.md) for why it stays that small.

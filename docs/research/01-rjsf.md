@@ -1,3 +1,5 @@
+> Research record, spike 1 (tag `rjsf-spike-v1`, 2026-09-04). The `sanity-rjsf` package it describes was superseded by `sanity-json-schema/rjsf` and removed from `main`; the tag preserves it. Kept because it explains the decisions in [architecture.md](../architecture.md).
+
 # Assessment: adapting `@sanity/form-toolkit` to RJSF
 
 Spike run 2026-09-04 against `@sanity/form-toolkit` 3.0.17 and RJSF 6.8.0
@@ -5,7 +7,7 @@ Spike run 2026-09-04 against `@sanity/form-toolkit` 3.0.17 and RJSF 6.8.0
 Evidence: `packages/sanity-rjsf` (one 400-line compiler, 22 tests covering
 compile output, AJV validation and a jsdom render through the shadcn theme)
 and `examples/rjsf-shadcn` (Vite app, checked in a browser). The full mapping
-tables are in [mapping.md](mapping.md).
+tables are in [mapping.md](../compatibility.md).
 
 ## 1. Can `@sanity/form-toolkit` be mapped cleanly to RJSF?
 

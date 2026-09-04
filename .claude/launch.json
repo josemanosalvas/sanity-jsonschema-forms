@@ -2,16 +2,6 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "rjsf-shadcn-example",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "--filter",
-        "rjsf-shadcn-example",
-        "dev"
-      ],
-      "port": 5173
-    },
-    {
       "name": "compare-example",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [

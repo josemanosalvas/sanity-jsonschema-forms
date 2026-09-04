@@ -39,7 +39,7 @@ export const FORM_TOOLKIT_FIELD_TYPES = {
 
 type FormToolkitFieldType = keyof typeof FORM_TOOLKIT_FIELD_TYPES
 
-/** The subset compiled by this spike; identical to spike 1's. */
+/** The field types compiled today. Everything else is dropped with a diagnostic; see docs/compatibility.md. */
 export const SUPPORTED_FIELD_TYPES = ['text', 'textarea', 'email', 'number', 'checkbox', 'select', 'radio'] as const satisfies readonly FormToolkitFieldType[]
 
 export type SupportedFieldType = (typeof SUPPORTED_FIELD_TYPES)[number]
@@ -156,8 +156,8 @@ const applyRules = (schema: JSONSchema7, ctx: FieldContext): void => {
 
 /**
  * Choices as `oneOf` consts with `title`: the schema-native way to label an
- * option, readable by any consumer. (Spike 1 used `enum` + `ui:enumNames`
- * to dodge RJSF's `constAsDefaults`; here that is the RJSF adapter's problem.)
+ * option, readable by any consumer. RJSF treats a `oneOf` const as a default;
+ * the RJSF adapter turns that off rather than bending the schema.
  */
 const compileChoices = (ctx: FieldContext): JSONSchema7[] => {
   const {diagnostics, path, name, field} = ctx
@@ -297,7 +297,7 @@ export const toJsonSchema = (form: FormToolkitForm): ToJsonSchemaResult => {
     }
     const type = compiledType(field)
     if (type === undefined) {
-      diagnostics.add('error', 'unsupported-field-type', path, `"${sourceType}" is not compiled by this spike (supported: ${SUPPORTED_FIELD_TYPES.join(', ')}), so the field was dropped.`, name)
+      diagnostics.add('error', 'unsupported-field-type', path, `"${sourceType}" is not supported yet (supported: ${SUPPORTED_FIELD_TYPES.join(', ')}), so the field was dropped.`, name)
       return
     }
     if (name === undefined || !FIELD_NAME_PATTERN.test(name) || RESERVED_NAMES.has(name)) {

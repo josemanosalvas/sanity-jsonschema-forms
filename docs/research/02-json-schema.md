@@ -1,3 +1,5 @@
+> Research record, spike 2 (tag `json-schema-spike-v2`, 2026-09-04). `packages/sanity-json-schema` grew out of this spike. Kept because it explains the decisions in [architecture.md](../architecture.md).
+
 # Assessment 2: a renderer-independent JSON Schema from `@sanity/form-toolkit`
 
 Spike run 2026-09-04 in the same repository as spike 1, against
@@ -8,7 +10,7 @@ Spike run 2026-09-04 in the same repository as spike 1, against
 an RJSF render, a JSON Forms render, parity with the frozen spike 1) and
 `examples/compare`, which renders one compiled form through both libraries
 side by side and was checked in a browser. The contract itself is in
-[json-schema-contract.md](json-schema-contract.md).
+[json-schema-contract.md](../json-schema-contract.md).
 
 ## (a) Can a renderer-independent schema be extracted?
 

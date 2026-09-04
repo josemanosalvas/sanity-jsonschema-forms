@@ -1,87 +1,107 @@
 # sanity-jsonschema-forms
 
-Experimental standards-based form authoring for Sanity using
-[`@sanity/form-toolkit`](https://www.npmjs.com/package/@sanity/form-toolkit),
-JSON Schema, and adapters for schema-driven form libraries. Nothing here is
-published; the repository is a sequence of spikes, each preserved by a tag.
-
-Repository: https://github.com/josemanosalvas/sanity-jsonschema-forms
-(formerly `sanity-rjsf`).
-
-**Spike 1** (`sanity-rjsf`, tag `rjsf-spike-v1`, frozen) compiled straight to
-RJSF and found the mapping mostly direct, with a few RJSF-specific compromises.
-
-**Spike 2** (`sanity-json-schema`, tag `json-schema-spike-v2`) extracted a
-renderer-independent JSON Schema instead, with RJSF and JSON Forms as thin
-presentation adapters on top.
-
-**Spike 3** (tag `surveyjs-spike-v3`) added SurveyJS as a third adapter and
-used it to test whether anything beyond JSON Schema needs a shared model. It
-does not; see [docs/assessment-3.md](docs/assessment-3.md).
+Standards-based form authoring for Sanity. Editors build a form in Sanity
+Studio with [`@sanity/form-toolkit`](https://www.npmjs.com/package/@sanity/form-toolkit);
+`sanity-json-schema` compiles that document into JSON Schema and ships thin
+adapters for schema-driven form libraries.
 
 ```
 Sanity Studio → @sanity/form-toolkit → form document → toJsonSchema() → JSON Schema + messages
-                                                                          ├── sanity-json-schema/rjsf      → @rjsf/shadcn
-                                                                          ├── sanity-json-schema/jsonforms → @jsonforms/vanilla-renderers
-                                                                          └── sanity-json-schema/surveyjs  → survey-react-ui
+                                                                          ├── sanity-json-schema/rjsf      → react-jsonschema-form
+                                                                          ├── sanity-json-schema/jsonforms → JSON Forms
+                                                                          └── sanity-json-schema/surveyjs  → SurveyJS
 ```
 
-```ts
-import {toJsonSchema} from 'sanity-json-schema'
-import {toRjsfProps} from 'sanity-json-schema/rjsf'
-import {toJsonFormsProps} from 'sanity-json-schema/jsonforms'
-import {toSurveyJsProps} from 'sanity-json-schema/surveyjs'
+The JSON Schema is the contract. It validates on its own with any draft-07
+validator, every adapter consumes it unchanged, and the server validates
+submissions against it whatever rendered the form.
 
-const compiled = toJsonSchema(form)                       // {schema, messages, diagnostics}
-const {schema, uiSchema, formProps, transformErrors} = toRjsfProps(form, compiled)
-const {uischema, translate, initialData, submitText} = toJsonFormsProps(form, compiled)
-const {surveyJson, fromSchema, fromForm} = toSurveyJsProps(form, compiled)
-```
-
-`@sanity/form-toolkit` owns authoring. `toJsonSchema` compiles that document
-into draft-07 JSON Schema and reports what it could not carry. Each adapter
-adds only what its renderer needs to present it. The renderer owns widgets,
-themes, state and validation.
-
-## Layout
-
-| Path | What |
-| --- | --- |
-| [`packages/sanity-json-schema`](packages/sanity-json-schema) | spikes 2 and 3: `toJsonSchema`, the `./rjsf`, `./jsonforms` and `./surveyjs` adapters, and their tests |
-| [`packages/sanity-rjsf`](packages/sanity-rjsf) | spike 1, frozen: `toRjsf` and its tests |
-| [`packages/fixtures`](packages/fixtures) | the form documents and submissions every compiler is tested against |
-| [`examples/compare`](examples/compare) | Vite app rendering one compiled form through `@rjsf/shadcn`, JSON Forms and SurveyJS side by side |
-| [`examples/rjsf-shadcn`](examples/rjsf-shadcn) | spike 1's example, kept as is |
-| [`docs/json-schema-contract.md`](docs/json-schema-contract.md) | what the schema and message map contain and what is deliberately out |
-| [`docs/assessment-2.md`](docs/assessment-2.md) | spike 2's assessment: renderer independence, what each adapter needed, the JSON Forms comparison |
-| [`docs/assessment-3.md`](docs/assessment-3.md) | spike 3's assessment: SurveyJS parity, the capability matrix, the architecture recommendation |
-| [`docs/mapping.md`](docs/mapping.md) | spike 1's mapping tables |
-| [`docs/assessment.md`](docs/assessment.md) | spike 1's assessment |
-
-## Run
+## Install
 
 ```bash
-git clone https://github.com/josemanosalvas/sanity-jsonschema-forms.git
-cd sanity-jsonschema-forms
-pnpm install
-pnpm test          # both packages: compile output, AJV, RJSF, JSON Forms and SurveyJS, parity
-pnpm build         # both packages' dist
-pnpm dev:compare   # examples/compare on http://localhost:5174
-pnpm dev           # examples/rjsf-shadcn on http://localhost:5173
+pnpm add sanity-json-schema
 ```
 
-## Scope
+Then the form library of your choice; each adapter's peers are optional and
+documented in [docs/adapters](docs/adapters).
 
-Field types compiled: `text`, `textarea`, `email`, `number`, `checkbox`
-(boolean or group), `select`, `radio`. Properties mapped: label, placeholder,
-required, default value, choices, min/max, min/max length, pattern, per-rule
-error messages, submit button text. Everything else is dropped with a
-diagnostic; see the mapping document for the full table.
+## Use
 
-Types: the input is form-toolkit's `FormDataProps`; the schema is
-`JSONSchema7`; adapters use `@rjsf/utils` and `@jsonforms/core` types and
-emit plain survey JSON for SurveyJS. All peers are type-level except
-`@jsonforms/core`, whose `createDefaultValue` the JSON Forms adapter calls.
+```ts
+import type {FormDataProps} from '@sanity/form-toolkit/form-renderer'
+import {toJsonSchema} from 'sanity-json-schema'
 
-Not a Sanity.io project. Versions pinned: `@sanity/form-toolkit` 3.0.17,
-RJSF 6.8.0, JSON Forms 3.8.0, SurveyJS 3.0.3.
+const form: FormDataProps = await client.fetch(
+  `*[_type == "form" && id.current == $id][0]{
+    title, id, submitButton,
+    fields[]{_key, type, label, name, required, validation, options, choices}
+  }`,
+  {id: 'contact'},
+)
+
+const {schema, messages, diagnostics} = toJsonSchema(form)
+```
+
+Then one of:
+
+```tsx
+import {toRjsfProps} from 'sanity-json-schema/rjsf'
+const {uiSchema, formProps, transformErrors} = toRjsfProps(form, compiled)
+<Form {...formProps} schema={schema} uiSchema={uiSchema} validator={validator} transformErrors={transformErrors} />
+```
+
+```tsx
+import {toJsonFormsProps} from 'sanity-json-schema/jsonforms'
+const {uischema, translate, initialData} = toJsonFormsProps(form, compiled)
+<JsonForms schema={schema} uischema={uischema} data={initialData} i18n={{translate}} renderers={renderers} cells={cells} />
+```
+
+```tsx
+import {toSurveyJsProps} from 'sanity-json-schema/surveyjs'
+const {surveyJson} = toSurveyJsProps(form, compiled)
+<Survey model={new Model(surveyJson)} />
+```
+
+And on the server:
+
+```ts
+import Ajv from 'ajv'
+import addFormats from 'ajv-formats'
+
+const ajv = new Ajv({allErrors: true})
+addFormats(ajv)
+const valid = ajv.validate(schema, submission)
+```
+
+`diagnostics` lists every field, rule or value the compiler could not carry,
+with the position in the source document. It never throws on content.
+
+## Documentation
+
+| | |
+| --- | --- |
+| [docs/architecture.md](docs/architecture.md) | the decisions: contract, compiler output, adapters, server-side validation, no intermediate model |
+| [docs/json-schema-contract.md](docs/json-schema-contract.md) | exactly what the schema and message map contain |
+| [docs/compatibility.md](docs/compatibility.md) | versions tested, supported and planned field types, diagnostic codes |
+| [docs/adapters/](docs/adapters) | per-library usage and the quirks each adapter handles |
+| [docs/research/](docs/research) | the three spikes that led here, preserved by tags `rjsf-spike-v1`, `json-schema-spike-v2`, `surveyjs-spike-v3` |
+
+## Repository
+
+```
+packages/sanity-json-schema/   the package
+packages/fixtures/             private: form documents and submissions used by tests
+examples/compare/              one compiled form rendered by all three adapters
+docs/
+```
+
+```bash
+pnpm install
+pnpm test        # compiler, plain AJV, RJSF, JSON Forms and SurveyJS renders
+pnpm build
+pnpm dev         # examples/compare on http://localhost:5174
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Status: `0.x`, experimental; the
+public API may change between minor versions until `1.0`. Not affiliated
+with Sanity.io. MIT.

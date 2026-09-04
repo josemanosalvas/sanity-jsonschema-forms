@@ -1,16 +1,16 @@
 {
-  "name": "sanity-rjsf-workspace",
+  "name": "sanity-jsonschema-forms",
   "version": "0.0.0",
   "private": true,
-  "description": "Spike: compile @sanity/form-toolkit forms to RJSF schema + uiSchema.",
+  "description": "Standards-based form authoring for Sanity: @sanity/form-toolkit compiled to JSON Schema, with adapters for schema-driven form libraries.",
   "license": "MIT",
   "type": "module",
   "scripts": {
     "build": "pnpm -r --filter \"./packages/*\" build",
-    "test": "pnpm -r --filter \"./packages/*\" test",
     "typecheck": "pnpm -r typecheck",
-    "dev": "pnpm --filter rjsf-shadcn-example dev",
-    "dev:compare": "pnpm --filter compare-example dev"
+    "test": "pnpm -r --filter \"./packages/*\" test",
+    "dev": "pnpm --filter compare-example dev",
+    "release": "pnpm build && pnpm --filter sanity-json-schema publish"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

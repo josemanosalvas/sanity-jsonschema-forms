@@ -45,7 +45,7 @@ export interface SurveyJson {
   elements: SurveyQuestionJson[]
 }
 
-/** Where each question property came from; the spike's evidence, kept next to the output. */
+/** Where each question property came from, so the schema/presentation split stays visible. */
 export interface SurveyJsProps {
   surveyJson: SurveyJson
   /** Question properties written from the JSON Schema alone. */

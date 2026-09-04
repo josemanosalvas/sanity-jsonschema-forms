@@ -1,19 +1,27 @@
 {
   "name": "sanity-json-schema",
-  "version": "0.0.0",
-  "description": "Compile @sanity/form-toolkit forms to standards-oriented JSON Schema, with thin RJSF and JSON Forms presentation adapters.",
+  "version": "0.1.0",
+  "description": "Compile @sanity/form-toolkit forms to JSON Schema, with adapters for RJSF, JSON Forms and SurveyJS.",
   "keywords": [
     "sanity",
     "form-toolkit",
     "json-schema",
+    "forms",
     "rjsf",
-    "jsonforms"
+    "react-jsonschema-form",
+    "jsonforms",
+    "surveyjs"
   ],
   "license": "MIT",
+  "author": "Jos\u00e9 Manosalvas",
+  "homepage": "https://github.com/josemanosalvas/sanity-jsonschema-forms#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/josemanosalvas/sanity-jsonschema-forms.git",
     "directory": "packages/sanity-json-schema"
+  },
+  "bugs": {
+    "url": "https://github.com/josemanosalvas/sanity-jsonschema-forms/issues"
   },
   "type": "module",
   "sideEffects": false,
@@ -39,6 +47,12 @@
     },
     "./package.json": "./package.json"
   },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
@@ -51,8 +65,7 @@
   "peerDependencies": {
     "@jsonforms/core": "3.8.0",
     "@rjsf/utils": "^6.8.0",
-    "@sanity/form-toolkit": "^3.0.0",
-    "survey-core": "^3.0.0"
+    "@sanity/form-toolkit": "^3.0.0"
   },
   "peerDependenciesMeta": {
     "@jsonforms/core": {
@@ -62,9 +75,6 @@
       "optional": true
     },
     "@sanity/form-toolkit": {
-      "optional": true
-    },
-    "survey-core": {
       "optional": true
     }
   },
@@ -87,7 +97,6 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sanity-form-fixtures": "workspace:*",
-    "sanity-rjsf": "workspace:*",
     "survey-core": "3.0.3",
     "survey-react-ui": "3.0.3",
     "tsdown": "^0.23.0",

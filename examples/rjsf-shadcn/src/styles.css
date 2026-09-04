@@ -1,9 +1,0 @@
-@import 'tailwindcss';
-/* Tailwind v4 has to scan the theme's class names, per @rjsf/shadcn's README. */
-@source '../node_modules/@rjsf/shadcn';
-/*
- * The theme's colour tokens (--background, --primary, ...). The README says
- * `@import '@rjsf/shadcn/dist/default.css'`, but the package's `exports` map
- * (6.8.0) does not expose its CSS files, so a relative path is the only way in.
- */
-@import '../node_modules/@rjsf/shadcn/dist/default.css';

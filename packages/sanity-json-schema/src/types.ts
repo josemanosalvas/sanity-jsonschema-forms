@@ -12,7 +12,7 @@ export type FormToolkitChoice = NonNullable<FormToolkitField['choices']>[number]
 
 export type DiagnosticSeverity = 'error' | 'warning' | 'info'
 
-/** Same vocabulary as spike 1 (`sanity-rjsf`); the parity test holds them equal. */
+/** Stable vocabulary; add codes, never rename them. */
 export type DiagnosticCode =
   | 'unsupported-field-type'
   | 'unknown-field-type'
