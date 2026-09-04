@@ -9,7 +9,6 @@ export const contactSubmissions = {
     data: {consent: true, email: 'a@b.co', fullName: 'Ada', interests: ['events', 'events'], message: 'ok', topic: 'press'},
     verdict: 'reject',
   },
-  // A native email input accepts a domain without a dot; ajv-formats' `email` does not.
   emailWithoutDot: {
     data: {consent: true, email: 'a@b', fullName: 'Ada', message: 'ok', topic: 'press'},
     verdict: 'reject',

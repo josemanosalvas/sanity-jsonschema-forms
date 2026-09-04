@@ -9,8 +9,6 @@ import {FORM_TOOLKIT_FIELD_TYPES, toJsonSchema} from '../src'
 import type {FormToolkitField, FormToolkitForm} from '../src'
 import {presentationFields} from '../src/internal/fields'
 
-/** Compiler invariants over arbitrary form documents, including ones the Studio would never store. */
-
 const RULE_TYPES = [...new Set(Object.values(FORM_TOOLKIT_FIELD_TYPES).flat()), 'bogus']
 const FIELD_TYPES = [...Object.keys(FORM_TOOLKIT_FIELD_TYPES), 'bogus', '']
 
@@ -104,7 +102,6 @@ const FORBIDDEN_KEYS = new Set([
   '$data',
 ])
 
-/** Keys anywhere in the schema that belong to a renderer or a validator extension; values are not inspected. */
 const forbiddenKeys = (node: unknown): string[] => {
   if (typeof node !== 'object' || node === null) {
     return []
@@ -140,7 +137,6 @@ describe('toJsonSchema over arbitrary forms', () => {
   })
 
   test('every emitted default has the value shape its type implies', () => {
-    // Authored rules and `required` are not checked against defaults (docs/json-schema-contract.md, "Defaults").
     const AUTHORED = ['minLength', 'maxLength', 'minimum', 'maximum', 'multipleOf', 'minItems', 'maxItems', 'const'] as const
     const AUTHORED_PATTERN = new Set(['text', 'textarea', 'email', 'url', 'tel'])
     assert(
