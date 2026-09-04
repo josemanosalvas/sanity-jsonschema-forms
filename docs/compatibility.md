@@ -9,8 +9,7 @@
 | `@rjsf/core`, `@rjsf/utils`, `@rjsf/validator-ajv8`, `@rjsf/shadcn` | 6.8.0 | `./rjsf` |
 | `@jsonforms/core`, `@jsonforms/react`, `@jsonforms/vanilla-renderers` | 3.8.0 | `./jsonforms` |
 | `survey-core`, `survey-react-ui` | 3.0.3 | `./surveyjs` |
-| Node | 22 or later | running the package |
-| Node | 22.12 or later | developing it (build and test tooling) |
+| Node | 22.12 or later | running and developing the package |
 
 ## Field types
 
