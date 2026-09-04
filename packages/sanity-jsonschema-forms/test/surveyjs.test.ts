@@ -11,7 +11,7 @@ const verdictOf = (surveyJson: object, data: Record<string, unknown>) => {
   model.data = data
   const ok = model.validate(true, false)
   const errors = model.getAllQuestions().flatMap((q) => q.errors.map((e) => `${q.name}: ${e.getText()}`))
-  return {ok, errors}
+  return {errors, ok}
 }
 
 describe('SurveyJS presentation adapter', () => {
@@ -20,93 +20,93 @@ describe('SurveyJS presentation adapter', () => {
 
   test('builds the survey JSON from the schema, reaching for the form only for presentation', () => {
     expect(surveyJson).toStrictEqual({
-      title: 'Contact us',
-      showQuestionNumbers: 'off',
       completeText: 'Send message',
       elements: [
         {
-          type: 'text',
-          name: 'fullName',
-          title: 'Full name',
-          isRequired: true,
           inputType: 'text',
+          isRequired: true,
+          name: 'fullName',
           placeholder: 'Ada Lovelace',
+          title: 'Full name',
+          type: 'text',
           validators: [
-            {type: 'text', minLength: 2, text: 'Please enter at least two characters.'},
-            {type: 'text', maxLength: 80, text: 'Names are limited to 80 characters.'},
-            {type: 'regex', regex: '^[^0-9]*$', text: 'Names cannot contain digits.'},
+            {minLength: 2, text: 'Please enter at least two characters.', type: 'text'},
+            {maxLength: 80, text: 'Names are limited to 80 characters.', type: 'text'},
+            {regex: '^[^0-9]*$', text: 'Names cannot contain digits.', type: 'regex'},
           ],
         },
         {
-          type: 'text',
-          name: 'email',
-          title: 'Email',
-          isRequired: true,
           inputType: 'email',
+          isRequired: true,
+          name: 'email',
           placeholder: 'you@example.com',
+          title: 'Email',
+          type: 'text',
           validators: [{type: 'email'}],
         },
         {
-          type: 'text',
-          name: 'partySize',
-          title: 'Party size',
           defaultValue: 2,
           inputType: 'number',
+          name: 'partySize',
           placeholder: 'How many?',
+          title: 'Party size',
+          type: 'text',
           validators: [
-            {type: 'numeric', minValue: 1, text: 'At least one person.'},
-            {type: 'numeric', maxValue: 12, text: 'We can seat 12 at most.'},
+            {minValue: 1, text: 'At least one person.', type: 'numeric'},
+            {maxValue: 12, text: 'We can seat 12 at most.', type: 'numeric'},
           ],
         },
         {
-          type: 'dropdown',
+          choices: [
+            {text: 'Sales', value: 'sales'},
+            {text: 'Support', value: 'support'},
+            {text: 'Press', value: 'press'},
+          ],
+          isRequired: true,
           name: 'topic',
           title: 'Topic',
-          isRequired: true,
-          choices: [
-            {value: 'sales', text: 'Sales'},
-            {value: 'support', text: 'Support'},
-            {value: 'press', text: 'Press'},
-          ],
+          type: 'dropdown',
         },
         {
-          type: 'radiogroup',
+          choices: [
+            {text: 'Email', value: 'email'},
+            {text: 'Phone', value: 'phone'},
+          ],
+          defaultValue: 'email',
           name: 'contactMethod',
           title: 'Preferred contact method',
-          defaultValue: 'email',
-          choices: [
-            {value: 'email', text: 'Email'},
-            {value: 'phone', text: 'Phone'},
-          ],
+          type: 'radiogroup',
         },
         {
-          type: 'checkbox',
+          choices: [
+            {text: 'Product updates', value: 'updates'},
+            {text: 'Events', value: 'events'},
+            {text: 'Newsletter', value: 'newsletter'},
+          ],
           name: 'interests',
           title: 'Interests',
-          choices: [
-            {value: 'updates', text: 'Product updates'},
-            {value: 'events', text: 'Events'},
-            {value: 'newsletter', text: 'Newsletter'},
-          ],
-          validators: [{type: 'answercount', maxCount: 2, text: 'Pick two at most.'}],
+          type: 'checkbox',
+          validators: [{maxCount: 2, text: 'Pick two at most.', type: 'answercount'}],
         },
         {
-          type: 'comment',
+          isRequired: true,
           name: 'message',
-          title: 'Message',
-          isRequired: true,
           placeholder: 'How can we help?',
-          validators: [{type: 'text', maxLength: 500, text: 'Keep it under 500 characters.'}],
+          title: 'Message',
+          type: 'comment',
+          validators: [{maxLength: 500, text: 'Keep it under 500 characters.', type: 'text'}],
         },
         {
-          type: 'boolean',
-          name: 'consent',
-          title: 'I agree to be contacted',
           isRequired: true,
+          name: 'consent',
           renderAs: 'checkbox',
-          validators: [{type: 'expression', expression: '{consent} = true', text: 'This box must be checked.'}],
+          title: 'I agree to be contacted',
+          type: 'boolean',
+          validators: [{expression: '{consent} = true', text: 'This box must be checked.', type: 'expression'}],
         },
       ],
+      showQuestionNumbers: 'off',
+      title: 'Contact us',
     })
     expect(fromForm.toSorted()).toStrictEqual(['completeText', 'placeholder', 'type'])
     expect(fromSchema).toContain('validators')
@@ -125,9 +125,9 @@ describe('SurveyJS presentation adapter', () => {
       'boolRules',
     ])
     expect(messy.elements.at(-1)).toMatchObject({
-      type: 'boolean',
       isRequired: true,
-      validators: [{type: 'expression', expression: '{boolRules} = true'}],
+      type: 'boolean',
+      validators: [{expression: '{boolRules} = true', type: 'expression'}],
     })
   })
 

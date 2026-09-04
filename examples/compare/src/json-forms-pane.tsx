@@ -4,9 +4,9 @@ import {useMemo, useState} from 'react'
 import type {FormToolkitForm, ToJsonSchemaResult} from 'sanity-jsonschema-forms'
 import {toJsonFormsProps} from 'sanity-jsonschema-forms/jsonforms'
 
-import {CheckboxGroupControl, checkboxGroupTester} from './CheckboxGroupControl'
+import {CheckboxGroupControl, checkboxGroupTester} from './checkbox-group-control'
 
-const renderers = [...vanillaRenderers, {tester: checkboxGroupTester, renderer: CheckboxGroupControl}]
+const renderers = [...vanillaRenderers, {renderer: CheckboxGroupControl, tester: checkboxGroupTester}]
 
 export const JsonFormsPane = ({form, compiled}: {form: FormToolkitForm; compiled: ToJsonSchemaResult}) => {
   const {schema, uischema, translate, submitText, initialData} = useMemo(() => toJsonFormsProps(form, compiled), [form, compiled])

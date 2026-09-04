@@ -45,7 +45,7 @@ export const presentationFields = (form: FormToolkitForm, schema: JSONSchema7): 
     }
     seen.add(name)
     const placeholder = trimmed(field.options?.placeholder)
-    out.push(placeholder === undefined ? {name, type} : {name, type, placeholder})
+    out.push(placeholder === undefined ? {name, type} : {name, placeholder, type})
   }
   return out
 }

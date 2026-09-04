@@ -43,13 +43,13 @@ export const toJsonFormsProps = (form: FormToolkitForm, compiled: ToJsonSchemaRe
     if (field.placeholder !== undefined && field.type !== 'radio' && field.type !== 'checkbox') {
       options.placeholder = field.placeholder
     }
-    const control: ControlElement = {type: 'Control', scope: `#/properties/${field.name}`, i18n: field.name}
+    const control: ControlElement = {i18n: field.name, scope: `#/properties/${field.name}`, type: 'Control'}
     if (Object.keys(options).length > 0) {
       control.options = options
     }
     elements.push(control)
   }
-  const uischema: VerticalLayout = {type: 'VerticalLayout', elements}
+  const uischema: VerticalLayout = {elements, type: 'VerticalLayout'}
 
   // Every non-error key (labels, descriptions, captions) must get its default
   // back, or JSON Forms blanks it.
@@ -65,6 +65,6 @@ export const toJsonFormsProps = (form: FormToolkitForm, compiled: ToJsonSchemaRe
 
   const initialData = createDefaultValue(schema as JsonSchema7, schema as JsonSchema7) as Record<string, unknown>
   const submitText = form.submitButton?.text?.trim()
-  const base = {schema: schema as JsonSchema7, uischema, translate, initialData}
+  const base = {initialData, schema: schema as JsonSchema7, translate, uischema}
   return submitText ? {...base, submitText} : base
 }

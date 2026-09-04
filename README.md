@@ -5,15 +5,13 @@ Studio with [`@sanity/form-toolkit`](https://www.npmjs.com/package/@sanity/form-
 `sanity-jsonschema-forms` compiles that document into JSON Schema and ships thin
 adapters for schema-driven form libraries.
 
-```
-@sanity/form-toolkit form document
-              │
-        toJsonSchema(form)
-              │
-{schema, messages, diagnostics}
-              ├── sanity-jsonschema-forms/rjsf       → react-jsonschema-form
-              ├── sanity-jsonschema-forms/jsonforms  → JSON Forms
-              └── sanity-jsonschema-forms/surveyjs   → SurveyJS
+```mermaid
+flowchart LR
+  form["@sanity/form-toolkit<br>form document"] --> compile["toJsonSchema(form)"]
+  compile --> out["{ schema, messages, diagnostics }"]
+  out --> rjsf["sanity-jsonschema-forms/rjsf"] --> RJSF["react-jsonschema-form"]
+  out --> jsonforms["sanity-jsonschema-forms/jsonforms"] --> JF["JSON Forms"]
+  out --> surveyjs["sanity-jsonschema-forms/surveyjs"] --> SJ["SurveyJS"]
 ```
 
 The JSON Schema is the contract. It is [JSON Schema Draft 7](https://json-schema.org/draft-07)

@@ -54,13 +54,13 @@ export type SupportedFieldType = (typeof SUPPORTED_FIELD_TYPES)[number]
 
 /** form-toolkit rule type → JSON Schema keyword (also AJV's error `keyword`). */
 const RULE_KEYWORDS = {
-  minLength: 'minLength',
-  maxLength: 'maxLength',
-  pattern: 'pattern',
-  min: 'minimum',
   max: 'maximum',
-  minSelectedCount: 'minItems',
+  maxLength: 'maxLength',
   maxSelectedCount: 'maxItems',
+  min: 'minimum',
+  minLength: 'minLength',
+  minSelectedCount: 'minItems',
+  pattern: 'pattern',
 } as const satisfies Record<string, MessageKeyword>
 
 type RuleType = keyof typeof RULE_KEYWORDS
@@ -98,7 +98,7 @@ const trimmed = (value: unknown): string | undefined => {
 class Diagnostics {
   readonly list: Diagnostic[] = []
   add(severity: DiagnosticSeverity, code: DiagnosticCode, path: string, message: string, field?: string) {
-    this.list.push(field === undefined ? {severity, code, path, message} : {severity, code, path, field, message})
+    this.list.push(field === undefined ? {code, message, path, severity} : {code, field, message, path, severity})
   }
 }
 
@@ -326,7 +326,7 @@ const compileField = (type: CompiledType, ctx: FieldContext): JSONSchema7 => {
       if (type === 'multiselect') {
         schema.type = 'array'
         schema.uniqueItems = true
-        schema.items = {type: 'string', oneOf}
+        schema.items = {oneOf, type: 'string'}
         if (storedDefault !== undefined) {
           diagnostics.add(
             'info',
@@ -438,7 +438,7 @@ export const toJsonSchema = (form: FormToolkitForm): ToJsonSchemaResult => {
       )
       continue
     }
-    properties[name] = compileField(type, {path, name, field, diagnostics, messages})
+    properties[name] = compileField(type, {diagnostics, field, messages, name, path})
     if (field.required === true) {
       required.push(name)
     }
@@ -463,5 +463,5 @@ export const toJsonSchema = (form: FormToolkitForm): ToJsonSchemaResult => {
     )
   }
 
-  return {schema, messages, diagnostics: diagnostics.list}
+  return {diagnostics: diagnostics.list, messages, schema}
 }

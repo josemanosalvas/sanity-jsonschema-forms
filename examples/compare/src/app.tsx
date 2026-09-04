@@ -2,9 +2,9 @@ import {useMemo} from 'react'
 import {contactForm} from 'sanity-form-fixtures'
 import {toJsonSchema} from 'sanity-jsonschema-forms'
 
-import {JsonFormsPane} from './JsonFormsPane'
-import {RjsfPane} from './RjsfPane'
-import {SurveyJsPane} from './SurveyJsPane'
+import {JsonFormsPane} from './json-forms-pane'
+import {RjsfPane} from './rjsf-pane'
+import {SurveyJsPane} from './survey-js-pane'
 
 const Panel = ({title, children, open = false}: {title: string; children: string; open?: boolean}) => (
   <details open={open}>

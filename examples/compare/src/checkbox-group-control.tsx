@@ -9,7 +9,7 @@ import {withJsonFormsControlProps} from '@jsonforms/react'
  */
 const CheckboxGroup = ({data, handleChange, path, label, schema, errors, id}: ControlProps) => {
   const items = schema.items as JsonSchema
-  const options = (items.oneOf ?? []).map((o) => ({value: String((o as JsonSchema).const), label: (o as JsonSchema).title ?? ''}))
+  const options = (items.oneOf ?? []).map((o) => ({label: (o as JsonSchema).title ?? '', value: String((o as JsonSchema).const)}))
   const selected: string[] = Array.isArray(data) ? data : []
   return (
     <fieldset className="control" id={id}>

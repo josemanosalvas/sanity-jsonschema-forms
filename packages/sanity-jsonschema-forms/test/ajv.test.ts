@@ -24,7 +24,7 @@ describe('compiled schema validates with plain AJV', () => {
   }
   const run = (data: unknown) => {
     const ok = validate(data)
-    return {ok, errors: (validate.errors ?? []).map(describeError)}
+    return {errors: (validate.errors ?? []).map(describeError), ok}
   }
 
   test.each(Object.entries(contactSubmissions))('%s reaches the expected verdict', (_, submission) => {

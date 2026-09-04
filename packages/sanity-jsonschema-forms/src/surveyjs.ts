@@ -59,7 +59,7 @@ const isSchema = (value: JSONSchema7Definition | JSONSchema7Definition[] | undef
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
 const choicesOf = (schema: JSONSchema7): SurveyChoiceJson[] =>
-  (schema.oneOf ?? []).filter(isSchema).map((option) => ({value: String(option.const), text: option.title ?? String(option.const)}))
+  (schema.oneOf ?? []).filter(isSchema).map((option) => ({text: option.title ?? String(option.const), value: String(option.const)}))
 
 const withText = (validator: SurveyValidatorJson, text: string | undefined): SurveyValidatorJson =>
   text === undefined ? validator : {...validator, text}
@@ -70,33 +70,33 @@ const validatorsOf = (name: string, schema: JSONSchema7, messages: MessageMap): 
   const out: SurveyValidatorJson[] = []
   // One validator per keyword: a SurveyJS validator carries one message.
   if (schema.minLength !== undefined) {
-    out.push(withText({type: 'text', minLength: schema.minLength}, m.minLength))
+    out.push(withText({minLength: schema.minLength, type: 'text'}, m.minLength))
   }
   if (schema.maxLength !== undefined) {
-    out.push(withText({type: 'text', maxLength: schema.maxLength}, m.maxLength))
+    out.push(withText({maxLength: schema.maxLength, type: 'text'}, m.maxLength))
   }
   if (schema.pattern !== undefined) {
-    out.push(withText({type: 'regex', regex: schema.pattern}, m.pattern))
+    out.push(withText({regex: schema.pattern, type: 'regex'}, m.pattern))
   }
   if (schema.format === 'email') {
     out.push({type: 'email'})
   }
   if (schema.minimum !== undefined) {
-    out.push(withText({type: 'numeric', minValue: schema.minimum}, m.minimum))
+    out.push(withText({minValue: schema.minimum, type: 'numeric'}, m.minimum))
   }
   if (schema.maximum !== undefined) {
-    out.push(withText({type: 'numeric', maxValue: schema.maximum}, m.maximum))
+    out.push(withText({maxValue: schema.maximum, type: 'numeric'}, m.maximum))
   }
   if (schema.minItems !== undefined) {
-    out.push(withText({type: 'answercount', minCount: schema.minItems}, m.minItems))
+    out.push(withText({minCount: schema.minItems, type: 'answercount'}, m.minItems))
   }
   if (schema.maxItems !== undefined) {
-    out.push(withText({type: 'answercount', maxCount: schema.maxItems}, m.maxItems))
+    out.push(withText({maxCount: schema.maxItems, type: 'answercount'}, m.maxItems))
   }
   // SurveyJS counts an explicit "No" as an answer, so `isRequired` alone lets a
   // declined consent through; `const: true` needs its own expression.
   if (schema.const === true) {
-    out.push(withText({type: 'expression', expression: `{${name}} = true`}, m.const))
+    out.push(withText({expression: `{${name}} = true`, type: 'expression'}, m.const))
   }
   return out
 }
@@ -133,7 +133,7 @@ const questionOf = (
     type = 'text'
   }
 
-  const question: SurveyQuestionJson = {type, name, title: schema.title ?? name}
+  const question: SurveyQuestionJson = {name, title: schema.title ?? name, type}
   if (required) {
     question.isRequired = true
   }
@@ -190,7 +190,7 @@ export const toSurveyJsProps = (form: FormToolkitForm, compiled: ToJsonSchemaRes
     elements.push(question)
   }
 
-  const surveyJson: SurveyJson = {showQuestionNumbers: 'off', elements}
+  const surveyJson: SurveyJson = {elements, showQuestionNumbers: 'off'}
   if (schema.title !== undefined) {
     surveyJson.title = schema.title
   }
@@ -210,5 +210,5 @@ export const toSurveyJsProps = (form: FormToolkitForm, compiled: ToJsonSchemaRes
     'validators',
     'type (text/boolean/dropdown/checkbox)',
   ]
-  return {surveyJson, fromSchema, fromForm: [...fromForm]}
+  return {fromForm: [...fromForm], fromSchema, surveyJson}
 }

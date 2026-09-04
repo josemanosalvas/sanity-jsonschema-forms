@@ -14,9 +14,9 @@ export interface RjsfProps {
 }
 
 const WIDGETS: Partial<Record<string, string>> = {
-  textarea: 'textarea',
   email: 'email',
   radio: 'radio',
+  textarea: 'textarea',
 }
 
 /**
@@ -64,9 +64,9 @@ export const toRjsfProps = (form: FormToolkitForm, compiled: ToJsonSchemaResult)
     })
 
   return {
-    schema: schema as RJSFSchema,
-    uiSchema,
     formProps: {experimental_defaultFormStateBehavior: {constAsDefaults: 'never'}},
+    schema: schema as RJSFSchema,
     transformErrors,
+    uiSchema,
   }
 }

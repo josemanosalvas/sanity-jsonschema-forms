@@ -30,12 +30,12 @@ describe('RJSF presentation adapter', () => {
 
   test('emits only presentation in the uiSchema', () => {
     expect(uiSchema).toStrictEqual({
+      contactMethod: {'ui:optionValueFormat': 'realValue', 'ui:widget': 'radio'},
+      email: {'ui:placeholder': 'you@example.com', 'ui:widget': 'email'},
       fullName: {'ui:placeholder': 'Ada Lovelace'},
-      email: {'ui:widget': 'email', 'ui:placeholder': 'you@example.com'},
-      partySize: {'ui:placeholder': 'How many?'},
-      contactMethod: {'ui:widget': 'radio', 'ui:optionValueFormat': 'realValue'},
       interests: {'ui:widget': 'checkboxes'},
-      message: {'ui:widget': 'textarea', 'ui:placeholder': 'How can we help?'},
+      message: {'ui:placeholder': 'How can we help?', 'ui:widget': 'textarea'},
+      partySize: {'ui:placeholder': 'How many?'},
       'ui:order': ['fullName', 'email', 'partySize', 'topic', 'contactMethod', 'interests', 'message', 'consent'],
       'ui:submitButtonOptions': {submitText: 'Send message'},
     })

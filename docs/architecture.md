@@ -5,18 +5,16 @@
 into JSON Schema, and ships thin adapters that let schema-driven form
 libraries render and validate it.
 
-```
-Sanity Studio → @sanity/form-toolkit → form document
-                                            │
-                                     toJsonSchema(form)
-                                            │
-                              {schema, messages, diagnostics}
-                                            │
-                    ┌───────────────────────┼───────────────────────┐
-             ./rjsf → RJSF          ./jsonforms → JSON Forms    ./surveyjs → SurveyJS
-                    └───────────────────────┼───────────────────────┘
-                                            │
-                          submission → AJV against `schema` (server)
+```mermaid
+flowchart TB
+  studio["Sanity Studio"] --> form["@sanity/form-toolkit form document"]
+  form --> compile["toJsonSchema(form)"]
+  compile --> out["{ schema, messages, diagnostics }"]
+  out --> rjsf["./rjsf → RJSF"]
+  out --> jsonforms["./jsonforms → JSON Forms"]
+  out --> surveyjs["./surveyjs → SurveyJS"]
+  rjsf & jsonforms & surveyjs --> submission["submission"]
+  submission --> ajv["AJV against schema, on the server"]
 ```
 
 ## Decisions

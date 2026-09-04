@@ -6,8 +6,8 @@ import ultracite from 'ultracite/oxfmt'
 // wrapped by hand; the docs' wide tables read better unpadded.
 export default defineConfig({
   ...ultracite,
-  ignorePatterns: [...ultracite.ignorePatterns, '**/*.md'],
   bracketSpacing: false,
+  ignorePatterns: [...ultracite.ignorePatterns, '**/*.md'],
   printWidth: 140,
   semi: false,
   singleQuote: true,

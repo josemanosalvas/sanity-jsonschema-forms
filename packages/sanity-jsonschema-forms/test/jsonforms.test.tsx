@@ -17,7 +17,7 @@ import {query} from './dom'
  */
 const CheckboxGroup = withJsonFormsControlProps(({data, handleChange, path, label, schema, errors}: ControlProps) => {
   const items = schema.items as JsonSchema
-  const options = (items.oneOf ?? []).map((o) => ({value: String((o as JsonSchema).const), label: (o as JsonSchema).title ?? ''}))
+  const options = (items.oneOf ?? []).map((o) => ({label: (o as JsonSchema).title ?? '', value: String((o as JsonSchema).const)}))
   const selected: string[] = Array.isArray(data) ? data : []
   return (
     <fieldset>
@@ -46,7 +46,7 @@ const checkboxGroupTester: RankedTester = rankWith(
     ),
   ),
 )
-const renderers = [...vanillaRenderers, {tester: checkboxGroupTester, renderer: CheckboxGroup}]
+const renderers = [...vanillaRenderers, {renderer: CheckboxGroup, tester: checkboxGroupTester}]
 
 describe('JSON Forms presentation adapter', () => {
   afterEach(cleanup)
@@ -57,20 +57,20 @@ describe('JSON Forms presentation adapter', () => {
   test('passes the schema through untouched and emits only controls', () => {
     expect(schema).toBe(compiled.schema)
     expect(uischema).toStrictEqual({
-      type: 'VerticalLayout',
       elements: [
-        {type: 'Control', scope: '#/properties/fullName', i18n: 'fullName', options: {placeholder: 'Ada Lovelace'}},
-        {type: 'Control', scope: '#/properties/email', i18n: 'email', options: {placeholder: 'you@example.com'}},
-        {type: 'Control', scope: '#/properties/partySize', i18n: 'partySize', options: {placeholder: 'How many?'}},
-        {type: 'Control', scope: '#/properties/topic', i18n: 'topic'},
-        {type: 'Control', scope: '#/properties/contactMethod', i18n: 'contactMethod', options: {format: 'radio'}},
-        {type: 'Control', scope: '#/properties/interests', i18n: 'interests'},
-        {type: 'Control', scope: '#/properties/message', i18n: 'message', options: {multi: true, placeholder: 'How can we help?'}},
-        {type: 'Control', scope: '#/properties/consent', i18n: 'consent'},
+        {i18n: 'fullName', options: {placeholder: 'Ada Lovelace'}, scope: '#/properties/fullName', type: 'Control'},
+        {i18n: 'email', options: {placeholder: 'you@example.com'}, scope: '#/properties/email', type: 'Control'},
+        {i18n: 'partySize', options: {placeholder: 'How many?'}, scope: '#/properties/partySize', type: 'Control'},
+        {i18n: 'topic', scope: '#/properties/topic', type: 'Control'},
+        {i18n: 'contactMethod', options: {format: 'radio'}, scope: '#/properties/contactMethod', type: 'Control'},
+        {i18n: 'interests', scope: '#/properties/interests', type: 'Control'},
+        {i18n: 'message', options: {multi: true, placeholder: 'How can we help?'}, scope: '#/properties/message', type: 'Control'},
+        {i18n: 'consent', scope: '#/properties/consent', type: 'Control'},
       ],
+      type: 'VerticalLayout',
     })
     expect(submitText).toBe('Send message')
-    expect(initialData).toStrictEqual({partySize: 2, contactMethod: 'email'})
+    expect(initialData).toStrictEqual({contactMethod: 'email', partySize: 2})
   })
 
   test('translate answers error keys and passes everything else through', () => {
@@ -112,7 +112,7 @@ describe('JSON Forms presentation adapter', () => {
       <JsonForms
         schema={schema}
         uischema={uischema}
-        data={{fullName: 'A1', partySize: 0, consent: false}}
+        data={{consent: false, fullName: 'A1', partySize: 0}}
         renderers={renderers}
         cells={vanillaCells}
         i18n={{translate}}

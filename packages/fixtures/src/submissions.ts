@@ -9,39 +9,39 @@ export interface Submission {
 }
 
 export const contactSubmissions = {
-  valid: {
-    verdict: 'accept',
-    data: {
-      fullName: 'Ada Lovelace',
-      email: 'ada@example.com',
-      partySize: 4,
-      topic: 'sales',
-      contactMethod: 'phone',
-      interests: ['events'],
-      message: 'Hello',
-      consent: true,
-    },
-  },
-  empty: {verdict: 'reject', data: {}},
-  everyRuleFails: {
+  duplicateInterests: {
+    data: {consent: true, email: 'a@b.co', fullName: 'Ada', interests: ['events', 'events'], message: 'ok', topic: 'press'},
     verdict: 'reject',
+  },
+  empty: {data: {}, verdict: 'reject'},
+  everyRuleFails: {
     data: {
-      fullName: 'A1',
-      email: 'not-an-email',
-      partySize: 0,
-      topic: 'other',
+      consent: false,
       contactMethod: 'fax',
+      email: 'not-an-email',
+      fullName: 'A1',
       interests: ['updates', 'events', 'newsletter'],
       message: 'x'.repeat(501),
-      consent: false,
+      partySize: 0,
+      topic: 'other',
     },
+    verdict: 'reject',
   },
   minLengthAndMaximum: {
+    data: {consent: true, email: 'a@b.co', fullName: 'A', message: 'ok', partySize: 13, topic: 'press'},
     verdict: 'reject',
-    data: {fullName: 'A', partySize: 13, email: 'a@b.co', topic: 'press', message: 'ok', consent: true},
   },
-  duplicateInterests: {
-    verdict: 'reject',
-    data: {fullName: 'Ada', email: 'a@b.co', topic: 'press', message: 'ok', consent: true, interests: ['events', 'events']},
+  valid: {
+    data: {
+      consent: true,
+      contactMethod: 'phone',
+      email: 'ada@example.com',
+      fullName: 'Ada Lovelace',
+      interests: ['events'],
+      message: 'Hello',
+      partySize: 4,
+      topic: 'sales',
+    },
+    verdict: 'accept',
   },
 } as const satisfies Record<string, Submission>

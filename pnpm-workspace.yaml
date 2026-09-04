@@ -11,3 +11,4 @@ minimumReleaseAgeExclude:
   - survey-core@3.0.3
   - survey-react-ui@3.0.3
   - ultracite@7.10.8
+autoInstallPeers: false
