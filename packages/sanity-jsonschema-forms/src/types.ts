@@ -1,14 +1,45 @@
-import type {FormDataProps} from '@sanity/form-toolkit/form-renderer'
 import type {JSONSchema7} from 'json-schema'
 
 /**
- * The form document as `@sanity/form-toolkit` types it. Derived from the one
- * type form-toolkit exports; this package adds no authoring type of its own.
+ * The form document as `@sanity/form-toolkit` stores it, reduced to the
+ * members this package reads. A structural copy of form-toolkit's
+ * `FormDataProps`, checked against it in `test/types.test.ts`, so a frontend
+ * can compile a fetched document without installing `@sanity/form-toolkit`,
+ * whose peers include `sanity` itself.
  */
-export type FormToolkitForm = FormDataProps
-export type FormToolkitField = NonNullable<FormDataProps['fields']>[number]
-export type FormToolkitValidationRule = NonNullable<FormToolkitField['validation']>[number]
-export type FormToolkitChoice = NonNullable<FormToolkitField['choices']>[number]
+export interface FormToolkitForm {
+  title: string
+  fields?: FormToolkitField[]
+  submitButton?: {
+    text: string
+    position: 'left' | 'center' | 'right'
+  }
+}
+
+export interface FormToolkitField {
+  type: string
+  label?: string
+  name: string
+  required?: boolean
+  validation?: FormToolkitValidationRule[]
+  options?: {
+    placeholder?: string
+    defaultValue?: string
+  }
+  choices?: FormToolkitChoice[]
+  _key?: string
+}
+
+export interface FormToolkitValidationRule {
+  type: string
+  value: string
+  message: string
+}
+
+export interface FormToolkitChoice {
+  label: string
+  value: string
+}
 
 export type DiagnosticSeverity = 'error' | 'warning' | 'info'
 
@@ -55,7 +86,7 @@ export type MessageKeyword = 'minLength' | 'maxLength' | 'pattern' | 'minimum' |
 export type MessageMap = Record<string, Partial<Record<MessageKeyword, string>>>
 
 export interface ToJsonSchemaResult {
-  /** Draft-07 JSON Schema. No `ui:*`, no `errorMessage`, no `$id`. */
+  /** JSON Schema Draft 7, declared by `$schema`. No `ui:*`, no `errorMessage`, no `$id`. */
   schema: JSONSchema7
   messages: MessageMap
   /** Everything that did not map one-to-one, in source order. */

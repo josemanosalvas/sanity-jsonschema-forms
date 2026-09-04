@@ -1,5 +1,5 @@
-export {toJsonSchema, SUPPORTED_FIELD_TYPES, FORM_TOOLKIT_FIELD_TYPES, isSupportedType} from './to-json-schema'
 export type {SupportedFieldType} from './to-json-schema'
+export {FORM_TOOLKIT_FIELD_TYPES, isSupportedType, JSON_SCHEMA_DRAFT_7, SUPPORTED_FIELD_TYPES, toJsonSchema} from './to-json-schema'
 export type {
   Diagnostic,
   DiagnosticCode,

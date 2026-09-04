@@ -1,5 +1,5 @@
-import {createDefaultValue} from '@jsonforms/core'
 import type {ControlElement, JsonSchema7, Translator, UISchemaElement, VerticalLayout} from '@jsonforms/core'
+import {createDefaultValue} from '@jsonforms/core'
 
 import {presentationFields} from './internal/fields'
 import type {FormToolkitForm, MessageKeyword, ToJsonSchemaResult} from './types'

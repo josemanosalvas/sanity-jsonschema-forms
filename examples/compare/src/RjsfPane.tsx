@@ -1,5 +1,5 @@
-import Form from '@rjsf/shadcn'
 import type {IChangeEvent} from '@rjsf/core'
+import Form from '@rjsf/shadcn'
 import validator from '@rjsf/validator-ajv8'
 import {useMemo, useState} from 'react'
 import type {FormToolkitForm, ToJsonSchemaResult} from 'sanity-jsonschema-forms'
@@ -22,7 +22,9 @@ export const RjsfPane = ({form, compiled}: {form: FormToolkitForm; compiled: ToJ
         noHtml5Validate
         showErrorList={false}
       />
-      {submitted !== null && <pre className="mt-4 overflow-x-auto rounded-md bg-muted p-3 text-xs">{JSON.stringify(submitted, null, 2)}</pre>}
+      {submitted !== null && (
+        <pre className="mt-4 overflow-x-auto rounded-md bg-muted p-3 text-xs">{JSON.stringify(submitted, null, 2)}</pre>
+      )}
     </section>
   )
 }

@@ -37,7 +37,15 @@ describe('SurveyJS presentation adapter', () => {
             {type: 'regex', regex: '^[^0-9]*$', text: 'Names cannot contain digits.'},
           ],
         },
-        {type: 'text', name: 'email', title: 'Email', isRequired: true, inputType: 'email', placeholder: 'you@example.com', validators: [{type: 'email'}]},
+        {
+          type: 'text',
+          name: 'email',
+          title: 'Email',
+          isRequired: true,
+          inputType: 'email',
+          placeholder: 'you@example.com',
+          validators: [{type: 'email'}],
+        },
         {
           type: 'text',
           name: 'partySize',
@@ -82,7 +90,14 @@ describe('SurveyJS presentation adapter', () => {
           ],
           validators: [{type: 'answercount', maxCount: 2, text: 'Pick two at most.'}],
         },
-        {type: 'comment', name: 'message', title: 'Message', isRequired: true, placeholder: 'How can we help?', validators: [{type: 'text', maxLength: 500, text: 'Keep it under 500 characters.'}]},
+        {
+          type: 'comment',
+          name: 'message',
+          title: 'Message',
+          isRequired: true,
+          placeholder: 'How can we help?',
+          validators: [{type: 'text', maxLength: 500, text: 'Keep it under 500 characters.'}],
+        },
         {
           type: 'boolean',
           name: 'consent',
@@ -99,8 +114,21 @@ describe('SurveyJS presentation adapter', () => {
 
   test('the messy form compiles to a question per surviving property', () => {
     const {surveyJson: messy} = toSurveyJsProps(messyForm, toJsonSchema(messyForm))
-    expect(messy.elements.map((q) => q.name)).toEqual(['dup', 'unlabeled', 'badRules', 'badDefault', 'dupChoices', 'radioPh', 'groupDefault', 'boolRules'])
-    expect(messy.elements.at(-1)).toMatchObject({type: 'boolean', isRequired: true, validators: [{type: 'expression', expression: '{boolRules} = true'}]})
+    expect(messy.elements.map((q) => q.name)).toEqual([
+      'dup',
+      'unlabeled',
+      'badRules',
+      'badDefault',
+      'dupChoices',
+      'radioPh',
+      'groupDefault',
+      'boolRules',
+    ])
+    expect(messy.elements.at(-1)).toMatchObject({
+      type: 'boolean',
+      isRequired: true,
+      validators: [{type: 'expression', expression: '{boolRules} = true'}],
+    })
   })
 
   /**

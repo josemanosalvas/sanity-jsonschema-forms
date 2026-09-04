@@ -1,4 +1,4 @@
-import {and, rankWith, schemaMatches, uiTypeIs, type ControlProps, type JsonSchema, type RankedTester} from '@jsonforms/core'
+import {and, type ControlProps, type JsonSchema, type RankedTester, rankWith, schemaMatches, uiTypeIs} from '@jsonforms/core'
 import {withJsonFormsControlProps} from '@jsonforms/react'
 
 /**
@@ -33,7 +33,9 @@ export const checkboxGroupTester: RankedTester = rankWith(
   5,
   and(
     uiTypeIs('Control'),
-    schemaMatches((s) => s.type === 'array' && s.uniqueItems === true && typeof s.items === 'object' && Array.isArray((s.items as JsonSchema).oneOf)),
+    schemaMatches(
+      (s) => s.type === 'array' && s.uniqueItems === true && typeof s.items === 'object' && Array.isArray((s.items as JsonSchema).oneOf),
+    ),
   ),
 )
 

@@ -2,12 +2,11 @@ import Ajv, {type ErrorObject, type SchemaObject} from 'ajv'
 import addFormats from 'ajv-formats'
 import {contactForm, contactSubmissions} from 'sanity-form-fixtures'
 import {describe, expect, test} from 'vitest'
-
-import {toJsonSchema} from '../src'
 import type {MessageKeyword} from '../src'
+import {toJsonSchema} from '../src'
 
 /**
- * The compiled schema through plain AJV (draft-07 default) with ajv-formats,
+ * The compiled schema through plain AJV, whose default dialect is Draft 7, with ajv-formats,
  * no renderer involved: the contract must validate on its own.
  */
 describe('compiled schema validates with plain AJV', () => {
@@ -32,11 +31,11 @@ describe('compiled schema validates with plain AJV', () => {
 
   test('an empty submission names every required property', () => {
     expect(run({}).errors).toEqual([
-      'fullName required: must have required property \'fullName\'',
-      'email required: must have required property \'email\'',
-      'topic required: must have required property \'topic\'',
-      'message required: must have required property \'message\'',
-      'consent required: must have required property \'consent\'',
+      "fullName required: must have required property 'fullName'",
+      "email required: must have required property 'email'",
+      "topic required: must have required property 'topic'",
+      "message required: must have required property 'message'",
+      "consent required: must have required property 'consent'",
     ])
   })
 

@@ -1,18 +1,25 @@
 {
-  "name": "sanity-jsonschema-forms",
+  "name": "sanity-jsonschema-forms-workspace",
   "version": "0.0.0",
   "private": true,
-  "description": "Standards-based form authoring for Sanity: @sanity/form-toolkit compiled to JSON Schema, with adapters for schema-driven form libraries.",
+  "description": "Workspace for sanity-jsonschema-forms: the package, its test fixtures and the comparison example.",
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "pnpm -r --filter \"./packages/*\" build",
+    "lint": "biome check .",
+    "format": "biome check --write .",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r --filter \"./packages/*\" test",
+    "test": "pnpm --filter sanity-jsonschema-forms test",
+    "build": "pnpm --filter sanity-jsonschema-forms build",
+    "build:example": "pnpm --filter compare-example build",
+    "publint": "pnpm --filter sanity-jsonschema-forms publint",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm build:example && pnpm publint",
     "dev": "pnpm --filter compare-example dev",
-    "release": "pnpm build && pnpm --filter sanity-jsonschema-forms publish"
+    "release": "pnpm verify && pnpm --filter sanity-jsonschema-forms publish"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.12",
+    "publint": "^0.3.24",
     "typescript": "^5.9.3"
   },
   "engines": {

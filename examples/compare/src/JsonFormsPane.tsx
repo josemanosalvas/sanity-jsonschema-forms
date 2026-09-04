@@ -18,7 +18,9 @@ export const JsonFormsPane = ({form, compiled}: {form: FormToolkitForm; compiled
   return (
     <section>
       <h2 className="mb-1 text-lg font-semibold">JSON Forms · vanilla renderers</h2>
-      <p className="mb-4 text-xs text-muted-foreground">uischema + translate from sanity-jsonschema-forms/jsonforms, plus one checkbox-group renderer</p>
+      <p className="mb-4 text-xs text-muted-foreground">
+        uischema + translate from sanity-jsonschema-forms/jsonforms, plus one checkbox-group renderer
+      </p>
       <form
         className="jsonforms"
         onSubmit={(e) => {
@@ -45,7 +47,9 @@ export const JsonFormsPane = ({form, compiled}: {form: FormToolkitForm; compiled
           {submitText ?? 'Submit'}
         </button>
       </form>
-      {submitted !== null && <pre className="mt-4 overflow-x-auto rounded-md bg-muted p-3 text-xs">{JSON.stringify(submitted, null, 2)}</pre>}
+      {submitted !== null && (
+        <pre className="mt-4 overflow-x-auto rounded-md bg-muted p-3 text-xs">{JSON.stringify(submitted, null, 2)}</pre>
+      )}
     </section>
   )
 }

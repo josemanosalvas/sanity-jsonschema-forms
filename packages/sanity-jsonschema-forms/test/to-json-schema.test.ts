@@ -6,8 +6,9 @@ import {toJsonSchema} from '../src'
 describe('toJsonSchema: contact form', () => {
   const {schema, messages, diagnostics} = toJsonSchema(contactForm)
 
-  test('compiles to standards-shaped draft-07', () => {
+  test('compiles to JSON Schema Draft 7 and declares the dialect', () => {
     expect(schema).toEqual({
+      $schema: 'http://json-schema.org/draft-07/schema#',
       type: 'object',
       title: 'Contact us',
       required: ['fullName', 'email', 'topic', 'message', 'consent'],
@@ -76,6 +77,12 @@ describe('toJsonSchema: contact form', () => {
     expect(diagnostics.map((d) => d.code)).toEqual(['lossy-submit-position'])
   })
 
+  test('diagnostics name no renderer', () => {
+    for (const form of [contactForm, messyForm]) {
+      for (const d of toJsonSchema(form).diagnostics) expect(d.message).not.toMatch(/rjsf|json forms|surveyjs|adapter/iu)
+    }
+  })
+
   test('is deterministic and does not mutate its input', () => {
     const before = JSON.stringify(contactForm)
     const again = toJsonSchema(contactForm)
@@ -89,7 +96,16 @@ describe('toJsonSchema: messy content', () => {
   const codes = diagnostics.map((d) => [d.path, d.code, d.severity] as const)
 
   test('keeps only compilable fields, in source order', () => {
-    expect(Object.keys(schema.properties ?? {})).toEqual(['dup', 'unlabeled', 'badRules', 'badDefault', 'dupChoices', 'radioPh', 'groupDefault', 'boolRules'])
+    expect(Object.keys(schema.properties ?? {})).toEqual([
+      'dup',
+      'unlabeled',
+      'badRules',
+      'badDefault',
+      'dupChoices',
+      'radioPh',
+      'groupDefault',
+      'boolRules',
+    ])
     expect(schema.title).toBeUndefined()
     expect(schema.required).toEqual(['boolRules'])
   })
@@ -123,6 +139,9 @@ describe('toJsonSchema: messy content', () => {
 
   test('a lone required checkbox is const true; group rules do not apply to it', () => {
     expect(schema.properties?.boolRules).toEqual({type: 'boolean', title: 'Bool', const: true})
-    expect(diagnostics.filter((d) => d.path === 'fields[15]').map((d) => d.code)).toEqual(['invalid-default-value', 'inapplicable-validation-rule'])
+    expect(diagnostics.filter((d) => d.path === 'fields[15]').map((d) => d.code)).toEqual([
+      'invalid-default-value',
+      'inapplicable-validation-rule',
+    ])
   })
 })

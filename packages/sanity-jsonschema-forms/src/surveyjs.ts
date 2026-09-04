@@ -1,6 +1,6 @@
 import type {JSONSchema7, JSONSchema7Definition} from 'json-schema'
 
-import {presentationFields, type PresentationField} from './internal/fields'
+import {type PresentationField, presentationFields} from './internal/fields'
 import type {FormToolkitForm, MessageMap, ToJsonSchemaResult} from './types'
 
 /**
@@ -54,12 +54,14 @@ export interface SurveyJsProps {
   fromForm: string[]
 }
 
-const isSchema = (value: JSONSchema7Definition | JSONSchema7Definition[] | undefined): value is JSONSchema7 => typeof value === 'object' && value !== null && !Array.isArray(value)
+const isSchema = (value: JSONSchema7Definition | JSONSchema7Definition[] | undefined): value is JSONSchema7 =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
 
 const choicesOf = (schema: JSONSchema7): SurveyChoiceJson[] =>
   (schema.oneOf ?? []).filter(isSchema).map((option) => ({value: String(option.const), text: option.title ?? String(option.const)}))
 
-const withText = (validator: SurveyValidatorJson, text: string | undefined): SurveyValidatorJson => (text === undefined ? validator : {...validator, text})
+const withText = (validator: SurveyValidatorJson, text: string | undefined): SurveyValidatorJson =>
+  text === undefined ? validator : {...validator, text}
 
 /** JSON Schema keywords → SurveyJS validators, each carrying its authored message. */
 const validatorsOf = (name: string, schema: JSONSchema7, messages: MessageMap): SurveyValidatorJson[] => {
@@ -80,7 +82,13 @@ const validatorsOf = (name: string, schema: JSONSchema7, messages: MessageMap): 
   return out
 }
 
-const questionOf = (name: string, schema: JSONSchema7, field: PresentationField | undefined, required: boolean, messages: MessageMap): SurveyQuestionJson => {
+const questionOf = (
+  name: string,
+  schema: JSONSchema7,
+  field: PresentationField | undefined,
+  required: boolean,
+  messages: MessageMap,
+): SurveyQuestionJson => {
   const isChoice = Array.isArray(schema.oneOf)
   const isGroup = schema.type === 'array'
   let type: SurveyQuestionJson['type']
@@ -97,7 +105,8 @@ const questionOf = (name: string, schema: JSONSchema7, field: PresentationField 
   if (type === 'boolean') question.renderAs = 'checkbox'
   if (isGroup && isSchema(schema.items)) question.choices = choicesOf(schema.items)
   else if (isChoice) question.choices = choicesOf(schema)
-  if (field?.placeholder !== undefined && (type === 'text' || type === 'comment' || type === 'dropdown')) question.placeholder = field.placeholder
+  if (field?.placeholder !== undefined && (type === 'text' || type === 'comment' || type === 'dropdown'))
+    question.placeholder = field.placeholder
   const validators = validatorsOf(name, schema, messages)
   if (validators.length > 0) question.validators = validators
   return question
@@ -134,6 +143,15 @@ export const toSurveyJsProps = (form: FormToolkitForm, compiled: ToJsonSchemaRes
     fromForm.add('completeText')
   }
 
-  const fromSchema = ['name', 'title', 'isRequired', 'defaultValue', 'inputType', 'choices', 'validators', 'type (text/boolean/dropdown/checkbox)']
+  const fromSchema = [
+    'name',
+    'title',
+    'isRequired',
+    'defaultValue',
+    'inputType',
+    'choices',
+    'validators',
+    'type (text/boolean/dropdown/checkbox)',
+  ]
   return {surveyJson, fromSchema, fromForm: [...fromForm]}
 }

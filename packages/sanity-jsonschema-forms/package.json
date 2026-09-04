@@ -13,7 +13,7 @@
     "surveyjs"
   ],
   "license": "MIT",
-  "author": "Jos\u00e9 Manosalvas",
+  "author": "José Manosalvas",
   "homepage": "https://github.com/josemanosalvas/sanity-jsonschema-forms#readme",
   "repository": {
     "type": "git",
@@ -29,26 +29,33 @@
     "dist"
   ],
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./rjsf": {
-      "types": "./dist/rjsf.d.ts",
-      "default": "./dist/rjsf.js"
-    },
-    "./jsonforms": {
-      "types": "./dist/jsonforms.d.ts",
-      "default": "./dist/jsonforms.js"
-    },
-    "./surveyjs": {
-      "types": "./dist/surveyjs.d.ts",
-      "default": "./dist/surveyjs.js"
-    },
+    ".": "./src/index.ts",
+    "./rjsf": "./src/rjsf.ts",
+    "./jsonforms": "./src/jsonforms.ts",
+    "./surveyjs": "./src/surveyjs.ts",
     "./package.json": "./package.json"
   },
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./rjsf": {
+        "types": "./dist/rjsf.d.ts",
+        "default": "./dist/rjsf.js"
+      },
+      "./jsonforms": {
+        "types": "./dist/jsonforms.d.ts",
+        "default": "./dist/jsonforms.js"
+      },
+      "./surveyjs": {
+        "types": "./dist/surveyjs.d.ts",
+        "default": "./dist/surveyjs.js"
+      },
+      "./package.json": "./package.json"
+    }
   },
   "engines": {
     "node": ">=20"
@@ -57,24 +64,21 @@
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "publint": "publint --pack pnpm --strict"
   },
   "dependencies": {
     "@types/json-schema": "^7.0.15"
   },
   "peerDependencies": {
     "@jsonforms/core": "3.8.0",
-    "@rjsf/utils": "^6.8.0",
-    "@sanity/form-toolkit": "^3.0.0"
+    "@rjsf/utils": "^6.8.0"
   },
   "peerDependenciesMeta": {
     "@jsonforms/core": {
       "optional": true
     },
     "@rjsf/utils": {
-      "optional": true
-    },
-    "@sanity/form-toolkit": {
       "optional": true
     }
   },

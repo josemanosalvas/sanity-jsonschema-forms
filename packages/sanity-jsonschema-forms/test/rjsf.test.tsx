@@ -42,7 +42,14 @@ describe('RJSF presentation adapter', () => {
   test('renders labels from oneOf titles without pre-selecting anything', () => {
     const changes: unknown[] = []
     const {container} = render(
-      <Form {...formProps} schema={schema} uiSchema={uiSchema} validator={validator} transformErrors={transformErrors} onChange={(e) => changes.push(e.formData)} />,
+      <Form
+        {...formProps}
+        schema={schema}
+        uiSchema={uiSchema}
+        validator={validator}
+        transformErrors={transformErrors}
+        onChange={(e) => changes.push(e.formData)}
+      />,
     )
     const text = container.textContent ?? ''
     expect(text).toContain('Product updates')
@@ -57,7 +64,15 @@ describe('RJSF presentation adapter', () => {
 
   test('shows the authored messages after an invalid submit', () => {
     const {container} = render(
-      <Form {...formProps} schema={schema} uiSchema={uiSchema} validator={validator} transformErrors={transformErrors} noHtml5Validate showErrorList={false} />,
+      <Form
+        {...formProps}
+        schema={schema}
+        uiSchema={uiSchema}
+        validator={validator}
+        transformErrors={transformErrors}
+        noHtml5Validate
+        showErrorList={false}
+      />,
     )
     const set = (id: string, value: string) => fireEvent.change(container.querySelector(`#${id}`)!, {target: {value}})
     set('root_fullName', 'A1')

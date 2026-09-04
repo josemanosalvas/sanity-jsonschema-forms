@@ -25,7 +25,9 @@ export const App = () => {
         <SurveyJsPane form={contactForm} compiled={compiled} />
       </div>
       <aside className="mt-12 grid gap-6 text-xs lg:grid-cols-3">
-        <Panel title="schema" open>{JSON.stringify(compiled.schema, null, 2)}</Panel>
+        <Panel title="schema" open>
+          {JSON.stringify(compiled.schema, null, 2)}
+        </Panel>
         <Panel title="messages">{JSON.stringify(compiled.messages, null, 2)}</Panel>
         <Panel title="diagnostics">{JSON.stringify(compiled.diagnostics, null, 2)}</Panel>
       </aside>

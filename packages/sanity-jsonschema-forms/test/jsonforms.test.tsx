@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import {rankWith, uiTypeIs, and, schemaMatches, type ControlProps, type JsonSchema, type RankedTester} from '@jsonforms/core'
+import {and, type ControlProps, type JsonSchema, type RankedTester, rankWith, schemaMatches, uiTypeIs} from '@jsonforms/core'
 import {JsonForms, withJsonFormsControlProps} from '@jsonforms/react'
 import {vanillaCells, vanillaRenderers} from '@jsonforms/vanilla-renderers'
 import {cleanup, fireEvent, render, waitFor} from '@testing-library/react'
@@ -41,7 +41,9 @@ const checkboxGroupTester: RankedTester = rankWith(
   5,
   and(
     uiTypeIs('Control'),
-    schemaMatches((s) => s.type === 'array' && s.uniqueItems === true && typeof s.items === 'object' && Array.isArray((s.items as JsonSchema).oneOf)),
+    schemaMatches(
+      (s) => s.type === 'array' && s.uniqueItems === true && typeof s.items === 'object' && Array.isArray((s.items as JsonSchema).oneOf),
+    ),
   ),
 )
 const renderers = [...vanillaRenderers, {tester: checkboxGroupTester, renderer: CheckboxGroup}]
@@ -78,7 +80,15 @@ describe('JSON Forms presentation adapter', () => {
 
   test('renders with vanilla renderers plus one checkbox-group control', () => {
     const {container} = render(
-      <JsonForms schema={schema} uischema={uischema} data={initialData} renderers={renderers} cells={vanillaCells} i18n={{translate}} validationMode="ValidateAndHide" />,
+      <JsonForms
+        schema={schema}
+        uischema={uischema}
+        data={initialData}
+        renderers={renderers}
+        cells={vanillaCells}
+        i18n={{translate}}
+        validationMode="ValidateAndHide"
+      />,
     )
     expect(container.querySelector('textarea')).not.toBeNull()
     expect(container.querySelector('input[placeholder="Ada Lovelace"]')).not.toBeNull()
@@ -97,7 +107,15 @@ describe('JSON Forms presentation adapter', () => {
 
   test('shows the authored messages when validation is visible', () => {
     const {container} = render(
-      <JsonForms schema={schema} uischema={uischema} data={{fullName: 'A1', partySize: 0, consent: false}} renderers={renderers} cells={vanillaCells} i18n={{translate}} validationMode="ValidateAndShow" />,
+      <JsonForms
+        schema={schema}
+        uischema={uischema}
+        data={{fullName: 'A1', partySize: 0, consent: false}}
+        renderers={renderers}
+        cells={vanillaCells}
+        i18n={{translate}}
+        validationMode="ValidateAndShow"
+      />,
     )
     const text = container.textContent ?? ''
     expect(text).toContain('Names cannot contain digits.')
@@ -108,7 +126,15 @@ describe('JSON Forms presentation adapter', () => {
   test('typing into a control updates data through the same schema', async () => {
     let latest: unknown
     const {container} = render(
-      <JsonForms schema={schema} uischema={uischema} data={{}} renderers={renderers} cells={vanillaCells} i18n={{translate}} onChange={({data}) => (latest = data)} />,
+      <JsonForms
+        schema={schema}
+        uischema={uischema}
+        data={{}}
+        renderers={renderers}
+        cells={vanillaCells}
+        i18n={{translate}}
+        onChange={({data}) => (latest = data)}
+      />,
     )
     fireEvent.change(container.querySelector('input[placeholder="Ada Lovelace"]')!, {target: {value: 'Ada'}})
     // JSON Forms reports changes on a short debounce.
