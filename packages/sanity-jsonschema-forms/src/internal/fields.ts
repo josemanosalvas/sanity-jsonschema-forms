@@ -18,7 +18,9 @@ export interface PresentationField {
 }
 
 const trimmed = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') return undefined
+  if (typeof value !== 'string') {
+    return undefined
+  }
   const text = value.trim()
   return text.length === 0 ? undefined : text
 }
@@ -35,8 +37,12 @@ export const presentationFields = (form: FormToolkitForm, schema: JSONSchema7): 
   for (const field of form.fields ?? []) {
     const name = trimmed(field?.name)
     const type = trimmed(field?.type)
-    if (name === undefined || type === undefined || !isSupportedType(type)) continue
-    if (!Object.hasOwn(properties, name) || seen.has(name)) continue
+    if (name === undefined || type === undefined || !isSupportedType(type)) {
+      continue
+    }
+    if (!Object.hasOwn(properties, name) || seen.has(name)) {
+      continue
+    }
     seen.add(name)
     const placeholder = trimmed(field.options?.placeholder)
     out.push(placeholder === undefined ? {name, type} : {name, type, placeholder})

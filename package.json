@@ -6,8 +6,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "lint": "biome check .",
-    "format": "biome check --write .",
+    "lint": "ultracite check",
+    "format": "ultracite fix",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm --filter sanity-jsonschema-forms test",
     "build": "pnpm --filter sanity-jsonschema-forms build",
@@ -18,9 +18,11 @@
     "release": "pnpm verify && pnpm --filter sanity-jsonschema-forms publish"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.5.12",
+    "oxfmt": "^0.66.0",
+    "oxlint": "^1.81.0",
     "publint": "^0.3.24",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "ultracite": "^7.10.8"
   },
   "engines": {
     "node": ">=22.12",

@@ -1,6 +1,6 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 /* Prebuilt shadcn tokens; the package's exports map does not expose them, hence the relative path. */
-@import "../node_modules/@rjsf/shadcn/dist/default.css";
+@import '../node_modules/@rjsf/shadcn/dist/default.css';
 @source "../node_modules/@rjsf/shadcn";
 
 /* Minimal styling for JSON Forms' vanilla renderers, which ship no CSS. */
@@ -33,7 +33,7 @@
   font-size: 0.875rem;
   font-weight: 500;
 }
-.jsonforms .control input:not([type="checkbox"]):not([type="radio"]),
+.jsonforms .control input:not([type='checkbox']):not([type='radio']),
 .jsonforms .control select,
 .jsonforms .control textarea {
   border: 1px solid var(--border);

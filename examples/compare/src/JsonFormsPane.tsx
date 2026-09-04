@@ -18,7 +18,7 @@ export const JsonFormsPane = ({form, compiled}: {form: FormToolkitForm; compiled
   return (
     <section>
       <h2 className="mb-1 text-lg font-semibold">JSON Forms · vanilla renderers</h2>
-      <p className="mb-4 text-xs text-muted-foreground">
+      <p className="text-muted-foreground mb-4 text-xs">
         uischema + translate from sanity-jsonschema-forms/jsonforms, plus one checkbox-group renderer
       </p>
       <form
@@ -26,7 +26,9 @@ export const JsonFormsPane = ({form, compiled}: {form: FormToolkitForm; compiled
         onSubmit={(e) => {
           e.preventDefault()
           setAttempted(true)
-          if (errors.length === 0) setSubmitted(data)
+          if (errors.length === 0) {
+            setSubmitted(data)
+          }
         }}
         noValidate
       >
@@ -43,12 +45,12 @@ export const JsonFormsPane = ({form, compiled}: {form: FormToolkitForm; compiled
             setErrors(nextErrors ?? [])
           }}
         />
-        <button type="submit" className="mt-2 rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground">
+        <button type="submit" className="bg-primary text-primary-foreground mt-2 rounded-md px-4 py-2 text-sm">
           {submitText ?? 'Submit'}
         </button>
       </form>
       {submitted !== null && (
-        <pre className="mt-4 overflow-x-auto rounded-md bg-muted p-3 text-xs">{JSON.stringify(submitted, null, 2)}</pre>
+        <pre className="bg-muted mt-4 overflow-x-auto rounded-md p-3 text-xs">{JSON.stringify(submitted, null, 2)}</pre>
       )}
     </section>
   )

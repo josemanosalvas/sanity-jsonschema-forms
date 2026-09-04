@@ -7,7 +7,7 @@ describe('toJsonSchema: contact form', () => {
   const {schema, messages, diagnostics} = toJsonSchema(contactForm)
 
   test('compiles to JSON Schema Draft 7 and declares the dialect', () => {
-    expect(schema).toEqual({
+    expect(schema).toStrictEqual({
       $schema: 'http://json-schema.org/draft-07/schema#',
       type: 'object',
       title: 'Contact us',
@@ -60,7 +60,7 @@ describe('toJsonSchema: contact form', () => {
   })
 
   test('collects the authored messages beside the schema', () => {
-    expect(messages).toEqual({
+    expect(messages).toStrictEqual({
       fullName: {
         minLength: 'Please enter at least two characters.',
         maxLength: 'Names are limited to 80 characters.',
@@ -74,12 +74,14 @@ describe('toJsonSchema: contact form', () => {
   })
 
   test('reports only the submit position as lossy', () => {
-    expect(diagnostics.map((d) => d.code)).toEqual(['lossy-submit-position'])
+    expect(diagnostics.map((d) => d.code)).toStrictEqual(['lossy-submit-position'])
   })
 
   test('diagnostics name no renderer', () => {
     for (const form of [contactForm, messyForm]) {
-      for (const d of toJsonSchema(form).diagnostics) expect(d.message).not.toMatch(/rjsf|json forms|surveyjs|adapter/iu)
+      for (const d of toJsonSchema(form).diagnostics) {
+        expect(d.message).not.toMatch(/rjsf|json forms|surveyjs|adapter/iu)
+      }
     }
   })
 
@@ -96,7 +98,7 @@ describe('toJsonSchema: messy content', () => {
   const codes = diagnostics.map((d) => [d.path, d.code, d.severity] as const)
 
   test('keeps only compilable fields, in source order', () => {
-    expect(Object.keys(schema.properties ?? {})).toEqual([
+    expect(Object.keys(schema.properties ?? {})).toStrictEqual([
       'dup',
       'unlabeled',
       'badRules',
@@ -107,11 +109,11 @@ describe('toJsonSchema: messy content', () => {
       'boolRules',
     ])
     expect(schema.title).toBeUndefined()
-    expect(schema.required).toEqual(['boolRules'])
+    expect(schema.required).toStrictEqual(['boolRules'])
   })
 
   test('drops fields with errors and reports every loss', () => {
-    expect(codes).toEqual(
+    expect(codes).toStrictEqual(
       expect.arrayContaining([
         ['fields[0]', 'unsupported-field-type', 'error'],
         ['fields[3]', 'unknown-field-type', 'error'],
@@ -127,7 +129,7 @@ describe('toJsonSchema: messy content', () => {
   })
 
   test('normalises choices into oneOf', () => {
-    expect(schema.properties?.dupChoices).toEqual({
+    expect(schema.properties?.dupChoices).toStrictEqual({
       type: 'string',
       title: 'Dup choices',
       oneOf: [
@@ -138,8 +140,8 @@ describe('toJsonSchema: messy content', () => {
   })
 
   test('a lone required checkbox is const true; group rules do not apply to it', () => {
-    expect(schema.properties?.boolRules).toEqual({type: 'boolean', title: 'Bool', const: true})
-    expect(diagnostics.filter((d) => d.path === 'fields[15]').map((d) => d.code)).toEqual([
+    expect(schema.properties?.boolRules).toStrictEqual({type: 'boolean', title: 'Bool', const: true})
+    expect(diagnostics.filter((d) => d.path === 'fields[15]').map((d) => d.code)).toStrictEqual([
       'invalid-default-value',
       'inapplicable-validation-rule',
     ])

@@ -1,4 +1,5 @@
-import {and, type ControlProps, type JsonSchema, type RankedTester, rankWith, schemaMatches, uiTypeIs} from '@jsonforms/core'
+import {and, rankWith, schemaMatches, uiTypeIs} from '@jsonforms/core'
+import type {ControlProps, JsonSchema, RankedTester} from '@jsonforms/core'
 import {withJsonFormsControlProps} from '@jsonforms/react'
 
 /**

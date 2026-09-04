@@ -34,11 +34,19 @@ export const toJsonFormsProps = (form: FormToolkitForm, compiled: ToJsonSchemaRe
 
   for (const field of presentationFields(form, schema)) {
     const options: Record<string, unknown> = {}
-    if (field.type === 'textarea') options.multi = true
-    if (field.type === 'radio') options.format = 'radio'
-    if (field.placeholder !== undefined && field.type !== 'radio' && field.type !== 'checkbox') options.placeholder = field.placeholder
+    if (field.type === 'textarea') {
+      options.multi = true
+    }
+    if (field.type === 'radio') {
+      options.format = 'radio'
+    }
+    if (field.placeholder !== undefined && field.type !== 'radio' && field.type !== 'checkbox') {
+      options.placeholder = field.placeholder
+    }
     const control: ControlElement = {type: 'Control', scope: `#/properties/${field.name}`, i18n: field.name}
-    if (Object.keys(options).length > 0) control.options = options
+    if (Object.keys(options).length > 0) {
+      control.options = options
+    }
     elements.push(control)
   }
   const uischema: VerticalLayout = {type: 'VerticalLayout', elements}
@@ -49,7 +57,9 @@ export const toJsonFormsProps = (form: FormToolkitForm, compiled: ToJsonSchemaRe
     const match = ERROR_KEY.exec(id)
     const field = match?.groups?.field
     const keyword = match?.groups?.keyword
-    if (field === undefined || keyword === undefined) return defaultMessage
+    if (field === undefined || keyword === undefined) {
+      return defaultMessage
+    }
     return messages[field]?.[keyword as MessageKeyword] ?? defaultMessage
   }) as Translator
 

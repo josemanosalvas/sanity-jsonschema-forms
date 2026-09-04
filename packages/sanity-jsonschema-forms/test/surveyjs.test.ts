@@ -19,7 +19,7 @@ describe('SurveyJS presentation adapter', () => {
   const {surveyJson, fromSchema, fromForm} = toSurveyJsProps(contactForm, compiled)
 
   test('builds the survey JSON from the schema, reaching for the form only for presentation', () => {
-    expect(surveyJson).toEqual({
+    expect(surveyJson).toStrictEqual({
       title: 'Contact us',
       showQuestionNumbers: 'off',
       completeText: 'Send message',
@@ -108,13 +108,13 @@ describe('SurveyJS presentation adapter', () => {
         },
       ],
     })
-    expect(fromForm.sort()).toEqual(['completeText', 'placeholder', 'type'])
+    expect(fromForm.toSorted()).toStrictEqual(['completeText', 'placeholder', 'type'])
     expect(fromSchema).toContain('validators')
   })
 
   test('the messy form compiles to a question per surviving property', () => {
     const {surveyJson: messy} = toSurveyJsProps(messyForm, toJsonSchema(messyForm))
-    expect(messy.elements.map((q) => q.name)).toEqual([
+    expect(messy.elements.map((q) => q.name)).toStrictEqual([
       'dup',
       'unlabeled',
       'badRules',
@@ -148,7 +148,7 @@ describe('SurveyJS presentation adapter', () => {
 
   test('every authored message surfaces through the SurveyJS validators', () => {
     const {errors} = verdictOf(surveyJson, contactSubmissions.everyRuleFails.data)
-    expect(errors).toEqual(
+    expect(errors).toStrictEqual(
       expect.arrayContaining([
         'fullName: Names cannot contain digits.',
         'partySize: At least one person.',
@@ -163,13 +163,13 @@ describe('SurveyJS presentation adapter', () => {
   test('an off-list dropdown value is where SurveyJS and AJV part ways', () => {
     const {ok, errors} = verdictOf(surveyJson, {...contactSubmissions.valid.data, topic: 'other'})
     // Documented divergence: SurveyJS keeps or clears the value; it does not error on it.
-    expect(errors.filter((e) => e.startsWith('topic:'))).toEqual([])
-    expect(typeof ok).toBe('boolean')
+    expect(errors.filter((e) => e.startsWith('topic:'))).toStrictEqual([])
+    expect(ok).toBeTypeOf('boolean')
   })
 
   test('an empty submission fails on required questions', () => {
     const {ok, errors} = verdictOf(surveyJson, {})
     expect(ok).toBe(false)
-    expect(errors.map((e) => e.split(':')[0])).toEqual(['fullName', 'email', 'topic', 'message', 'consent'])
+    expect(errors.map((e) => e.split(':')[0])).toStrictEqual(['fullName', 'email', 'topic', 'message', 'consent'])
   })
 })

@@ -1,6 +1,7 @@
 import type {JSONSchema7, JSONSchema7Definition} from 'json-schema'
 
-import {type PresentationField, presentationFields} from './internal/fields'
+import {presentationFields} from './internal/fields'
+import type {PresentationField} from './internal/fields'
 import type {FormToolkitForm, MessageMap, ToJsonSchemaResult} from './types'
 
 /**
@@ -68,18 +69,46 @@ const validatorsOf = (name: string, schema: JSONSchema7, messages: MessageMap): 
   const m = messages[name] ?? {}
   const out: SurveyValidatorJson[] = []
   // One validator per keyword: a SurveyJS validator carries one message.
-  if (schema.minLength !== undefined) out.push(withText({type: 'text', minLength: schema.minLength}, m.minLength))
-  if (schema.maxLength !== undefined) out.push(withText({type: 'text', maxLength: schema.maxLength}, m.maxLength))
-  if (schema.pattern !== undefined) out.push(withText({type: 'regex', regex: schema.pattern}, m.pattern))
-  if (schema.format === 'email') out.push({type: 'email'})
-  if (schema.minimum !== undefined) out.push(withText({type: 'numeric', minValue: schema.minimum}, m.minimum))
-  if (schema.maximum !== undefined) out.push(withText({type: 'numeric', maxValue: schema.maximum}, m.maximum))
-  if (schema.minItems !== undefined) out.push(withText({type: 'answercount', minCount: schema.minItems}, m.minItems))
-  if (schema.maxItems !== undefined) out.push(withText({type: 'answercount', maxCount: schema.maxItems}, m.maxItems))
+  if (schema.minLength !== undefined) {
+    out.push(withText({type: 'text', minLength: schema.minLength}, m.minLength))
+  }
+  if (schema.maxLength !== undefined) {
+    out.push(withText({type: 'text', maxLength: schema.maxLength}, m.maxLength))
+  }
+  if (schema.pattern !== undefined) {
+    out.push(withText({type: 'regex', regex: schema.pattern}, m.pattern))
+  }
+  if (schema.format === 'email') {
+    out.push({type: 'email'})
+  }
+  if (schema.minimum !== undefined) {
+    out.push(withText({type: 'numeric', minValue: schema.minimum}, m.minimum))
+  }
+  if (schema.maximum !== undefined) {
+    out.push(withText({type: 'numeric', maxValue: schema.maximum}, m.maximum))
+  }
+  if (schema.minItems !== undefined) {
+    out.push(withText({type: 'answercount', minCount: schema.minItems}, m.minItems))
+  }
+  if (schema.maxItems !== undefined) {
+    out.push(withText({type: 'answercount', maxCount: schema.maxItems}, m.maxItems))
+  }
   // SurveyJS counts an explicit "No" as an answer, so `isRequired` alone lets a
   // declined consent through; `const: true` needs its own expression.
-  if (schema.const === true) out.push(withText({type: 'expression', expression: `{${name}} = true`}, m.const))
+  if (schema.const === true) {
+    out.push(withText({type: 'expression', expression: `{${name}} = true`}, m.const))
+  }
   return out
+}
+
+const inputTypeOf = (schema: JSONSchema7): NonNullable<SurveyQuestionJson['inputType']> => {
+  if (schema.format === 'email') {
+    return 'email'
+  }
+  if (schema.type === 'number') {
+    return 'number'
+  }
+  return 'text'
 }
 
 const questionOf = (
@@ -92,23 +121,43 @@ const questionOf = (
   const isChoice = Array.isArray(schema.oneOf)
   const isGroup = schema.type === 'array'
   let type: SurveyQuestionJson['type']
-  if (isGroup) type = 'checkbox'
-  else if (isChoice) type = field?.type === 'radio' ? 'radiogroup' : 'dropdown'
-  else if (schema.type === 'boolean') type = 'boolean'
-  else if (field?.type === 'textarea') type = 'comment'
-  else type = 'text'
+  if (isGroup) {
+    type = 'checkbox'
+  } else if (isChoice) {
+    type = field?.type === 'radio' ? 'radiogroup' : 'dropdown'
+  } else if (schema.type === 'boolean') {
+    type = 'boolean'
+  } else if (field?.type === 'textarea') {
+    type = 'comment'
+  } else {
+    type = 'text'
+  }
 
   const question: SurveyQuestionJson = {type, name, title: schema.title ?? name}
-  if (required) question.isRequired = true
-  if (schema.default !== undefined) question.defaultValue = schema.default
-  if (type === 'text') question.inputType = schema.format === 'email' ? 'email' : schema.type === 'number' ? 'number' : 'text'
-  if (type === 'boolean') question.renderAs = 'checkbox'
-  if (isGroup && isSchema(schema.items)) question.choices = choicesOf(schema.items)
-  else if (isChoice) question.choices = choicesOf(schema)
-  if (field?.placeholder !== undefined && (type === 'text' || type === 'comment' || type === 'dropdown'))
+  if (required) {
+    question.isRequired = true
+  }
+  if (schema.default !== undefined) {
+    question.defaultValue = schema.default
+  }
+  if (type === 'text') {
+    question.inputType = inputTypeOf(schema)
+  }
+  if (type === 'boolean') {
+    question.renderAs = 'checkbox'
+  }
+  if (isGroup && isSchema(schema.items)) {
+    question.choices = choicesOf(schema.items)
+  } else if (isChoice) {
+    question.choices = choicesOf(schema)
+  }
+  if (field?.placeholder !== undefined && (type === 'text' || type === 'comment' || type === 'dropdown')) {
     question.placeholder = field.placeholder
+  }
   const validators = validatorsOf(name, schema, messages)
-  if (validators.length > 0) question.validators = validators
+  if (validators.length > 0) {
+    question.validators = validators
+  }
   return question
 }
 
@@ -121,22 +170,30 @@ const questionOf = (
  */
 export const toSurveyJsProps = (form: FormToolkitForm, compiled: ToJsonSchemaResult): SurveyJsProps => {
   const {schema, messages} = compiled
-  const required = new Set(schema.required ?? [])
+  const required = new Set(schema.required)
   const fields = new Map(presentationFields(form, schema).map((f) => [f.name, f]))
   const elements: SurveyQuestionJson[] = []
   const fromForm = new Set<string>()
 
   for (const [name, property] of Object.entries(schema.properties ?? {})) {
-    if (!isSchema(property)) continue
+    if (!isSchema(property)) {
+      continue
+    }
     const field = fields.get(name)
     const question = questionOf(name, property, field, required.has(name), messages)
-    if (question.type === 'comment' || question.type === 'radiogroup') fromForm.add('type')
-    if (question.placeholder !== undefined) fromForm.add('placeholder')
+    if (question.type === 'comment' || question.type === 'radiogroup') {
+      fromForm.add('type')
+    }
+    if (question.placeholder !== undefined) {
+      fromForm.add('placeholder')
+    }
     elements.push(question)
   }
 
   const surveyJson: SurveyJson = {showQuestionNumbers: 'off', elements}
-  if (schema.title !== undefined) surveyJson.title = schema.title
+  if (schema.title !== undefined) {
+    surveyJson.title = schema.title
+  }
   const submitText = form.submitButton?.text?.trim()
   if (submitText) {
     surveyJson.completeText = submitText

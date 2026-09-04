@@ -1,7 +1,9 @@
-import Ajv, {type ErrorObject, type SchemaObject} from 'ajv'
+import Ajv from 'ajv'
+import type {ErrorObject, SchemaObject} from 'ajv'
 import addFormats from 'ajv-formats'
 import {contactForm, contactSubmissions} from 'sanity-form-fixtures'
 import {describe, expect, test} from 'vitest'
+
 import type {MessageKeyword} from '../src'
 import {toJsonSchema} from '../src'
 
@@ -30,7 +32,7 @@ describe('compiled schema validates with plain AJV', () => {
   })
 
   test('an empty submission names every required property', () => {
-    expect(run({}).errors).toEqual([
+    expect(run({}).errors).toStrictEqual([
       "fullName required: must have required property 'fullName'",
       "email required: must have required property 'email'",
       "topic required: must have required property 'topic'",
@@ -40,7 +42,7 @@ describe('compiled schema validates with plain AJV', () => {
   })
 
   test('every authored message can be looked up by (field, keyword)', () => {
-    expect(run(contactSubmissions.everyRuleFails.data).errors).toEqual([
+    expect(run(contactSubmissions.everyRuleFails.data).errors).toStrictEqual([
       'fullName pattern: Names cannot contain digits.',
       'email format: must match format "email"',
       'partySize minimum: At least one person.',
@@ -59,7 +61,7 @@ describe('compiled schema validates with plain AJV', () => {
   })
 
   test('minLength and maximum carry their messages', () => {
-    expect(run(contactSubmissions.minLengthAndMaximum.data).errors).toEqual([
+    expect(run(contactSubmissions.minLengthAndMaximum.data).errors).toStrictEqual([
       'fullName minLength: Please enter at least two characters.',
       'partySize maximum: We can seat 12 at most.',
     ])

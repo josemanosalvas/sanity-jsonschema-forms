@@ -13,9 +13,11 @@ pnpm install
 pnpm verify
 ```
 
-`pnpm verify` runs everything CI runs, in order: `lint` (Biome), `typecheck`,
-`test`, `build`, `build:example`, `publint`. `pnpm format` applies Biome's
-fixes. `pnpm dev` starts `examples/compare`, which renders the same compiled
+`pnpm verify` runs everything CI runs, in order: `lint`, `typecheck`, `test`,
+`build`, `build:example`, `publint`. Lint and format are oxlint and oxfmt
+through [Ultracite](https://www.ultracite.ai/)'s preset; `oxlint.config.ts`
+and `oxfmt.config.ts` list the few rules and style options this repo
+overrides, each with its reason. `pnpm format` applies the fixes. `pnpm dev` starts `examples/compare`, which renders the same compiled
 form through all three adapters; use it to see a change in every renderer
 at once.
 

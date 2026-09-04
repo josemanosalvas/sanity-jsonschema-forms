@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
-import {and, type ControlProps, type JsonSchema, type RankedTester, rankWith, schemaMatches, uiTypeIs} from '@jsonforms/core'
+import {and, rankWith, schemaMatches, uiTypeIs} from '@jsonforms/core'
+import type {ControlProps, JsonSchema, RankedTester} from '@jsonforms/core'
 import {JsonForms, withJsonFormsControlProps} from '@jsonforms/react'
 import {vanillaCells, vanillaRenderers} from '@jsonforms/vanilla-renderers'
 import {cleanup, fireEvent, render, waitFor} from '@testing-library/react'
@@ -8,8 +9,7 @@ import {afterEach, describe, expect, test} from 'vitest'
 
 import {toJsonSchema} from '../src'
 import {toJsonFormsProps} from '../src/jsonforms'
-
-afterEach(cleanup)
+import {query} from './dom'
 
 /**
  * Vanilla renderers have no control for an array of enum values, so the
@@ -49,12 +49,14 @@ const checkboxGroupTester: RankedTester = rankWith(
 const renderers = [...vanillaRenderers, {tester: checkboxGroupTester, renderer: CheckboxGroup}]
 
 describe('JSON Forms presentation adapter', () => {
+  afterEach(cleanup)
+
   const compiled = toJsonSchema(contactForm)
   const {schema, uischema, translate, submitText, initialData} = toJsonFormsProps(contactForm, compiled)
 
   test('passes the schema through untouched and emits only controls', () => {
     expect(schema).toBe(compiled.schema)
-    expect(uischema).toEqual({
+    expect(uischema).toStrictEqual({
       type: 'VerticalLayout',
       elements: [
         {type: 'Control', scope: '#/properties/fullName', i18n: 'fullName', options: {placeholder: 'Ada Lovelace'}},
@@ -68,7 +70,7 @@ describe('JSON Forms presentation adapter', () => {
       ],
     })
     expect(submitText).toBe('Send message')
-    expect(initialData).toEqual({partySize: 2, contactMethod: 'email'})
+    expect(initialData).toStrictEqual({partySize: 2, contactMethod: 'email'})
   })
 
   test('translate answers error keys and passes everything else through', () => {
@@ -94,10 +96,10 @@ describe('JSON Forms presentation adapter', () => {
     expect(container.querySelector('input[placeholder="Ada Lovelace"]')).not.toBeNull()
     const select = container.querySelector('select') as HTMLSelectElement
     // Vanilla puts the text in the option's `label` attribute; 'None' is its translated empty option.
-    expect([...select.options].map((o) => o.label)).toEqual(['None', 'Sales', 'Support', 'Press'])
+    expect([...select.options].map((o) => o.label)).toStrictEqual(['None', 'Sales', 'Support', 'Press'])
     expect(select.value).toBe('')
     const radios = [...container.querySelectorAll('input[type="radio"]')] as HTMLInputElement[]
-    expect(radios.map((r) => [r.value, r.checked])).toEqual([
+    expect(radios.map((r) => [r.value, r.checked])).toStrictEqual([
       ['email', true],
       ['phone', false],
     ])
@@ -136,7 +138,7 @@ describe('JSON Forms presentation adapter', () => {
         onChange={({data}) => (latest = data)}
       />,
     )
-    fireEvent.change(container.querySelector('input[placeholder="Ada Lovelace"]')!, {target: {value: 'Ada'}})
+    fireEvent.change(query(container, 'input[placeholder="Ada Lovelace"]'), {target: {value: 'Ada'}})
     // JSON Forms reports changes on a short debounce.
     await waitFor(() => expect(latest).toMatchObject({fullName: 'Ada'}))
   })

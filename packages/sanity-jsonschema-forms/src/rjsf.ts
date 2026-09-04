@@ -32,19 +32,29 @@ export const toRjsfProps = (form: FormToolkitForm, compiled: ToJsonSchemaResult)
     const ui: UiSchema = {}
     const property = schema.properties?.[field.name]
     const isGroup = typeof property === 'object' && property.type === 'array'
-    const widget = field.type === 'checkbox' ? (isGroup ? 'checkboxes' : undefined) : WIDGETS[field.type]
-    if (widget !== undefined) ui['ui:widget'] = widget
-    if (field.placeholder !== undefined && field.type !== 'radio' && field.type !== 'checkbox') ui['ui:placeholder'] = field.placeholder
+    const widget = field.type === 'checkbox' && isGroup ? 'checkboxes' : WIDGETS[field.type]
+    if (widget !== undefined) {
+      ui['ui:widget'] = widget
+    }
+    if (field.placeholder !== undefined && field.type !== 'radio' && field.type !== 'checkbox') {
+      ui['ui:placeholder'] = field.placeholder
+    }
     // @rjsf/shadcn 6.8.0's RadioWidget hands the real value to the Radix
     // group as its default while encoding items by index; real values on
     // both sides make a default show as checked. Harmless in other themes.
-    if (field.type === 'radio') ui['ui:optionValueFormat'] = 'realValue'
-    if (Object.keys(ui).length > 0) uiSchema[field.name] = ui
+    if (field.type === 'radio') {
+      ui['ui:optionValueFormat'] = 'realValue'
+    }
+    if (Object.keys(ui).length > 0) {
+      uiSchema[field.name] = ui
+    }
     order.push(field.name)
   }
   uiSchema['ui:order'] = order
   const submitText = form.submitButton?.text?.trim()
-  if (submitText) uiSchema['ui:submitButtonOptions'] = {submitText}
+  if (submitText) {
+    uiSchema['ui:submitButtonOptions'] = {submitText}
+  }
 
   const transformErrors = (errors: RJSFValidationError[]) =>
     errors.map((error) => {
