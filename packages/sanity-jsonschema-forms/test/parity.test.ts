@@ -29,9 +29,12 @@ const suites = [
     surveyJsDivergence: {
       // No calendar check behind `inputType: date`.
       dateFebruary30: 'accept',
+      dateFiveDigitYear: 'accept',
+      dateNonLeapDay: 'accept',
       // A numeric string is converted to a number before validation.
       satisfactionAsString: 'accept',
       // No URL check behind `inputType: url`; the native input alone enforces it (`websiteRelative` fails the authored pattern instead).
+      websiteInternationalizedHost: 'accept',
       websiteNonAscii: 'accept',
       websiteSpace: 'accept',
     } as Record<string, 'accept' | 'reject'>,

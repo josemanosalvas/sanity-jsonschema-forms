@@ -40,7 +40,7 @@ form would collide.
 | `text` | `{type: "string"}` | |
 | `textarea` | `{type: "string"}` | indistinguishable from `text` in the schema; the input choice is presentation |
 | `email` | `{type: "string", format: "email"}` | |
-| `url` | `{type: "string", format: "uri"}` | RFC 3986 URI: absolute, scheme required, printable ASCII (non-ASCII must be percent-encoded). A native `url` input is looser on non-ASCII; the schema is the contract |
+| `url` | `{type: "string", format: "uri"}` | RFC 3986 URI: absolute, scheme required, printable ASCII. Narrower than the native input, which also accepts unencoded non-ASCII; see [compatibility.md](compatibility.md) |
 | `tel` | `{type: "string"}` | no value contract beyond an authored `pattern`; the input type is presentation |
 | `hidden` | `{type: "string", default}` | the value is the default; see "Required" |
 | `number` | `{type: "number"}` | |
@@ -48,8 +48,8 @@ form would collide.
 | `checkbox` without choices | `{type: "boolean"}`; required adds `const: true` | see "Required" |
 | `checkbox` with choices | `{type: "array", uniqueItems: true, items: {type: "string", oneOf: [...]}}` | |
 | `select`, `radio` | `{type: "string", oneOf: [{const, title}, ...]}` | indistinguishable in the schema; the widget is presentation |
-| `date` | `{type: "string", format: "date"}` | RFC 3339 `full-date`, the native value exactly |
-| `datetime-local` | `{type: "string", pattern: DATETIME_LOCAL_PATTERN}` | `YYYY-MM-DDTHH:MM`, optional `:SS` and `.sss`, never a timezone; month lengths checked, 29 February accepted in every year |
+| `date` | `{type: "string", format: "date"}` | RFC 3339 `full-date`. Narrower than the native value at the year boundary: exactly four digits, `0000` not rejected; see [compatibility.md](compatibility.md) |
+| `datetime-local` | `{type: "string", pattern: DATETIME_LOCAL_PATTERN}` | the HTML local date and time value: `YYYY-MM-DDTHH:MM`, optional `:SS` and `.sss`, never a timezone; month lengths, leap years, year > 0, four or more year digits |
 | `time` | `{type: "string", pattern: TIME_PATTERN}` | `HH:MM`, optional `:SS` and `.sss`, never a timezone |
 | `color` | `{type: "string", pattern: COLOR_PATTERN}` | `#` and six hexadecimal digits, either case; a default is lowercased as the native input reports it |
 | `file` | not compiled | no portable JSON representation; see [compatibility.md](compatibility.md) |

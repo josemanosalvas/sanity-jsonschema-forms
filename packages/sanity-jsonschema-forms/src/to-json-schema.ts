@@ -97,13 +97,18 @@ export const CHECKBOX_REQUIRED_MESSAGE = 'This box must be checked.'
  */
 const HH_MM = '(?:[01]\\d|2[0-3]):[0-5]\\d'
 const OPTIONAL_SECONDS = '(?::[0-5]\\d(?:\\.\\d{1,3})?)?'
-/** Month and day, with each month's length; 29 February is accepted in every year. */
-const MONTH_DAY = '(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2\\d))'
+/** HTML "valid date string": a year of four or more digits greater than zero, and a day the month has, leap years included. */
+const YEAR = '(?!0+-)\\d{4,}'
+/** Divisible by 4 but not by 100 (last two digits), or by 400 (ends in 00 after digits divisible by 4). */
+const LEAP_YEAR = '(?!0+-)(?:\\d{2,}(?:0[48]|[2468][048]|[13579][26])|\\d*(?:[02468][048]|[13579][26])00)'
+const MONTH_DAY_EXCEPT_LEAP_DAY =
+  '(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2[0-8]))'
+const LOCAL_DATE = `(?:${YEAR}-${MONTH_DAY_EXCEPT_LEAP_DAY}|${LEAP_YEAR}-02-29)`
 
 /** `HH:MM`, optionally `:SS` and `.sss` (HTML "valid time string"). */
 export const TIME_PATTERN = `^${HH_MM}${OPTIONAL_SECONDS}$`
-/** `YYYY-MM-DDTHH:MM`, optionally `:SS` and `.sss`, no timezone (HTML "valid local date and time string"). */
-export const DATETIME_LOCAL_PATTERN = `^\\d{4}-${MONTH_DAY}T${HH_MM}${OPTIONAL_SECONDS}$`
+/** A valid date string, `T`, a valid time string, no timezone (HTML "valid local date and time string"). */
+export const DATETIME_LOCAL_PATTERN = `^${LOCAL_DATE}T${HH_MM}${OPTIONAL_SECONDS}$`
 /** `#` and six hexadecimal digits (HTML "valid simple color"); the native input submits lowercase. */
 export const COLOR_PATTERN = '^#[0-9A-Fa-f]{6}$'
 
@@ -113,7 +118,7 @@ const COLOR_REGEXP = new RegExp(COLOR_PATTERN, 'u')
 const DATE_REGEXP = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})$/u
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
-/** RFC 3339 `full-date`: the native `date` value, and what `format: date` checks. */
+/** `format: date` as ajv-formats checks it: exactly four year digits, `0000` included. HTML allows more digits and needs year > 0. */
 const isCalendarDate = (value: string): boolean => {
   const groups = DATE_REGEXP.exec(value)?.groups
   if (groups === undefined) {
@@ -127,7 +132,7 @@ const isCalendarDate = (value: string): boolean => {
   return month >= 1 && month <= 12 && day >= 1 && day <= days
 }
 
-/** What `format: uri` (RFC 3986) accepts; a native `url` input also takes unencoded non-ASCII. */
+/** What `format: uri` (RFC 3986) accepts. A native `url` input also takes unencoded non-ASCII; see docs/compatibility.md. */
 const isAbsoluteAsciiUrl = (value: string): boolean => /^[!-~]+$/u.test(value) && URL.canParse(value)
 
 const FIELD_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_-]*$/u

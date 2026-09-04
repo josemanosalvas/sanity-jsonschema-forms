@@ -14,10 +14,14 @@
 ## Field types
 
 `@sanity/form-toolkit`'s `formSchema` plugin offers sixteen field types.
-Fifteen compile. Each has one of three statuses:
+Fifteen compile. Each has one of four statuses:
 
 - **supported**: every value the native input can submit validates, and
   every rule the Studio offers for the type is in the schema;
+- **supported, narrower values**: the schema rejects some values the
+  native input accepts, because no portable Draft 7 construct matches the
+  HTML contract across the tested validators; the gap is stated in the
+  table and pinned by tests;
 - **supported, lossy rule**: the field compiles, but a rule the Studio
   offers cannot be written in JSON Schema Draft 7 without a validator
   extension, so it is dropped with `warning lossy-validation-rule`;
@@ -29,7 +33,7 @@ Fifteen compile. Each has one of three statuses:
 | `text` | supported | `string` |
 | `textarea` | supported | `string` (input choice is presentation) |
 | `email` | supported | `string` + `format: email` |
-| `url` | supported | `string` + `format: uri` (RFC 3986: absolute, scheme required, non-ASCII percent-encoded) |
+| `url` | supported, narrower values | `string` + `format: uri` (RFC 3986). A native `url` input also accepts unencoded non-ASCII such as `https://例え.jp`; see "URLs" |
 | `tel` | supported | `string` (the input type is presentation; only an authored `pattern` constrains it) |
 | `hidden` | supported | `string`, value from `default`; `required` without a default is `warning missing-default-value` |
 | `number` | supported | `number` |
@@ -37,8 +41,8 @@ Fifteen compile. Each has one of three statuses:
 | `checkbox` (no choices) | supported | `boolean`; `const: true` when required |
 | `checkbox` (with choices) | supported | `array` of `string` `oneOf`, `uniqueItems` |
 | `select`, `radio` | supported | `string` `oneOf` (widget choice is presentation) |
-| `date` | supported, lossy rule | `string` + `format: date`; `minDate`/`maxDate` are dropped (see below) |
-| `datetime-local` | supported, lossy rule | `string` + `pattern` for the native local value, no timezone; `minDate`/`maxDate` are dropped |
+| `date` | supported, narrower values, lossy rule | `string` + `format: date`. ajv-formats takes exactly four year digits (`0000` included); HTML allows more and needs year > 0. `minDate`/`maxDate` are dropped (see below) |
+| `datetime-local` | supported, lossy rule | `string` + `pattern` for the HTML local date and time value: leap years, year > 0, four or more year digits, no timezone. `minDate`/`maxDate` are dropped |
 | `time` | supported | `string` + `pattern` for `HH:MM`, optional seconds |
 | `color` | supported | `string` + `pattern` for `#` and six hexadecimal digits |
 | `file` | unsupported | none; see "Why `file` is not compiled" |
@@ -55,9 +59,35 @@ every value a datetime-local input produces. Both types therefore get a
 `TIME_PATTERN` and `DATETIME_LOCAL_PATTERN`. A value with a `Z` or an
 offset fails; a client that converts to UTC before submitting (RJSF's own
 `DateTimeWidget` does) must be told not to. The `datetime-local` pattern
-knows each month's length and accepts 29 February in every year.
-`date` maps to `format: date` because RFC 3339 `full-date` and the native
-value agree exactly, leap years included.
+implements the HTML "valid date string" rules: each month's length, 29
+February only in leap years (divisible by 4, and by 400 if by 100), a
+year of four or more digits greater than zero. `2025-02-29T18:30` and
+`0000-01-01T00:00` fail; `12026-09-04T18:30` passes.
+
+`date` maps to `format: date`, RFC 3339 `full-date`, which agrees with
+the native value on months, days and leap years but not at the year
+boundary: ajv-formats matches exactly four digits and does not reject
+`0000`, while HTML allows four or more digits and requires a year greater
+than zero. Five-digit years are rejected and year `0000` accepted, both
+pinned in the fixture. The type is listed as narrower rather than
+re-implemented as a pattern so the standard format keeps its meaning to
+every consumer.
+
+### URLs
+
+`format: uri` is RFC 3986: an absolute URI, scheme required, printable
+ASCII only. A native `<input type="url">` checks against the URL Living
+Standard instead, which accepts unencoded non-ASCII (`https://例え.jp`,
+`https://example.com/ü`) and percent-encodes it on its own; those values
+fail the schema until percent-encoded. No portable alternative exists
+among the tested validators: Draft 7 names an `iri` format, but
+ajv-formats does not implement it, so plain AJV in strict mode refuses
+the schema and JSON Forms' and RJSF's validators ignore the keyword and
+check nothing. A hand-written pattern cannot reproduce the URL parser
+either (it percent-encodes some spaces and rejects others). The type is
+therefore listed as narrower: the standard format, with the gap stated
+and pinned in the fixture. A host that must accept internationalized
+URLs should percent-encode before validating.
 
 ### Date bounds: `minDate` and `maxDate`
 

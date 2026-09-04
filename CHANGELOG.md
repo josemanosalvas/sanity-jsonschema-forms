@@ -11,13 +11,16 @@ researched status in `docs/compatibility.md`: supported, supported with a
 lossy rule, or unsupported. The canonical schema stays JSON Schema Draft 7
 with no validator extension.
 
-- Added: `url` (`format: uri`), `tel` (`string`), `hidden` (`string` with
-  `default`), `color` (pattern for `#rrggbb`), `date` (`format: date`),
-  `datetime-local` and `time` (patterns for the native local value, no
-  timezone; AJV's RFC 3339 formats would reject every value those inputs
-  produce), `range` (`number` with `minimum`/`maximum`; `step` becomes
-  `multipleOf` only when the step is a whole number and the HTML step base
-  is a multiple of it).
+- Added: `url` (`format: uri`; narrower than the native input, which also
+  accepts unencoded non-ASCII), `tel` (`string`), `hidden` (`string` with
+  `default`), `color` (pattern for `#rrggbb`), `date` (`format: date`;
+  narrower than the native input at the year boundary), `datetime-local`
+  (pattern implementing the HTML local date and time value: leap years,
+  year > 0, four or more year digits, no timezone) and `time` (pattern for
+  the native value, no timezone; AJV's RFC 3339 formats would reject every
+  value those inputs produce), `range` (`number` with `minimum`/`maximum`;
+  `step` becomes `multipleOf` only when the step is a whole number and the
+  HTML step base is a multiple of it).
 - Added: diagnostic `lossy-validation-rule` for `minDate`/`maxDate` (no
   Draft 7 keyword; `formatMinimum` is an AJV extension) and for a `step`
   that `multipleOf` cannot reproduce; `missing-default-value` for a

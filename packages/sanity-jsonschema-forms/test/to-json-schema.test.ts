@@ -197,8 +197,30 @@ describe('toJsonSchema: field types added in 0.2', () => {
   test('the temporal and colour patterns are the exported constants', () => {
     expect(COLOR_PATTERN).toBe('^#[0-9A-Fa-f]{6}$')
     expect(TIME_PATTERN).toBe('^(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d{1,3})?)?$')
-    expect(DATETIME_LOCAL_PATTERN.startsWith('^\\d{4}-')).toBe(true)
-    expect(DATETIME_LOCAL_PATTERN.endsWith(TIME_PATTERN.slice(1))).toBe(true)
+    expect(DATETIME_LOCAL_PATTERN.endsWith(`T${TIME_PATTERN.slice(1)}`)).toBe(true)
+  })
+
+  test('the datetime-local pattern follows the HTML date rules: leap years, year > 0, four or more year digits', () => {
+    const local = new RegExp(DATETIME_LOCAL_PATTERN, 'u')
+    const accepted = [
+      '2024-02-29T00:00',
+      '2000-02-29T00:00',
+      '2400-02-29T00:00',
+      '12024-02-29T00:00',
+      '0001-01-01T00:00',
+      '12026-09-04T18:30:15.5',
+    ]
+    const rejected = [
+      '2025-02-29T00:00',
+      '1900-02-29T00:00',
+      '2100-02-29T00:00',
+      '0000-01-01T00:00',
+      '00000-01-01T00:00',
+      '999-01-01T00:00',
+      '2026-04-31T00:00',
+    ]
+    expect(accepted.filter((v) => !local.test(v))).toStrictEqual([])
+    expect(rejected.filter((v) => local.test(v))).toStrictEqual([])
   })
 
   test('step becomes multipleOf only with an aligned base, and carries its message', () => {
