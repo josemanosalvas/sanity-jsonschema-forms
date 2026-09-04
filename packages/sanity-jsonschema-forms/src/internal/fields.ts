@@ -22,12 +22,7 @@ const trimmed = (value: unknown): string | undefined => {
   return text.length === 0 ? undefined : text
 }
 
-/**
- * Whether a compiled property can have come from a field of this type. The
- * compiler drops a choice field with no choices before it claims the name, so
- * a later field may reuse it; matching on shape keeps the dropped field from
- * lending its presentation to the one that was kept.
- */
+/** A dropped choice field may share its name with a later, kept field; the property's shape tells them apart. */
 const shapeMatches = (type: SupportedFieldType, property: JSONSchema7Definition | undefined): boolean => {
   if (typeof property !== 'object' || property === null) {
     return false

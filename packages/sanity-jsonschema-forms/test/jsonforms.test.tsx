@@ -71,7 +71,6 @@ describe('JSON Forms presentation adapter', () => {
   })
 
   test('takes presentation from the field the compiler kept, not a dropped namesake', () => {
-    // `empty` is first a select with no choices (dropped), then a textarea (kept).
     const messy = toJsonFormsProps(messyForm, toJsonSchema(messyForm)).uischema as VerticalLayout
     expect(messy.elements.find((e) => (e as ControlElement).scope === '#/properties/empty')).toStrictEqual({
       i18n: 'empty',

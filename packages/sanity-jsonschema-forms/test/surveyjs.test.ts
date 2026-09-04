@@ -125,7 +125,6 @@ describe('SurveyJS presentation adapter', () => {
       'groupDefault',
       'boolRules',
     ])
-    // `empty` is first a select with no choices (dropped), then a textarea (kept).
     expect(messy.elements.find((q) => q.name === 'empty')).toStrictEqual({
       name: 'empty',
       placeholder: 'Write instead',

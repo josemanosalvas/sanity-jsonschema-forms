@@ -43,7 +43,6 @@ describe('RJSF presentation adapter', () => {
   })
 
   test('takes presentation from the field the compiler kept, not a dropped namesake', () => {
-    // `empty` is first a select with no choices (dropped), then a textarea (kept).
     const messy = toRjsfProps(messyForm, toJsonSchema(messyForm)).uiSchema
     expect(messy.empty).toStrictEqual({'ui:placeholder': 'Write instead', 'ui:widget': 'textarea'})
   })
