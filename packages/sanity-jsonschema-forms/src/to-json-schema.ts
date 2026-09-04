@@ -122,11 +122,10 @@ const compiledType = (type: SupportedFieldType, field: FormToolkitField): Compil
   return type
 }
 
-/** A field the compiler accepts on its own merits; only a name clash with an earlier field can still drop it. */
 export interface AcceptedField {
   accepted: true
   name: string
-  /** The `type` the editor chose; adapters need it where two types share one schema. */
+  /** The editor's `type`; textarea/text and radio/select share a schema. */
   sourceType: SupportedFieldType
   type: CompiledType
 }
@@ -135,15 +134,13 @@ export interface DroppedField {
   accepted: false
   code: DiagnosticCode
   message: string
-  /** The trimmed `name`, when the field had one; the diagnostic carries it. */
   name: string | undefined
 }
 
 /**
- * Judges a field on its own: type, name, choices. Name clashes depend on
- * the fields before it, so the caller decides those. `toJsonSchema()` and
- * `presentationFields()` both go through here, which is what keeps them
- * agreeing on which of two same-named fields survived.
+ * Accepts or drops a field on its type, name and choices. Duplicate names
+ * depend on the fields before it and are the caller's decision. Shared by
+ * `toJsonSchema` and `presentationFields` so both keep the same field.
  */
 export const classifyField = (field: FormToolkitField): AcceptedField | DroppedField => {
   const sourceType = trimmed(field.type)

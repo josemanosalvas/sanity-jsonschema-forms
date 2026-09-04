@@ -1,11 +1,6 @@
 import type {FormDataProps} from '@sanity/form-toolkit/form-renderer'
 
-/**
- * Four choice fields whose names are first taken by a choice field with no
- * choices. The compiler drops the first of each pair; adapters must take
- * their presentation (radio vs select, placeholder) from the second. The
- * dropped-select-then-textarea case lives in `messyForm` (`empty`).
- */
+/** Each name is taken first by a choice field with no choices, which is dropped; the second field must decide the presentation. */
 export const namesakeForm: FormDataProps = {
   fields: [
     {choices: [], label: 'Dropped', name: 'selectThenRadio', options: {placeholder: 'Stolen'}, type: 'select'},

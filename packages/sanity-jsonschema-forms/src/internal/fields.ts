@@ -22,11 +22,7 @@ const trimmed = (value: unknown): string | undefined => {
   return text.length === 0 ? undefined : text
 }
 
-/**
- * The source fields the compiler kept, in schema order. Runs the compiler's
- * own acceptance check so a dropped field (an empty `select`, say) cannot
- * lend its type or placeholder to a later kept field of the same name.
- */
+/** The source fields the compiler kept, in schema order, decided by the compiler's own check. */
 export const presentationFields = (form: FormToolkitForm, schema: JSONSchema7): PresentationField[] => {
   const properties = schema.properties ?? {}
   const seen = new Set<string>()
