@@ -9,6 +9,10 @@ export const contactSubmissions = {
     data: {consent: true, email: 'a@b.co', fullName: 'Ada', interests: ['events', 'events'], message: 'ok', topic: 'press'},
     verdict: 'reject',
   },
+  emailWithoutDot: {
+    data: {consent: true, email: 'a@b', fullName: 'Ada', message: 'ok', topic: 'press'},
+    verdict: 'reject',
+  },
   empty: {data: {}, verdict: 'reject'},
   everyRuleFails: {
     data: {

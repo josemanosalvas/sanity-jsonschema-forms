@@ -89,6 +89,7 @@ export const fieldTypesSubmissions = {
   // HTML allows years of four or more digits; ajv-formats' `date` takes exactly four. Documented narrowing.
   dateFiveDigitYear: oneChange({startDate: '12026-09-04'}, 'reject'),
   dateLeapDay: oneChange({startDate: '2028-02-29'}, 'accept'),
+  dateNonAsciiDigits: oneChange({startDate: '٢٠٢٦-09-04'}, 'reject'),
   dateNonLeapDay: oneChange({startDate: '2025-02-29'}, 'reject'),
   // `minDate` is not in the schema; this is the documented loss.
   dateOutsideAuthoredBounds: oneChange({startDate: '2020-01-01'}, 'accept'),
@@ -101,8 +102,12 @@ export const fieldTypesSubmissions = {
   pickupCenturyLeapDay: oneChange({pickup: '2000-02-29T18:30'}, 'accept'),
   pickupCenturyNonLeapDay: oneChange({pickup: '1900-02-29T18:30'}, 'reject'),
   pickupFebruary30: oneChange({pickup: '2026-02-30T18:30'}, 'reject'),
+  pickupFiveDigitCenturyLeapDay: oneChange({pickup: '10000-02-29T18:30'}, 'accept'),
   pickupFiveDigitYear: oneChange({pickup: '12026-09-04T18:30'}, 'accept'),
+  pickupFiveDigitYearZero: oneChange({pickup: '00000-01-01T00:00'}, 'reject'),
+  pickupLeadingZeroYear: oneChange({pickup: '00004-01-01T00:00'}, 'accept'),
   pickupLeapDay: oneChange({pickup: '2024-02-29T18:30'}, 'accept'),
+  pickupNonAsciiDigits: oneChange({pickup: '٢٠٢٦-09-04T18:30'}, 'reject'),
   pickupNonLeapDay: oneChange({pickup: '2025-02-29T18:30'}, 'reject'),
   pickupOffset: oneChange({pickup: '2026-09-04T18:30+02:00'}, 'reject'),
   pickupSeconds: oneChange({pickup: '2026-09-04T18:30:15'}, 'accept'),
@@ -114,6 +119,7 @@ export const fieldTypesSubmissions = {
   satisfactionZero: oneChange({satisfaction: 0}, 'accept'),
   timeBadHour: oneChange({preferredTime: '25:30'}, 'reject'),
   timeMilliseconds: oneChange({preferredTime: '18:30:00.500'}, 'accept'),
+  timeNonAsciiDigits: oneChange({preferredTime: '١٨:30'}, 'reject'),
   timeSeconds: oneChange({preferredTime: '18:30:00'}, 'accept'),
   timeUtc: oneChange({preferredTime: '18:30Z'}, 'reject'),
   valid: {data: accepted, verdict: 'accept'},
@@ -128,6 +134,8 @@ export const fieldTypesSubmissions = {
 /** What an editor can get wrong: bad defaults, malformed operands, a step the schema cannot encode, a required hidden field with no value. Every field still compiles. */
 export const fieldTypeEdgesForm: FormDataProps = {
   fields: [
+    {label: 'Email', name: 'badEmail', options: {defaultValue: 'not-an-email'}, type: 'email'},
+    {label: 'Email', name: 'dotlessEmail', options: {defaultValue: 'a@b'}, type: 'email'},
     {label: 'Website', name: 'badUrl', options: {defaultValue: 'example.com'}, type: 'url'},
     {label: 'Website', name: 'unicodeUrl', options: {defaultValue: 'https://例え.jp'}, type: 'url'},
     // The WHATWG parser takes brackets in a query; RFC 3986 and `format: uri` do not.

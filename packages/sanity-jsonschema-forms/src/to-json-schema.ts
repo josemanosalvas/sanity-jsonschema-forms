@@ -95,14 +95,15 @@ export const CHECKBOX_REQUIRED_MESSAGE = 'This box must be checked.'
  * and `date-time` formats are RFC 3339 and demand a timezone; a native
  * `time` or `datetime-local` value carries none.
  */
-const HH_MM = '(?:[01]\\d|2[0-3]):[0-5]\\d'
-const OPTIONAL_SECONDS = '(?::[0-5]\\d(?:\\.\\d{1,3})?)?'
+const HH_MM = '(?:[01][0-9]|2[0-3]):[0-5][0-9]'
+const OPTIONAL_SECONDS = '(?::[0-5][0-9](?:\\.[0-9]{1,3})?)?'
+const NONZERO_MULTIPLE_OF_4 = '(?:0[48]|[2468][048]|[13579][26])'
 /** HTML "valid date string": a year of four or more digits greater than zero, and a day the month has, leap years included. */
-const YEAR = '(?!0+-)\\d{4,}'
+const YEAR = '(?:[1-9][0-9]{3,}|0[1-9][0-9]{2,}|00[1-9][0-9]+|000[1-9][0-9]*|0{4,}[1-9][0-9]*)'
 /** Divisible by 4 but not by 100 (last two digits), or by 400 (ends in 00 after digits divisible by 4). */
-const LEAP_YEAR = '(?!0+-)(?:\\d{2,}(?:0[48]|[2468][048]|[13579][26])|\\d*(?:[02468][048]|[13579][26])00)'
+const LEAP_YEAR = `(?:[0-9]{2,}${NONZERO_MULTIPLE_OF_4}|[0-9]*${NONZERO_MULTIPLE_OF_4}00|[0-9]*[1-9][0-9]*0000)`
 const MONTH_DAY_EXCEPT_LEAP_DAY =
-  '(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2[0-8]))'
+  '(?:(?:0[13578]|1[02])-(?:0[1-9]|[12][0-9]|3[01])|(?:0[469]|11)-(?:0[1-9]|[12][0-9]|30)|02-(?:0[1-9]|1[0-9]|2[0-8]))'
 const LOCAL_DATE = `(?:${YEAR}-${MONTH_DAY_EXCEPT_LEAP_DAY}|${LEAP_YEAR}-02-29)`
 
 /** `HH:MM`, optionally `:SS` and `.sss` (HTML "valid time string"). */
@@ -117,7 +118,7 @@ export const NONZERO_YEAR_PATTERN = '^(?!0000-)'
 const TIME_REGEXP = new RegExp(TIME_PATTERN, 'u')
 const DATETIME_LOCAL_REGEXP = new RegExp(DATETIME_LOCAL_PATTERN, 'u')
 const COLOR_REGEXP = new RegExp(COLOR_PATTERN, 'u')
-const DATE_REGEXP = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})$/u
+const DATE_REGEXP = /^(?<year>[0-9]{4})-(?<month>[0-9]{2})-(?<day>[0-9]{2})$/u
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
 /** What `format: date` plus `NONZERO_YEAR_PATTERN` accept: exactly four year digits, year > 0, a day the month has. */
@@ -144,6 +145,10 @@ const isCalendarDate = (value: string): boolean => {
 const URI_REGEXP =
   /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)(?:\?(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?$/iu
 const isUri = (value: string): boolean => URI_REGEXP.test(value) && URL.canParse(value)
+
+/** An email address as ajv-formats 2.1 checks `format: email` (its `email` regular expression, MIT). */
+const EMAIL_REGEXP =
+  /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/iu
 
 const FIELD_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_-]*$/u
 const RESERVED_NAMES = new Set(Object.getOwnPropertyNames(Object.prototype))
@@ -504,6 +509,7 @@ const STRING_DEFAULTS: Partial<Record<CompiledType, {accepts: (value: string) =>
     accepts: (value) => DATETIME_LOCAL_REGEXP.test(value),
     reason: 'is not a local date and time written as YYYY-MM-DDTHH:MM (no timezone)',
   },
+  email: {accepts: (value) => EMAIL_REGEXP.test(value), reason: 'is not an email address'},
   time: {accepts: (value) => TIME_REGEXP.test(value), reason: 'is not a time written as HH:MM'},
   url: {accepts: isUri, reason: 'is not an absolute URI as RFC 3986 writes one'},
 }

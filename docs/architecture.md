@@ -60,6 +60,7 @@ packages/sanity-jsonschema-forms/  the published package
   src/jsonforms.ts                 ./jsonforms
   src/internal/fields.ts           presentation facts shared by adapters (not exported)
   test/parity.test.ts              every fixture submission through AJV, RJSF's validator and JSON Forms' AJV
+  test/properties.test.ts          fast-check: compiler invariants over arbitrary form documents
 packages/fixtures/                 private: form documents and submissions used by tests
 examples/compare/                  one compiled form rendered by both adapters
 docs/                              this file, the contract, compatibility, per-adapter notes

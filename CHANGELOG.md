@@ -3,6 +3,24 @@
 All notable changes to `sanity-jsonschema-forms`. Semantic versioning; until
 `1.0`, breaking changes bump the minor version.
 
+## 0.2.1 (2026-09-05)
+
+- `test/properties.test.ts`: fast-check invariants over arbitrary form
+  documents. `toJsonSchema` never throws, is a pure function of its input,
+  produces a schema AJV's Draft 7 metaschema accepts, emits no default
+  outside its type's value shape, names only existing properties in
+  `required`, `messages` and `diagnostics`, and keeps the same source
+  field as the adapters' presentation helper for every property.
+- Fixed: an `email` default was emitted unchecked, so `not-an-email`
+  could start a form invalid under its own `format: email`. It is now
+  checked with the grammar ajv-formats uses and dropped with
+  `invalid-default-value`, like a bad `url` default.
+- `email` is "supported, narrower values": ajv-formats' `format: email`
+  requires a dot in the domain and a native input does not, so `a@b` is
+  rejected and dropped as a default. Documented and pinned.
+- `TIME_PATTERN` and `DATETIME_LOCAL_PATTERN` use `[0-9]` instead of `\d`
+  and no lookahead. Same meaning: `\d` is ASCII in JavaScript.
+
 ## 0.2.0 (2026-09-04)
 
 Every built-in `@sanity/form-toolkit` field type that has a portable JSON

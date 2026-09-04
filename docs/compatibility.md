@@ -9,6 +9,7 @@
 | `@rjsf/core`, `@rjsf/utils`, `@rjsf/validator-ajv8`, `@rjsf/shadcn` | 6.8.0 | `./rjsf` |
 | `@jsonforms/core`, `@jsonforms/react`, `@jsonforms/vanilla-renderers` | 3.8.0 | `./jsonforms` |
 | Node | 22.12 or later | running and developing the package |
+| `fast-check` | 4.9 | compiler invariants over arbitrary form documents (`test/properties.test.ts`) |
 
 ## Field types
 
@@ -32,7 +33,7 @@ Fifteen compile. Each has one of four statuses:
 | --- | --- | --- |
 | `text` | supported | `string` |
 | `textarea` | supported | `string` (input choice is presentation) |
-| `email` | supported | `string` + `format: email` |
+| `email` | supported, narrower values | `string` + `format: email`. ajv-formats requires a dot in the domain; a native `email` input also accepts `a@b`; see "Email addresses" |
 | `url` | supported, narrower values | `string` + `format: uri` (RFC 3986). A native `url` input also accepts unencoded non-ASCII such as `https://例え.jp`; see "URLs" |
 | `tel` | supported | `string` (the input type is presentation; only an authored `pattern` constrains it) |
 | `hidden` | supported | `string`, value from `default`; `required` without a default is `warning missing-default-value` |
@@ -73,6 +74,15 @@ and removes year `0000`, so what remains is a narrowing: five-digit years
 are rejected, pinned in the fixture together with year `0000`. The format
 is kept rather than re-implemented as a pattern so it keeps its meaning to
 every consumer.
+
+### Email addresses
+
+`format: email` as ajv-formats checks it requires at least one dot in the
+domain. The HTML "valid e-mail address" grammar does not: a native
+`<input type="email">` accepts `a@b`. The schema rejects such a value,
+and a stored default of that shape is dropped with
+`warning invalid-default-value`, because a default the schema rejects
+would start the form invalid. Both are pinned in the fixtures.
 
 ### URLs
 
