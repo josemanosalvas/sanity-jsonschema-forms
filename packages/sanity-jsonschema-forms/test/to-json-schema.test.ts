@@ -196,8 +196,14 @@ describe('toJsonSchema: field types added in 0.2', () => {
 
   test('the temporal and colour patterns are the exported constants', () => {
     expect(COLOR_PATTERN).toBe('^#[0-9A-Fa-f]{6}$')
-    expect(TIME_PATTERN).toBe('^(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d{1,3})?)?$')
+    expect(TIME_PATTERN).toBe('^(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9](?:\\.[0-9]{1,3})?)?$')
     expect(DATETIME_LOCAL_PATTERN.endsWith(`T${TIME_PATTERN.slice(1)}`)).toBe(true)
+  })
+
+  test('the patterns use ASCII digit classes and no lookaround', () => {
+    for (const pattern of [COLOR_PATTERN, DATETIME_LOCAL_PATTERN, NONZERO_YEAR_PATTERN, TIME_PATTERN]) {
+      expect(pattern).not.toMatch(/\\[dDwWsSb]|\(\?<?[=!]/u)
+    }
   })
 
   test('the datetime-local pattern follows the HTML date rules: leap years, year > 0, four or more year digits', () => {
@@ -257,6 +263,7 @@ describe('toJsonSchema: field type edges', () => {
 
   test('a default the native input would refuse is dropped', () => {
     expect(codes.filter(([, code]) => code === 'invalid-default-value').map(([field]) => field)).toStrictEqual([
+      'badEmail',
       'badUrl',
       'unicodeUrl',
       'bracketUrl',
@@ -269,6 +276,7 @@ describe('toJsonSchema: field type edges', () => {
       'wordRating',
     ])
     for (const name of [
+      'badEmail',
       'badUrl',
       'unicodeUrl',
       'bracketUrl',

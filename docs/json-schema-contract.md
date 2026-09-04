@@ -9,7 +9,7 @@ Verified against `@sanity/form-toolkit` 3.0.17, plain `ajv` 8.20 with
 const {schema, messages, diagnostics} = toJsonSchema(form)
 ```
 
-- `schema` is [JSON Schema Draft 7](https://json-schema.org/draft-07), typed as `JSONSchema7` from `@types/json-schema`. It declares its dialect (`$schema: "http://json-schema.org/draft-07/schema#"`, exported as `JSON_SCHEMA_DRAFT_7`) and validates on its own with any validator that supports that draft. It contains no `ui:*` key, no `errorMessage`, no `$id`, and no validator extension such as `formatMinimum`; a test checks every fixture for these.
+- `schema` is [JSON Schema Draft 7](https://json-schema.org/draft-07), typed as `JSONSchema7` from `@types/json-schema`. It declares its dialect (`$schema: "http://json-schema.org/draft-07/schema#"`, exported as `JSON_SCHEMA_DRAFT_7`) and validates on its own with any validator that supports that draft. Draft 7 lets a validator treat `format` as an annotation; every verdict in this document assumes AJV 8 with `ajv-formats`, which asserts it. It contains no `ui:*` key, no `errorMessage`, no `$id`, and no validator extension such as `formatMinimum`; a test checks every fixture for these.
 - `messages` is `Record<field, Record<keyword, text>>`: the error messages editors wrote, keyed by the AJV keyword whose failure they describe.
 - `diagnostics` lists everything that did not map one-to-one, in source order; codes are stable and listed in [compatibility.md](compatibility.md).
 
@@ -104,12 +104,15 @@ lone checkbox, one of the choices for `select`/`radio`, a calendar date
 with a year greater than zero for `date`, the pattern's form for
 `datetime-local`, `time` and `color`, an RFC 3986 URI for `url`, checked
 with the grammar ajv-formats uses for `format: uri` rather than the
-WHATWG parser behind the native input (a default must satisfy both).
+WHATWG parser behind the native input (a default must satisfy both), an
+email address as ajv-formats checks `format: email` for `email`.
 Anything that violates the type-implied value shape is dropped with
 `warning invalid-default-value`; a test validates every default that
 survives against its own property schema. Authored rules are not checked
 against defaults, for any type, so a `number` default of `0` under an
-authored minimum of `1` starts invalid.
+authored minimum of `1` starts invalid; nor is `required`, so a required
+lone checkbox with a stored default of `false` starts unticked and
+invalid.
 
 ## Validation rules
 

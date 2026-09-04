@@ -9,6 +9,7 @@
 | `@rjsf/core`, `@rjsf/utils`, `@rjsf/validator-ajv8`, `@rjsf/shadcn` | 6.8.0 | `./rjsf` |
 | `@jsonforms/core`, `@jsonforms/react`, `@jsonforms/vanilla-renderers` | 3.8.0 | `./jsonforms` |
 | Node | 22.12 or later | running and developing the package |
+| `fast-check` | 4.9 | compiler invariants over arbitrary form documents (`test/properties.test.ts`) |
 
 ## Field types
 
@@ -68,7 +69,7 @@ year of four or more digits greater than zero. `2025-02-29T18:30` and
 the native value on months, days and leap years but not at the year
 boundary: ajv-formats matches exactly four digits and does not reject
 `0000`, while HTML allows four or more digits and requires a year greater
-than zero. `NONZERO_YEAR_PATTERN` (`^(?!0000-)`) sits beside the format
+than zero. `NONZERO_YEAR_PATTERN` (four digits, not all zero, then `-`) sits beside the format
 and removes year `0000`, so what remains is a narrowing: five-digit years
 are rejected, pinned in the fixture together with year `0000`. The format
 is kept rather than re-implemented as a pattern so it keeps its meaning to
