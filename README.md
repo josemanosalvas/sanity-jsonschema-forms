@@ -2,14 +2,14 @@
 
 Standards-based form authoring for Sanity. Editors build a form in Sanity
 Studio with [`@sanity/form-toolkit`](https://www.npmjs.com/package/@sanity/form-toolkit);
-`sanity-json-schema` compiles that document into JSON Schema and ships thin
+`sanity-jsonschema-forms` compiles that document into JSON Schema and ships thin
 adapters for schema-driven form libraries.
 
 ```
 Sanity Studio → @sanity/form-toolkit → form document → toJsonSchema() → JSON Schema + messages
-                                                                          ├── sanity-json-schema/rjsf      → react-jsonschema-form
-                                                                          ├── sanity-json-schema/jsonforms → JSON Forms
-                                                                          └── sanity-json-schema/surveyjs  → SurveyJS
+                                                                          ├── sanity-jsonschema-forms/rjsf      → react-jsonschema-form
+                                                                          ├── sanity-jsonschema-forms/jsonforms → JSON Forms
+                                                                          └── sanity-jsonschema-forms/surveyjs  → SurveyJS
 ```
 
 The JSON Schema is the contract. It validates on its own with any draft-07
@@ -19,7 +19,7 @@ submissions against it whatever rendered the form.
 ## Install
 
 ```bash
-pnpm add sanity-json-schema
+pnpm add sanity-jsonschema-forms
 ```
 
 Then the form library of your choice; each adapter's peers are optional and
@@ -29,7 +29,7 @@ documented in [docs/adapters](docs/adapters).
 
 ```ts
 import type {FormDataProps} from '@sanity/form-toolkit/form-renderer'
-import {toJsonSchema} from 'sanity-json-schema'
+import {toJsonSchema} from 'sanity-jsonschema-forms'
 
 const form: FormDataProps = await client.fetch(
   `*[_type == "form" && id.current == $id][0]{
@@ -45,19 +45,19 @@ const {schema, messages, diagnostics} = toJsonSchema(form)
 Then one of:
 
 ```tsx
-import {toRjsfProps} from 'sanity-json-schema/rjsf'
+import {toRjsfProps} from 'sanity-jsonschema-forms/rjsf'
 const {uiSchema, formProps, transformErrors} = toRjsfProps(form, compiled)
 <Form {...formProps} schema={schema} uiSchema={uiSchema} validator={validator} transformErrors={transformErrors} />
 ```
 
 ```tsx
-import {toJsonFormsProps} from 'sanity-json-schema/jsonforms'
+import {toJsonFormsProps} from 'sanity-jsonschema-forms/jsonforms'
 const {uischema, translate, initialData} = toJsonFormsProps(form, compiled)
 <JsonForms schema={schema} uischema={uischema} data={initialData} i18n={{translate}} renderers={renderers} cells={cells} />
 ```
 
 ```tsx
-import {toSurveyJsProps} from 'sanity-json-schema/surveyjs'
+import {toSurveyJsProps} from 'sanity-jsonschema-forms/surveyjs'
 const {surveyJson} = toSurveyJsProps(form, compiled)
 <Survey model={new Model(surveyJson)} />
 ```
@@ -84,12 +84,11 @@ with the position in the source document. It never throws on content.
 | [docs/json-schema-contract.md](docs/json-schema-contract.md) | exactly what the schema and message map contain |
 | [docs/compatibility.md](docs/compatibility.md) | versions tested, supported and planned field types, diagnostic codes |
 | [docs/adapters/](docs/adapters) | per-library usage and the quirks each adapter handles |
-| [docs/research/](docs/research) | the three spikes that led here, preserved by tags `rjsf-spike-v1`, `json-schema-spike-v2`, `surveyjs-spike-v3` |
 
 ## Repository
 
 ```
-packages/sanity-json-schema/   the package
+packages/sanity-jsonschema-forms/   the package
 packages/fixtures/             private: form documents and submissions used by tests
 examples/compare/              one compiled form rendered by all three adapters
 docs/

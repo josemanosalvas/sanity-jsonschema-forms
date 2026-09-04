@@ -1,10 +1,10 @@
-# `sanity-json-schema/jsonforms`
+# `sanity-jsonschema-forms/jsonforms`
 
 ```tsx
 import {JsonForms} from '@jsonforms/react'
 import {vanillaCells, vanillaRenderers} from '@jsonforms/vanilla-renderers'
-import {toJsonSchema} from 'sanity-json-schema'
-import {toJsonFormsProps} from 'sanity-json-schema/jsonforms'
+import {toJsonSchema} from 'sanity-jsonschema-forms'
+import {toJsonFormsProps} from 'sanity-jsonschema-forms/jsonforms'
 
 const compiled = toJsonSchema(form)
 const {schema, uischema, translate, initialData, submitText} = toJsonFormsProps(form, compiled)

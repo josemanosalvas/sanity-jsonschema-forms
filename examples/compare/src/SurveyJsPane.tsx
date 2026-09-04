@@ -1,6 +1,6 @@
 import {useMemo, useState} from 'react'
-import type {FormToolkitForm, ToJsonSchemaResult} from 'sanity-json-schema'
-import {toSurveyJsProps} from 'sanity-json-schema/surveyjs'
+import type {FormToolkitForm, ToJsonSchemaResult} from 'sanity-jsonschema-forms'
+import {toSurveyJsProps} from 'sanity-jsonschema-forms/surveyjs'
 import {Model} from 'survey-core'
 import {Survey} from 'survey-react-ui'
 import 'survey-core/survey-core.css'
@@ -17,7 +17,7 @@ export const SurveyJsPane = ({form, compiled}: {form: FormToolkitForm; compiled:
   return (
     <section>
       <h2 className="mb-1 text-lg font-semibold">SurveyJS · survey-react-ui</h2>
-      <p className="mb-4 text-xs text-muted-foreground">survey JSON from sanity-json-schema/surveyjs; from the form only: {fromForm.join(', ')}</p>
+      <p className="mb-4 text-xs text-muted-foreground">survey JSON from sanity-jsonschema-forms/surveyjs; from the form only: {fromForm.join(', ')}</p>
       <div className="surveyjs">
         <Survey model={model} />
       </div>

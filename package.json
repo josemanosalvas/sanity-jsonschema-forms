@@ -10,7 +10,7 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r --filter \"./packages/*\" test",
     "dev": "pnpm --filter compare-example dev",
-    "release": "pnpm build && pnpm --filter sanity-json-schema publish"
+    "release": "pnpm build && pnpm --filter sanity-jsonschema-forms publish"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

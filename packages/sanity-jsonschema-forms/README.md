@@ -1,4 +1,4 @@
-# sanity-json-schema
+# sanity-jsonschema-forms
 
 Compile a form authored in Sanity Studio with
 [`@sanity/form-toolkit`](https://www.npmjs.com/package/@sanity/form-toolkit)
@@ -6,19 +6,19 @@ into JSON Schema, and render it with react-jsonschema-form, JSON Forms or
 SurveyJS through thin adapters.
 
 ```bash
-pnpm add sanity-json-schema
+pnpm add sanity-jsonschema-forms
 ```
 
 ```ts
-import {toJsonSchema} from 'sanity-json-schema'
+import {toJsonSchema} from 'sanity-jsonschema-forms'
 
 const {schema, messages, diagnostics} = toJsonSchema(form) // form: FormDataProps from @sanity/form-toolkit
 ```
 
 ```ts
-import {toRjsfProps} from 'sanity-json-schema/rjsf'
-import {toJsonFormsProps} from 'sanity-json-schema/jsonforms'
-import {toSurveyJsProps} from 'sanity-json-schema/surveyjs'
+import {toRjsfProps} from 'sanity-jsonschema-forms/rjsf'
+import {toJsonFormsProps} from 'sanity-jsonschema-forms/jsonforms'
+import {toSurveyJsProps} from 'sanity-jsonschema-forms/surveyjs'
 ```
 
 - `schema` is draft-07 JSON Schema, valid on its own; validate submissions against it on the server with AJV.

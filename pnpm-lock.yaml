@@ -47,9 +47,9 @@ importers:
       sanity-form-fixtures:
         specifier: workspace:*
         version: link:../../packages/fixtures
-      sanity-json-schema:
+      sanity-jsonschema-forms:
         specifier: workspace:*
-        version: link:../../packages/sanity-json-schema
+        version: link:../../packages/sanity-jsonschema-forms
       survey-core:
         specifier: 3.0.3
         version: 3.0.3
@@ -88,7 +88,7 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/sanity-json-schema:
+  packages/sanity-jsonschema-forms:
     dependencies:
       '@types/json-schema':
         specifier: ^7.0.15

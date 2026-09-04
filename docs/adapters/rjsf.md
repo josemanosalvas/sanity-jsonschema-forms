@@ -1,10 +1,10 @@
-# `sanity-json-schema/rjsf`
+# `sanity-jsonschema-forms/rjsf`
 
 ```tsx
 import Form from '@rjsf/shadcn'          // or any RJSF theme
 import validator from '@rjsf/validator-ajv8'
-import {toJsonSchema} from 'sanity-json-schema'
-import {toRjsfProps} from 'sanity-json-schema/rjsf'
+import {toJsonSchema} from 'sanity-jsonschema-forms'
+import {toRjsfProps} from 'sanity-jsonschema-forms/rjsf'
 
 const compiled = toJsonSchema(form)
 const {schema, uiSchema, formProps, transformErrors} = toRjsfProps(form, compiled)

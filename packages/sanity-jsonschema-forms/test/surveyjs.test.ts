@@ -104,8 +104,8 @@ describe('SurveyJS presentation adapter', () => {
   })
 
   /**
-   * Accept/reject parity with AJV. Two submissions diverge, and the divergence
-   * is the evidence: SurveyJS validates what its own UI can produce, not an
+   * Accept/reject parity with AJV. Two submissions diverge by design:
+   * SurveyJS validates what its own UI can produce, not an
    * arbitrary payload. A duplicate in a checkbox answer and an off-list
    * dropdown value cannot come from its widgets, so it does not reject them.
    */

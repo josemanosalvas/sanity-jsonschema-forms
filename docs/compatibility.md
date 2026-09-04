@@ -68,9 +68,22 @@ added, none renamed.
 
 ## What no adapter can add
 
-These have no field in the Studio schema, so nothing compiles them:
-descriptions or help text, conditional logic, pages, sections, nesting,
-repeating groups, cross-field constraints, a "required" message.
+The ceiling is `@sanity/form-toolkit`'s authoring model. These have no field
+in the Studio schema, so nothing compiles them:
+
+- field descriptions or help text;
+- conditional visibility, enablement or required-ness;
+- pages, sections, nesting, repeating groups;
+- constraints across fields;
+- a message for "required" (only rule messages exist; the compiler supplies
+  one for a required checkbox);
+- a default value on a lone checkbox (the Studio hides `options` for it);
+- formats beyond what a field type implies.
+
+Two properties of the authoring model shape how content is read: every
+validation operand is stored as a string and parsed here, and `checkbox`
+is one type for both a boolean and a group, told apart by whether it has
+choices.
 
 ## Renderer notes
 

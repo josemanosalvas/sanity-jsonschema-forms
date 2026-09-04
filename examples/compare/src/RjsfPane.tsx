@@ -2,8 +2,8 @@ import Form from '@rjsf/shadcn'
 import type {IChangeEvent} from '@rjsf/core'
 import validator from '@rjsf/validator-ajv8'
 import {useMemo, useState} from 'react'
-import type {FormToolkitForm, ToJsonSchemaResult} from 'sanity-json-schema'
-import {toRjsfProps} from 'sanity-json-schema/rjsf'
+import type {FormToolkitForm, ToJsonSchemaResult} from 'sanity-jsonschema-forms'
+import {toRjsfProps} from 'sanity-jsonschema-forms/rjsf'
 
 export const RjsfPane = ({form, compiled}: {form: FormToolkitForm; compiled: ToJsonSchemaResult}) => {
   const {schema, uiSchema, formProps, transformErrors} = useMemo(() => toRjsfProps(form, compiled), [form, compiled])
@@ -11,7 +11,7 @@ export const RjsfPane = ({form, compiled}: {form: FormToolkitForm; compiled: ToJ
   return (
     <section>
       <h2 className="mb-1 text-lg font-semibold">RJSF · @rjsf/shadcn</h2>
-      <p className="mb-4 text-xs text-muted-foreground">uiSchema + formProps + transformErrors from sanity-json-schema/rjsf</p>
+      <p className="mb-4 text-xs text-muted-foreground">uiSchema + formProps + transformErrors from sanity-jsonschema-forms/rjsf</p>
       <Form
         {...formProps}
         schema={schema}

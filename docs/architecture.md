@@ -1,6 +1,6 @@
 # Architecture
 
-`sanity-json-schema` compiles a form authored in Sanity Studio with
+`sanity-jsonschema-forms` compiles a form authored in Sanity Studio with
 [`@sanity/form-toolkit`](https://www.npmjs.com/package/@sanity/form-toolkit)
 into JSON Schema, and ships thin adapters that let schema-driven form
 libraries render and validate it.
@@ -28,7 +28,7 @@ Sanity Studio → @sanity/form-toolkit → form document
 | **Compiler output** | `schema`, `messages`, `diagnostics` | Editor-written error messages have no JSON Schema keyword, so they travel beside the schema keyed by field and AJV keyword. Everything that could not map one-to-one is a diagnostic; the compiler never throws on content. |
 | **Renderer and runtime concerns** | subpath adapters (`./rjsf`, `./jsonforms`, `./surveyjs`) | Each adds only what its library needs to present the schema: widget choice, placeholder, submit label, message delivery, and the library's own quirks. The schema passes through unchanged. Renderer dependencies are optional peers; the root entry has none. |
 | **Submission validation** | AJV against `schema`, server-side, whatever rendered the form | Renderers validate what their widgets can produce, not arbitrary payloads. SurveyJS, for one, accepts duplicate checkbox values and off-list dropdown values that the schema rejects. |
-| **Intermediate `FormDefinition` model** | **deliberately rejected** | Three consumers of very different shape (RJSF, JSON Forms, SurveyJS) consumed the same schema and message map through adapters of 60 to 140 lines plus one 45-line internal helper carrying two presentation facts per field. No behaviour shared by two consumers exists outside JSON Schema. See [research/](research/). |
+| **Intermediate `FormDefinition` model** | **deliberately rejected** | Three consumers of very different shape (RJSF, JSON Forms, SurveyJS) consumed the same schema and message map through adapters of 60 to 140 lines plus one 45-line internal helper carrying two presentation facts per field. No behaviour shared by two consumers exists outside JSON Schema. |
 
 ## What an adapter is allowed to do
 
@@ -57,7 +57,7 @@ belong in the contract; it belongs in that adapter, behind an option.
 ## Layout
 
 ```
-packages/sanity-json-schema/   the published package
+packages/sanity-jsonschema-forms/   the published package
   src/to-json-schema.ts        compiler
   src/rjsf.ts                  ./rjsf
   src/jsonforms.ts             ./jsonforms
@@ -65,5 +65,16 @@ packages/sanity-json-schema/   the published package
   src/internal/fields.ts       presentation facts shared by adapters (not exported)
 packages/fixtures/             private: form documents and submissions used by tests
 examples/compare/              one compiled form rendered by all three adapters
-docs/                          this file, the contract, compatibility, per-adapter notes, research
+docs/                          this file, the contract, compatibility, per-adapter notes
 ```
+
+## Design history
+
+The architecture was settled in three tagged experiments before `0.1.0`.
+`rjsf-spike-v1` compiled form-toolkit documents straight to RJSF and showed
+the mapping was direct but carried RJSF-specific choices. `json-schema-spike-v2`
+extracted a renderer-independent schema and moved those choices into a
+thin adapter, with JSON Forms as a second consumer. `surveyjs-spike-v3` used
+SurveyJS, the richest consumer available, to look for behaviour that would
+justify a shared model beyond JSON Schema, and found none. Each tag holds
+the code and the write-up of its experiment.

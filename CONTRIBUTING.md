@@ -45,7 +45,7 @@ Read [docs/architecture.md](docs/architecture.md) first. In short:
 ## Tests
 
 ```bash
-pnpm --filter sanity-json-schema test
+pnpm --filter sanity-jsonschema-forms test
 ```
 
 Render tests run in jsdom against the real libraries. Keep assertions on
@@ -58,7 +58,7 @@ Semantic versioning. Until `1.0`, breaking changes bump the minor version
 and are called out in `CHANGELOG.md`.
 
 1. Update `CHANGELOG.md` and the version in
-   `packages/sanity-json-schema/package.json`.
+   `packages/sanity-jsonschema-forms/package.json`.
 2. `pnpm test && pnpm build`.
 3. Commit, tag `vX.Y.Z`, push the tag.
 4. `pnpm release` (runs `npm publish` for the package with public access).

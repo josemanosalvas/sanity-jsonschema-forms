@@ -1,10 +1,10 @@
-# `sanity-json-schema/surveyjs`
+# `sanity-jsonschema-forms/surveyjs`
 
 ```tsx
 import {Model} from 'survey-core'
 import {Survey} from 'survey-react-ui'
-import {toJsonSchema} from 'sanity-json-schema'
-import {toSurveyJsProps} from 'sanity-json-schema/surveyjs'
+import {toJsonSchema} from 'sanity-jsonschema-forms'
+import {toSurveyJsProps} from 'sanity-jsonschema-forms/surveyjs'
 
 const compiled = toJsonSchema(form)
 const {surveyJson} = toSurveyJsProps(form, compiled)
@@ -61,5 +61,7 @@ server regardless of renderer (see [architecture.md](../architecture.md)).
 SurveyJS has pages, `visibleIf`/`enableIf`/`requiredIf`, calculated values,
 cross-field expression validators, dynamic panels, branching and scoring.
 `@sanity/form-toolkit` can author none of them, so the adapter emits none.
-The research record in [../research/03-surveyjs.md](../research/03-surveyjs.md)
-classifies each.
+The behaviours shared with the other adapters (grouping, repeating groups,
+conditional presence) are the ones JSON Schema already expresses as nested
+objects, arrays of objects and `if`/`then`, which is where they would be added;
+see [../architecture.md](../architecture.md).

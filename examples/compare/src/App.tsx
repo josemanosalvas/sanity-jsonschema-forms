@@ -1,6 +1,6 @@
 import {useMemo} from 'react'
 import {contactForm} from 'sanity-form-fixtures'
-import {toJsonSchema} from 'sanity-json-schema'
+import {toJsonSchema} from 'sanity-jsonschema-forms'
 
 import {JsonFormsPane} from './JsonFormsPane'
 import {RjsfPane} from './RjsfPane'
@@ -17,7 +17,7 @@ export const App = () => {
     <main className="mx-auto max-w-7xl p-8">
       <h1 className="mb-1 text-2xl font-semibold">{contactForm.title}</h1>
       <p className="mb-8 text-sm text-muted-foreground">
-        Authored with @sanity/form-toolkit, compiled once by sanity-json-schema, rendered by three independent form libraries.
+        Authored with @sanity/form-toolkit, compiled once by sanity-jsonschema-forms, rendered by three independent form libraries.
       </p>
       <div className="grid gap-10 xl:grid-cols-3 lg:grid-cols-2">
         <RjsfPane form={contactForm} compiled={compiled} />
