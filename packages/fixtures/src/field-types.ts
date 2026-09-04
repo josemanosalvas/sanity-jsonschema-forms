@@ -2,12 +2,7 @@ import type {FormDataProps} from '@sanity/form-toolkit/form-renderer'
 
 import type {Submission} from './submissions'
 
-/**
- * The eight field types added in 0.2, each with a valid default and every
- * validation rule the Studio offers for it, exactly as form-toolkit stores
- * them (operands as strings, `datetime-local` and `time` values without a
- * timezone, a colour as the editor typed it).
- */
+/** The eight field types added in 0.2, each with a valid default and every rule the Studio offers for it. */
 export const fieldTypesForm: FormDataProps = {
   fields: [
     {
@@ -85,11 +80,7 @@ const oneChange = (change: Record<string, unknown>, verdict: Submission['verdict
   verdict,
 })
 
-/**
- * The value contract of every 0.2 field type: native browser values that
- * must pass, and the shapes that must fail. Where a renderer's own
- * validator reaches a different verdict, its test says so.
- */
+/** Native browser values that must pass and shapes that must fail; renderer divergences are listed in test/parity.test.ts. */
 export const fieldTypesSubmissions = {
   colorName: oneChange({brandColor: 'red'}, 'reject'),
   colorShort: oneChange({brandColor: '#f80'}, 'reject'),
@@ -121,11 +112,7 @@ export const fieldTypesSubmissions = {
   websiteSpace: oneChange({website: 'https://exa mple.com'}, 'reject'),
 } as const satisfies Record<string, Submission>
 
-/**
- * The same types with what an editor can get wrong: defaults the native
- * input would refuse, malformed operands, a step the schema cannot encode,
- * a required hidden field nothing can fill. Every field still compiles.
- */
+/** What an editor can get wrong: bad defaults, malformed operands, a step the schema cannot encode, a required hidden field with no value. Every field still compiles. */
 export const fieldTypeEdgesForm: FormDataProps = {
   fields: [
     {label: 'Website', name: 'badUrl', options: {defaultValue: 'example.com'}, type: 'url'},

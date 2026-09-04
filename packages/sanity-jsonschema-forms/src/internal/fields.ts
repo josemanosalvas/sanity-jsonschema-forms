@@ -12,11 +12,10 @@ import type {FormToolkitForm} from '../types'
 export interface PresentationField {
   name: string
   type: SupportedFieldType
-  /** Only on types with a text input to show it in; the compiler reports the others as ignored. */
   placeholder?: string
 }
 
-/** Types with no text input for a placeholder; mirrors the compiler's `ignored-placeholder`. */
+/** No text input to show a placeholder in; the compiler reports these as `ignored-placeholder`. */
 const NO_PLACEHOLDER: ReadonlySet<SupportedFieldType> = new Set<SupportedFieldType>(['checkbox', 'color', 'hidden', 'radio', 'range'])
 
 const trimmed = (value: unknown): string | undefined => {

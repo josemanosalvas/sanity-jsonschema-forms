@@ -14,7 +14,7 @@ const Panel = ({title, children, open = false}: {title: string; children: string
   </details>
 )
 
-/** The fixtures the tests use; swap in a `@sanity/client` fetch to render a real document. */
+/** Swap a fixture for a `@sanity/client` fetch to render a real document. */
 const FORMS: Record<string, FormToolkitForm> = {
   contact: contactForm,
   'field-types': fieldTypesForm,

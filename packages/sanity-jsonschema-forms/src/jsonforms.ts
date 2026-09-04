@@ -13,8 +13,7 @@ export interface JsonFormsProps {
   /**
    * Schema `default`s as a data object. JSON Forms does not apply defaults to
    * the data it is given (its AJV runs without `useDefaults`), so the host
-   * must seed them; RJSF does this itself. A hidden field's value travels
-   * only here: it has no control.
+   * must seed them; RJSF does this itself.
    */
   initialData: Record<string, unknown>
   /** JSON Forms renders no submit button; the host does. */

@@ -39,11 +39,7 @@ export const FORM_TOOLKIT_FIELD_TYPES = {
 
 type FormToolkitFieldType = keyof typeof FORM_TOOLKIT_FIELD_TYPES
 
-/**
- * The field types compiled. `file` is the one type left out: JSON has no
- * portable representation of a file, so it is dropped with a diagnostic;
- * see docs/compatibility.md.
- */
+/** Every type but `file`, which has no portable JSON representation; see docs/compatibility.md. */
 export const SUPPORTED_FIELD_TYPES = [
   'text',
   'textarea',
@@ -79,16 +75,13 @@ const RULE_KEYWORDS = {
 type KeywordRuleType = keyof typeof RULE_KEYWORDS
 
 /**
- * Rule types the Studio offers that JSON Schema Draft 7 cannot carry. A date
- * bound would need `formatMinimum`/`formatMaximum`, which are a validator
- * extension, not part of the draft. The rule is checked and then dropped
- * with `lossy-validation-rule`; the server enforces it by other means.
+ * Rules Draft 7 cannot carry: a date bound needs `formatMinimum`/`formatMaximum`,
+ * an ajv-formats extension. Checked, then dropped with `lossy-validation-rule`.
  */
 const LOSSY_RULES = ['minDate', 'maxDate'] as const
 
 type LossyRuleType = (typeof LOSSY_RULES)[number]
 
-/** Every rule type the Studio offers on some field type. */
 const FORM_TOOLKIT_RULES: ReadonlySet<string> = new Set(Object.values(FORM_TOOLKIT_FIELD_TYPES).flat())
 
 /** See docs/json-schema-contract.md for why Draft 7. */
@@ -98,22 +91,20 @@ export const JSON_SCHEMA_DRAFT_7 = 'http://json-schema.org/draft-07/schema#'
 export const CHECKBOX_REQUIRED_MESSAGE = 'This box must be checked.'
 
 /**
- * The lexical forms of the native `<input>` values `@sanity/form-toolkit`'s
- * renderer submits, as JSON Schema `pattern`s. AJV's `time` and `date-time`
- * formats follow RFC 3339 and demand a timezone; a native `time` or
- * `datetime-local` value carries none, so those two types get a pattern
- * instead of a `format`. Exported so a consumer can quote the contract.
+ * The native `<input>` value shapes as JSON Schema `pattern`s. AJV's `time`
+ * and `date-time` formats are RFC 3339 and demand a timezone; a native
+ * `time` or `datetime-local` value carries none.
  */
 const HH_MM = '(?:[01]\\d|2[0-3]):[0-5]\\d'
 const OPTIONAL_SECONDS = '(?::[0-5]\\d(?:\\.\\d{1,3})?)?'
 /** Month and day, with each month's length; 29 February is accepted in every year. */
 const MONTH_DAY = '(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|02-(?:0[1-9]|1\\d|2\\d))'
 
-/** `HH:MM`, optionally `:SS` and `.sss`: a valid time string per the HTML standard. */
+/** `HH:MM`, optionally `:SS` and `.sss` (HTML "valid time string"). */
 export const TIME_PATTERN = `^${HH_MM}${OPTIONAL_SECONDS}$`
-/** `YYYY-MM-DDTHH:MM`, optionally `:SS` and `.sss`, never a timezone: a valid local date and time string per the HTML standard. */
+/** `YYYY-MM-DDTHH:MM`, optionally `:SS` and `.sss`, no timezone (HTML "valid local date and time string"). */
 export const DATETIME_LOCAL_PATTERN = `^\\d{4}-${MONTH_DAY}T${HH_MM}${OPTIONAL_SECONDS}$`
-/** `#` and six hexadecimal digits: a valid simple color per the HTML standard. The native input submits lowercase. */
+/** `#` and six hexadecimal digits (HTML "valid simple color"); the native input submits lowercase. */
 export const COLOR_PATTERN = '^#[0-9A-Fa-f]{6}$'
 
 const TIME_REGEXP = new RegExp(TIME_PATTERN, 'u')
@@ -122,7 +113,7 @@ const COLOR_REGEXP = new RegExp(COLOR_PATTERN, 'u')
 const DATE_REGEXP = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})$/u
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
-/** RFC 3339 `full-date`, the value of a native `date` input and what `format: date` validates. */
+/** RFC 3339 `full-date`: the native `date` value, and what `format: date` checks. */
 const isCalendarDate = (value: string): boolean => {
   const groups = DATE_REGEXP.exec(value)?.groups
   if (groups === undefined) {
@@ -136,11 +127,7 @@ const isCalendarDate = (value: string): boolean => {
   return month >= 1 && month <= 12 && day >= 1 && day <= days
 }
 
-/**
- * An absolute URL of printable ASCII, which is what `format: uri` (RFC 3986)
- * accepts. A native `url` input also takes non-ASCII characters and leaves
- * them unencoded; those need percent-encoding before they validate.
- */
+/** What `format: uri` (RFC 3986) accepts; a native `url` input also takes unencoded non-ASCII. */
 const isAbsoluteAsciiUrl = (value: string): boolean => /^[!-~]+$/u.test(value) && URL.canParse(value)
 
 const FIELD_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_-]*$/u
@@ -270,7 +257,6 @@ const recordMessage = (ctx: FieldContext, keyword: MessageKeyword, message: stri
   ctx.messages[ctx.name] = {...ctx.messages[ctx.name], [keyword]: message}
 }
 
-/** A `minDate`/`maxDate` operand must have the field's own value shape. */
 const isTemporalOperand = (field: FormToolkitField, operand: string): boolean =>
   field.type === 'datetime-local' ? DATETIME_LOCAL_REGEXP.test(operand) : isCalendarDate(operand)
 
@@ -286,11 +272,10 @@ const stepBase = (schema: JSONSchema7): {base: number; source: string} => {
 }
 
 /**
- * HTML `step` counts from a step base (`min`, else the default value, else
- * 0); JSON Schema `multipleOf` counts from zero. The two agree only when the
- * base is itself a multiple of the step. Fractional steps are left out as
- * well: validators check `multipleOf` with floating-point division, which
- * rejects values such as 0.3 for a step of 0.1.
+ * HTML `step` counts from the step base; `multipleOf` counts from zero. They
+ * agree only when the base is a multiple of the step. Fractional steps are
+ * left out too: AJV checks `multipleOf` with floating-point division and
+ * rejects 0.3 for a step of 0.1.
  */
 const applyStep = (schema: JSONSchema7, ctx: FieldContext, label: string, operand: string, message: string | undefined): void => {
   const {diagnostics, path, name} = ctx
@@ -396,7 +381,7 @@ const applyRules = (schema: JSONSchema7, ctx: FieldContext): void => {
       continue
     }
     if (!isKeywordRule(ruleType)) {
-      // `maxSize` and `fileType` apply to `file` only, which is never compiled; unreachable in practice.
+      // `maxSize` and `fileType` apply to `file` only, which is never compiled.
       diagnostics.add(
         'warning',
         'unsupported-validation-rule',
@@ -496,11 +481,7 @@ const dropDefault = (ctx: FieldContext, storedDefault: string, reason: string): 
   )
 }
 
-/**
- * The value shape each string type implies, checked on a stored default so a
- * form never starts invalid. Authored rules (a `pattern`, a `min`) are not
- * checked against defaults, for any type.
- */
+/** The value shape each string type implies, checked on a stored default. Authored rules are not checked against defaults. */
 const STRING_DEFAULTS: Partial<Record<CompiledType, {accepts: (value: string) => boolean; reason: string}>> = {
   color: {accepts: (value) => COLOR_REGEXP.test(value), reason: 'is not a colour written as "#" and six hexadecimal digits'},
   date: {accepts: isCalendarDate, reason: 'is not a calendar date written as YYYY-MM-DD'},

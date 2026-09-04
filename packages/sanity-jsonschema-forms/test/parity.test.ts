@@ -11,11 +11,7 @@ import {describe, expect, test} from 'vitest'
 import {toJsonSchema} from '../src'
 import {toSurveyJsProps} from '../src/surveyjs'
 
-/**
- * One schema, four validators, the same accept/reject verdict. Errors may
- * differ in count and wording; the verdict may not, except where SurveyJS
- * validates only what its widgets can produce (listed per case below).
- */
+/** One schema, four validators, one verdict. Wording and error counts may differ; SurveyJS divergences are listed per case. */
 const suites = [
   {
     form: contactForm,

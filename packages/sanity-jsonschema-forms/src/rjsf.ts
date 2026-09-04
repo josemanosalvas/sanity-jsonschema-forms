@@ -13,7 +13,7 @@ export interface RjsfProps {
   transformErrors: (errors: RJSFValidationError[]) => RJSFValidationError[]
 }
 
-/** Source type → RJSF widget name. `uri`, `date` and `color` would also be picked from the schema; naming them keeps the choice explicit. */
+/** Source type → RJSF widget name. */
 const WIDGETS: Partial<Record<string, string>> = {
   color: 'color',
   date: 'date',
@@ -26,10 +26,9 @@ const WIDGETS: Partial<Record<string, string>> = {
 }
 
 /**
- * Source type → native `<input type>` on RJSF's text widget. RJSF's own
- * `DateTimeWidget` converts to UTC and its `TimeWidget` appends seconds;
- * the text widget with an input type hands the native value through as
- * the schema's pattern expects it.
+ * Source type → native `<input type>` on RJSF's text widget, which hands
+ * the value through untouched. RJSF's own `DateTimeWidget` converts to UTC
+ * and its `TimeWidget` appends seconds.
  */
 const INPUT_TYPES: Partial<Record<string, string>> = {
   'datetime-local': 'datetime-local',
