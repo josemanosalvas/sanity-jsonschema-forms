@@ -1,7 +1,7 @@
 import {contactForm, fieldTypeEdgesForm, fieldTypesForm, messyForm, namesakeForm} from 'sanity-form-fixtures'
 import {describe, expect, test} from 'vitest'
 
-import {COLOR_PATTERN, DATETIME_LOCAL_PATTERN, TIME_PATTERN, toJsonSchema} from '../src'
+import {COLOR_PATTERN, DATETIME_LOCAL_PATTERN, NONZERO_YEAR_PATTERN, TIME_PATTERN, toJsonSchema} from '../src'
 
 describe('toJsonSchema: contact form', () => {
   const {schema, messages, diagnostics} = toJsonSchema(contactForm)
@@ -185,7 +185,7 @@ describe('toJsonSchema: field types added in 0.2', () => {
         pickup: {default: '2026-09-04T18:30', pattern: DATETIME_LOCAL_PATTERN, title: 'Pickup', type: 'string'},
         preferredTime: {default: '18:30', pattern: TIME_PATTERN, title: 'Preferred time', type: 'string'},
         satisfaction: {default: 6, maximum: 10, minimum: 0, multipleOf: 2, title: 'Satisfaction', type: 'number'},
-        startDate: {default: '2026-09-04', format: 'date', title: 'Start date', type: 'string'},
+        startDate: {default: '2026-09-04', format: 'date', pattern: NONZERO_YEAR_PATTERN, title: 'Start date', type: 'string'},
         website: {default: 'https://example.com', format: 'uri', pattern: '^https://', title: 'Website', type: 'string'},
       },
       required: ['website', 'startDate'],
@@ -259,14 +259,27 @@ describe('toJsonSchema: field type edges', () => {
     expect(codes.filter(([, code]) => code === 'invalid-default-value').map(([field]) => field)).toStrictEqual([
       'badUrl',
       'unicodeUrl',
+      'bracketUrl',
       'namedColor',
       'shortColor',
       'badDate',
+      'zeroDate',
       'utcPickup',
       'badTime',
       'wordRating',
     ])
-    for (const name of ['badUrl', 'unicodeUrl', 'namedColor', 'shortColor', 'badDate', 'utcPickup', 'badTime', 'wordRating']) {
+    for (const name of [
+      'badUrl',
+      'unicodeUrl',
+      'bracketUrl',
+      'namedColor',
+      'shortColor',
+      'badDate',
+      'zeroDate',
+      'utcPickup',
+      'badTime',
+      'wordRating',
+    ]) {
       expect(schema.properties?.[name]).not.toHaveProperty('default')
     }
   })

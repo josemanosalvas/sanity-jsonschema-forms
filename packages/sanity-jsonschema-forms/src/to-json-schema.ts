@@ -39,7 +39,7 @@ export const FORM_TOOLKIT_FIELD_TYPES = {
 
 type FormToolkitFieldType = keyof typeof FORM_TOOLKIT_FIELD_TYPES
 
-/** Every type but `file`, which has no portable JSON representation; see docs/compatibility.md. */
+/** Every type but `file`: form-toolkit defines no JSON submission representation of one; see docs/compatibility.md. */
 export const SUPPORTED_FIELD_TYPES = [
   'text',
   'textarea',
@@ -111,6 +111,8 @@ export const TIME_PATTERN = `^${HH_MM}${OPTIONAL_SECONDS}$`
 export const DATETIME_LOCAL_PATTERN = `^${LOCAL_DATE}T${HH_MM}${OPTIONAL_SECONDS}$`
 /** `#` and six hexadecimal digits (HTML "valid simple color"); the native input submits lowercase. */
 export const COLOR_PATTERN = '^#[0-9A-Fa-f]{6}$'
+/** Beside `format: date`, which takes exactly four year digits: HTML needs the year to be greater than zero. */
+export const NONZERO_YEAR_PATTERN = '^(?!0000-)'
 
 const TIME_REGEXP = new RegExp(TIME_PATTERN, 'u')
 const DATETIME_LOCAL_REGEXP = new RegExp(DATETIME_LOCAL_PATTERN, 'u')
@@ -118,7 +120,7 @@ const COLOR_REGEXP = new RegExp(COLOR_PATTERN, 'u')
 const DATE_REGEXP = /^(?<year>\d{4})-(?<month>\d{2})-(?<day>\d{2})$/u
 const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
-/** `format: date` as ajv-formats checks it: exactly four year digits, `0000` included. HTML allows more digits and needs year > 0. */
+/** What `format: date` plus `NONZERO_YEAR_PATTERN` accept: exactly four year digits, year > 0, a day the month has. */
 const isCalendarDate = (value: string): boolean => {
   const groups = DATE_REGEXP.exec(value)?.groups
   if (groups === undefined) {
@@ -129,11 +131,19 @@ const isCalendarDate = (value: string): boolean => {
   const day = Number(groups.day)
   const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
   const days = month === 2 && leap ? 29 : (DAYS_IN_MONTH[month - 1] ?? 0)
-  return month >= 1 && month <= 12 && day >= 1 && day <= days
+  return year >= 1 && month >= 1 && month <= 12 && day >= 1 && day <= days
 }
 
-/** What `format: uri` (RFC 3986) accepts. A native `url` input also takes unencoded non-ASCII; see docs/compatibility.md. */
-const isAbsoluteAsciiUrl = (value: string): boolean => /^[!-~]+$/u.test(value) && URL.canParse(value)
+/**
+ * RFC 3986 URI as ajv-formats 2.1 checks `format: uri` (its `URI` regular
+ * expression, MIT). The WHATWG parser behind `URL` and the native input is
+ * a different grammar: it takes a backslash or a bracket in a path or query
+ * and a bare `%`, which this rejects. A default must pass both, so that
+ * the native input shows it and the schema the compiler emits accepts it.
+ */
+const URI_REGEXP =
+  /^(?:[a-z][a-z0-9+\-.]*:)(?:\/?\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:]|%[0-9a-f]{2})*@)?(?:\[(?:(?:(?:(?:[0-9a-f]{1,4}:){6}|::(?:[0-9a-f]{1,4}:){5}|(?:[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){4}|(?:(?:[0-9a-f]{1,4}:){0,1}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){3}|(?:(?:[0-9a-f]{1,4}:){0,2}[0-9a-f]{1,4})?::(?:[0-9a-f]{1,4}:){2}|(?:(?:[0-9a-f]{1,4}:){0,3}[0-9a-f]{1,4})?::[0-9a-f]{1,4}:|(?:(?:[0-9a-f]{1,4}:){0,4}[0-9a-f]{1,4})?::)(?:[0-9a-f]{1,4}:[0-9a-f]{1,4}|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?))|(?:(?:[0-9a-f]{1,4}:){0,5}[0-9a-f]{1,4})?::[0-9a-f]{1,4}|(?:(?:[0-9a-f]{1,4}:){0,6}[0-9a-f]{1,4})?::)|[Vv][0-9a-f]+\.[a-z0-9\-._~!$&'()*+,;=:]+)\]|(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)|(?:[a-z0-9\-._~!$&'()*+,;=]|%[0-9a-f]{2})*)(?::\d*)?(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*|\/(?:(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)?|(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})+(?:\/(?:[a-z0-9\-._~!$&'()*+,;=:@]|%[0-9a-f]{2})*)*)(?:\?(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?(?:#(?:[a-z0-9\-._~!$&'()*+,;=:@/?]|%[0-9a-f]{2})*)?$/iu
+const isUri = (value: string): boolean => URI_REGEXP.test(value) && URL.canParse(value)
 
 const FIELD_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_-]*$/u
 const RESERVED_NAMES = new Set(Object.getOwnPropertyNames(Object.prototype))
@@ -227,7 +237,7 @@ export const classifyField = (field: FormToolkitField): AcceptedField | DroppedF
       code: 'unsupported-field-type',
       message:
         sourceType === 'file'
-          ? 'JSON has no portable representation of a file (a data URL, a multipart body and an upload reference each suit a different runtime), so "file" is not compiled and the field was dropped; its maxSize and fileType rules with it.'
+          ? 'form-toolkit defines a native file input but no JSON representation of the submitted file, and choosing one (a data URL, an upload reference) would be a submission contract of this package\'s own, so "file" is not compiled and the field was dropped; its maxSize and fileType rules with it.'
           : `"${sourceType}" is not supported (supported: ${SUPPORTED_FIELD_TYPES.join(', ')}), so the field was dropped.`,
       name,
     }
@@ -495,7 +505,7 @@ const STRING_DEFAULTS: Partial<Record<CompiledType, {accepts: (value: string) =>
     reason: 'is not a local date and time written as YYYY-MM-DDTHH:MM (no timezone)',
   },
   time: {accepts: (value) => TIME_REGEXP.test(value), reason: 'is not a time written as HH:MM'},
-  url: {accepts: isAbsoluteAsciiUrl, reason: 'is not an absolute URL'},
+  url: {accepts: isUri, reason: 'is not an absolute URI as RFC 3986 writes one'},
 }
 
 const compileField = (type: CompiledType, ctx: FieldContext): JSONSchema7 => {
@@ -525,6 +535,7 @@ const compileField = (type: CompiledType, ctx: FieldContext): JSONSchema7 => {
         schema.format = 'uri'
       } else if (type === 'date') {
         schema.format = 'date'
+        schema.pattern = NONZERO_YEAR_PATTERN
       } else if (type === 'datetime-local') {
         schema.pattern = DATETIME_LOCAL_PATTERN
       } else if (type === 'time') {

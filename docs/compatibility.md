@@ -24,7 +24,8 @@ Fifteen compile. Each has one of four statuses:
 - **supported, lossy rule**: the field compiles, but a rule the Studio
   offers cannot be written in JSON Schema Draft 7 without a validator
   extension, so it is dropped with `warning lossy-validation-rule`;
-- **unsupported**: no portable JSON representation of the value exists, so
+- **unsupported**: form-toolkit defines no JSON representation of the
+  submitted value, so compiling it would mean this package defining one;
   the field is dropped with `error unsupported-field-type`.
 
 | form-toolkit type | status | JSON Schema |
@@ -40,7 +41,7 @@ Fifteen compile. Each has one of four statuses:
 | `checkbox` (no choices) | supported | `boolean`; `const: true` when required |
 | `checkbox` (with choices) | supported | `array` of `string` `oneOf`, `uniqueItems` |
 | `select`, `radio` | supported | `string` `oneOf` (widget choice is presentation) |
-| `date` | supported, narrower values, lossy rule | `string` + `format: date`. ajv-formats takes exactly four year digits (`0000` included); HTML allows more and needs year > 0. `minDate`/`maxDate` are dropped (see below) |
+| `date` | supported, narrower values, lossy rule | `string` + `format: date` + `pattern` excluding year `0000`. HTML allows four or more year digits; the format takes exactly four. `minDate`/`maxDate` are dropped (see below) |
 | `datetime-local` | supported, lossy rule | `string` + `pattern` for the HTML local date and time value: leap years, year > 0, four or more year digits, no timezone. `minDate`/`maxDate` are dropped |
 | `time` | supported | `string` + `pattern` for `HH:MM`, optional seconds |
 | `color` | supported | `string` + `pattern` for `#` and six hexadecimal digits |
@@ -67,9 +68,10 @@ year of four or more digits greater than zero. `2025-02-29T18:30` and
 the native value on months, days and leap years but not at the year
 boundary: ajv-formats matches exactly four digits and does not reject
 `0000`, while HTML allows four or more digits and requires a year greater
-than zero. Five-digit years are rejected and year `0000` accepted, both
-pinned in the fixture. The type is listed as narrower rather than
-re-implemented as a pattern so the standard format keeps its meaning to
+than zero. `NONZERO_YEAR_PATTERN` (`^(?!0000-)`) sits beside the format
+and removes year `0000`, so what remains is a narrowing: five-digit years
+are rejected, pinned in the fixture together with year `0000`. The format
+is kept rather than re-implemented as a pattern so it keeps its meaning to
 every consumer.
 
 ### URLs
@@ -113,12 +115,12 @@ Schema number already accepts any value). A range without a `step` rule is
 a plain `number` in the schema although browsers step it by 1: the schema
 carries the authored rules, not the widget's defaults.
 
-### Why `file` is not compiled
+### Why `file` is deferred
 
 `@sanity/form-toolkit`'s renderer emits a native `<input type="file">` and
 its documented native usage posts `multipart/form-data`; it defines no JSON
-representation of a file. Each candidate suits one runtime and not the
-others:
+representation of a submitted file. Each candidate suits one runtime and
+not the others:
 
 | representation | fits | does not fit |
 | --- | --- | --- |
@@ -127,12 +129,14 @@ others:
 | `File` object or multipart body | native forms | JSON Schema, which cannot describe either |
 | uploaded asset reference (`{id, name, size, type}`) | a Sanity or S3 upload flow | any renderer without a bespoke uploader |
 
-None gives the same submission to every consumer, so choosing one
-would make the schema's meaning depend on the renderer, which is the one
-thing the contract forbids. `file` stays dropped with
-`error unsupported-field-type`, and `maxSize`/`fileType` with it. A future
-release can compile it once a representation with parity across consumers
-is settled; that is a submission-architecture decision, not a mapping.
+Adapters could normalize every renderer to one of these, an upload
+reference say. What stops it is not the renderers but the source:
+form-toolkit defines none of them, so choosing one would make this
+package the owner of a submission and upload contract (where the bytes
+go, what the reference means, who checks size and type) rather than a
+compiler of form-toolkit's semantics. That is a design step of its own.
+`file` stays dropped with `error unsupported-field-type`, and
+`maxSize`/`fileType` with it, until that contract exists.
 
 ## Validation rules
 

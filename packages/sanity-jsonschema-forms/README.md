@@ -24,8 +24,9 @@ import {toJsonFormsProps} from 'sanity-jsonschema-forms/jsonforms'
 - `messages` carries the error messages editors wrote, keyed by field and AJV keyword; each adapter delivers them its own way.
 - `diagnostics` lists everything the compiler could not carry. It never throws on content.
 
-Fifteen of form-toolkit's sixteen built-in field types compile; `file` has
-no portable JSON representation. A rule Draft 7 cannot carry (a date bound,
+Fifteen of form-toolkit's sixteen built-in field types compile; `file` is
+deferred until a submission representation for it is settled. A rule
+Draft 7 cannot carry (a date bound,
 a range step that does not count from zero) is reported, never encoded as
 a validator extension.
 

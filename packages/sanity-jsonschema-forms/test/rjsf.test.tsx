@@ -190,14 +190,28 @@ describe('RJSF presentation adapter', () => {
       expect((query(container, '#root_pickup') as HTMLInputElement).value).toBe('2026-12-24T09:15')
     })
 
-    test('a range without a default renders with the slider at its minimum and submits nothing for it', () => {
+    test('a range without a default renders a slider with no value and submits nothing for it', () => {
       const edges = toJsonSchema(fieldTypeEdgesForm)
       const edgeProps = toRjsfProps(fieldTypeEdgesForm, edges)
+      const submissions: Record<string, unknown>[] = []
       const {container} = render(
-        <Form {...edgeProps.formProps} schema={edgeProps.schema} uiSchema={edgeProps.uiSchema} validator={validator} noHtml5Validate />,
+        <Form
+          {...edgeProps.formProps}
+          schema={edgeProps.schema}
+          uiSchema={edgeProps.uiSchema}
+          validator={validator}
+          onSubmit={({formData}) => submissions.push(formData as Record<string, unknown>)}
+          noHtml5Validate
+          noValidate
+        />,
       )
-      const slider = container.querySelector('#root_offsetStep [role="slider"], [role="slider"]')
-      expect(slider).not.toBeNull()
+      const slider = query(container, '#root_offsetStep [role="slider"]')
+      expect([slider.getAttribute('aria-valuemin'), slider.getAttribute('aria-valuemax')]).toStrictEqual(['1', '9'])
+      // No default, no value: the thumb sits at the minimum without claiming it.
+      expect(slider.getAttribute('aria-valuenow')).toBeNull()
+      fireEvent.submit(query(container, 'form'))
+      expect(submissions).toHaveLength(1)
+      expect(submissions[0]?.offsetStep).toBeUndefined()
     })
   })
 })

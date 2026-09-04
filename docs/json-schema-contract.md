@@ -48,11 +48,11 @@ form would collide.
 | `checkbox` without choices | `{type: "boolean"}`; required adds `const: true` | see "Required" |
 | `checkbox` with choices | `{type: "array", uniqueItems: true, items: {type: "string", oneOf: [...]}}` | |
 | `select`, `radio` | `{type: "string", oneOf: [{const, title}, ...]}` | indistinguishable in the schema; the widget is presentation |
-| `date` | `{type: "string", format: "date"}` | RFC 3339 `full-date`. Narrower than the native value at the year boundary: exactly four digits, `0000` not rejected; see [compatibility.md](compatibility.md) |
+| `date` | `{type: "string", format: "date", pattern: NONZERO_YEAR_PATTERN}` | RFC 3339 `full-date` with year `0000` excluded by the pattern. Narrower than the native value: exactly four year digits; see [compatibility.md](compatibility.md) |
 | `datetime-local` | `{type: "string", pattern: DATETIME_LOCAL_PATTERN}` | the HTML local date and time value: `YYYY-MM-DDTHH:MM`, optional `:SS` and `.sss`, never a timezone; month lengths, leap years, year > 0, four or more year digits |
 | `time` | `{type: "string", pattern: TIME_PATTERN}` | `HH:MM`, optional `:SS` and `.sss`, never a timezone |
 | `color` | `{type: "string", pattern: COLOR_PATTERN}` | `#` and six hexadecimal digits, either case; a default is lowercased as the native input reports it |
-| `file` | not compiled | no portable JSON representation; see [compatibility.md](compatibility.md) |
+| `file` | not compiled | deferred: form-toolkit defines no JSON representation of a submitted file, and choosing one is a submission contract of its own; see [compatibility.md](compatibility.md) |
 
 `TIME_PATTERN`, `DATETIME_LOCAL_PATTERN` and `COLOR_PATTERN` are exported
 from the root entry. The temporal types use a `pattern` because AJV's
@@ -101,10 +101,15 @@ skip constraint validation; JSON Schema `required` has no such exemption.)
 A stored default enters the schema as `default` when it has the value shape
 the type implies: a number for `number` and `range`, `true`/`false` for a
 lone checkbox, one of the choices for `select`/`radio`, a calendar date
-for `date`, the pattern's form for `datetime-local`, `time` and `color`,
-an absolute ASCII URL for `url`. Anything else is dropped with
-`warning invalid-default-value` so a form never starts invalid. Authored
-rules are not checked against defaults, for any type.
+with a year greater than zero for `date`, the pattern's form for
+`datetime-local`, `time` and `color`, an RFC 3986 URI for `url`, checked
+with the grammar ajv-formats uses for `format: uri` rather than the
+WHATWG parser behind the native input (a default must satisfy both).
+Anything that violates the type-implied value shape is dropped with
+`warning invalid-default-value`; a test validates every default that
+survives against its own property schema. Authored rules are not checked
+against defaults, for any type, so a `number` default of `0` under an
+authored minimum of `1` starts invalid.
 
 ## Validation rules
 

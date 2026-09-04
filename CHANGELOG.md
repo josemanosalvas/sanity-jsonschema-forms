@@ -12,9 +12,12 @@ lossy rule, or unsupported. The canonical schema stays JSON Schema Draft 7
 with no validator extension.
 
 - Added: `url` (`format: uri`; narrower than the native input, which also
-  accepts unencoded non-ASCII), `tel` (`string`), `hidden` (`string` with
-  `default`), `color` (pattern for `#rrggbb`), `date` (`format: date`;
-  narrower than the native input at the year boundary), `datetime-local`
+  accepts unencoded non-ASCII; a default is kept only when it satisfies the
+  RFC 3986 grammar the format uses, not just the native input's parser),
+  `tel` (`string`), `hidden` (`string` with `default`), `color` (pattern
+  for `#rrggbb`), `date` (`format: date` plus a pattern excluding year
+  `0000`; narrower than the native input, which also takes years of five
+  or more digits), `datetime-local`
   (pattern implementing the HTML local date and time value: leap years,
   year > 0, four or more year digits, no timezone) and `time` (pattern for
   the native value, no timezone; AJV's RFC 3339 formats would reject every
@@ -25,8 +28,8 @@ with no validator extension.
   Draft 7 keyword; `formatMinimum` is an AJV extension) and for a `step`
   that `multipleOf` cannot reproduce; `missing-default-value` for a
   required `hidden` field with no default. Existing codes are unchanged.
-- Added: `TIME_PATTERN`, `DATETIME_LOCAL_PATTERN`, `COLOR_PATTERN` exports;
-  `multipleOf` in `MessageKeyword`.
+- Added: `TIME_PATTERN`, `DATETIME_LOCAL_PATTERN`, `COLOR_PATTERN`,
+  `NONZERO_YEAR_PATTERN` exports; `multipleOf` in `MessageKeyword`.
 - Adapters: RJSF names a widget or native input type per field and keeps
   the native `datetime-local`/`time` values untouched; JSON Forms omits
   the control for a hidden field and seeds its value through
@@ -35,9 +38,11 @@ with no validator extension.
 - Removed (breaking): `sanity-jsonschema-forms/surveyjs`. It was a spike
   that was not pursued; SurveyJS does not consume JSON Schema as its
   contract. The spike stays tagged `surveyjs-spike-v3`.
-- `file` stays unsupported, now by decision rather than omission: no
-  representation of a file gives the same submission to every consumer.
-  The reasoning is in `docs/compatibility.md`.
+- `file` stays unsupported, now by decision rather than omission: it is
+  deferred because form-toolkit defines a native file input but no JSON
+  representation of the submitted file, and choosing one would be a
+  submission and upload contract of this package's own. The reasoning is
+  in `docs/compatibility.md`.
 - Changed: a `minDate`/`maxDate`/`step`/`maxSize`/`fileType` rule on a
   field type that does not offer it is now `inapplicable-validation-rule`
   (was `unsupported-validation-rule`, which is now reserved for rule types
@@ -45,7 +50,9 @@ with no validator extension.
   `PresentationField` carries a placeholder only for types with a text
   input.
 - Tests: `test/parity.test.ts` runs every fixture submission through plain
-  AJV, `@rjsf/validator-ajv8` and JSON Forms' AJV and pins the verdicts.
+  AJV, `@rjsf/validator-ajv8` and JSON Forms' AJV and pins the verdicts;
+  `test/ajv.test.ts` validates every emitted default against its own
+  property schema.
 
 ## 0.1.1 (2026-09-04)
 

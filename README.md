@@ -55,8 +55,10 @@ throws on content.
 Fifteen of form-toolkit's sixteen built-in field types compile. Where the
 Studio can author a rule that JSON Schema Draft 7 cannot carry without a
 validator extension (a date bound, a range step that does not count from
-zero), the field compiles and the rule is reported as lossy; `file` has no
-portable JSON representation and is reported as unsupported.
+zero), the field compiles and the rule is reported as lossy. `file` is
+deferred and reported as unsupported: form-toolkit defines no JSON
+representation of a submitted file, and choosing one is a submission
+contract of its own.
 [docs/compatibility.md](docs/compatibility.md) gives each type its status
 and the reasoning.
 

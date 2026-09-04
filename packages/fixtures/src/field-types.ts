@@ -86,13 +86,14 @@ export const fieldTypesSubmissions = {
   colorShort: oneChange({brandColor: '#f80'}, 'reject'),
   colorUppercase: oneChange({brandColor: '#FF8800'}, 'accept'),
   dateFebruary30: oneChange({startDate: '2026-02-30'}, 'reject'),
-  // HTML allows years of four or more digits and needs year > 0; ajv-formats' `date` takes exactly four, `0000` included. Documented narrowing.
+  // HTML allows years of four or more digits; ajv-formats' `date` takes exactly four. Documented narrowing.
   dateFiveDigitYear: oneChange({startDate: '12026-09-04'}, 'reject'),
   dateLeapDay: oneChange({startDate: '2028-02-29'}, 'accept'),
   dateNonLeapDay: oneChange({startDate: '2025-02-29'}, 'reject'),
   // `minDate` is not in the schema; this is the documented loss.
   dateOutsideAuthoredBounds: oneChange({startDate: '2020-01-01'}, 'accept'),
-  dateYearZero: oneChange({startDate: '0000-01-01'}, 'accept'),
+  // HTML needs year > 0; `format: date` alone would take `0000`, `NONZERO_YEAR_PATTERN` does not.
+  dateYearZero: oneChange({startDate: '0000-01-01'}, 'reject'),
   empty: {data: {}, verdict: 'reject'},
   hiddenOmitted: {data: {...accepted, campaign: undefined}, verdict: 'accept'},
   phoneLetters: oneChange({phone: 'call me'}, 'reject'),
@@ -129,6 +130,8 @@ export const fieldTypeEdgesForm: FormDataProps = {
   fields: [
     {label: 'Website', name: 'badUrl', options: {defaultValue: 'example.com'}, type: 'url'},
     {label: 'Website', name: 'unicodeUrl', options: {defaultValue: 'https://例え.jp'}, type: 'url'},
+    // The WHATWG parser takes brackets in a query; RFC 3986 and `format: uri` do not.
+    {label: 'Website', name: 'bracketUrl', options: {defaultValue: 'https://example.com/?ids[]=1'}, type: 'url'},
     {label: 'Token', name: 'requiredHidden', required: true, type: 'hidden'},
     {label: 'Source', name: 'hiddenPlaceholder', options: {defaultValue: 'web', placeholder: 'ignored'}, type: 'hidden'},
     {label: 'Colour', name: 'namedColor', options: {defaultValue: 'red'}, type: 'color'},
@@ -144,6 +147,7 @@ export const fieldTypeEdgesForm: FormDataProps = {
         {message: 'min on date', type: 'min', value: '1'},
       ],
     },
+    {label: 'Date', name: 'zeroDate', options: {defaultValue: '0000-01-01'}, type: 'date'},
     {label: 'Pickup', name: 'utcPickup', options: {defaultValue: '2026-09-04T18:30Z'}, type: 'datetime-local'},
     {label: 'Time', name: 'badTime', options: {defaultValue: '25:30'}, type: 'time'},
     {label: 'Rating', name: 'wordRating', options: {defaultValue: 'lots', placeholder: 'ignored'}, type: 'range'},
