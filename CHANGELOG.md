@@ -30,14 +30,21 @@ with no validator extension.
 - Adapters: RJSF names a widget or native input type per field and keeps
   the native `datetime-local`/`time` values untouched; JSON Forms omits
   the control for a hidden field and seeds its value through
-  `initialData`, asks for the time and slider cells; SurveyJS maps input
-  types, keeps hidden values through completion
-  (`clearInvisibleValues: 'none'`) and checks `multipleOf` with an
-  expression validator. Per-renderer control support is tabled in
-  `docs/compatibility.md`.
+  `initialData`, asks for the time and slider cells. Per-renderer control
+  support is tabled in `docs/compatibility.md`.
+- Removed (breaking): `sanity-jsonschema-forms/surveyjs` (`toSurveyJsProps`
+  and the `Survey*Json` types). SurveyJS does not consume JSON Schema as
+  its contract: the adapter rebuilt survey JSON from the schema, and
+  SurveyJS validated what its widgets can produce rather than the payload,
+  diverging from the three AJV consumers wherever the schema checked
+  something a widget cannot produce (a duplicate checkbox value, a
+  calendar date, a URL, a numeric string). The reasoning, the admission
+  rule for adapters and what a SurveyJS integration should look like
+  instead are in `docs/decisions/001-surveyjs-is-research-not-an-adapter.md`.
+  The spike stays tagged `surveyjs-spike-v3`; `0.1.x` keeps the adapter.
 - `file` stays unsupported, now by decision rather than omission: no
-  representation of a file gives the same submission to all three
-  consumers. The reasoning is in `docs/compatibility.md`.
+  representation of a file gives the same submission to every consumer.
+  The reasoning is in `docs/compatibility.md`.
 - Changed: a `minDate`/`maxDate`/`step`/`maxSize`/`fileType` rule on a
   field type that does not offer it is now `inapplicable-validation-rule`
   (was `unsupported-validation-rule`, which is now reserved for rule types
@@ -45,8 +52,7 @@ with no validator extension.
   `PresentationField` carries a placeholder only for types with a text
   input.
 - Tests: `test/parity.test.ts` runs every fixture submission through plain
-  AJV, `@rjsf/validator-ajv8`, JSON Forms' AJV and SurveyJS and pins the
-  verdicts, listing where SurveyJS diverges.
+  AJV, `@rjsf/validator-ajv8` and JSON Forms' AJV and pins the verdicts.
 
 ## 0.1.1 (2026-09-04)
 

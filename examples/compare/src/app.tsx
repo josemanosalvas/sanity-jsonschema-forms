@@ -5,7 +5,6 @@ import {toJsonSchema} from 'sanity-jsonschema-forms'
 
 import {JsonFormsPane} from './json-forms-pane'
 import {RjsfPane} from './rjsf-pane'
-import {SurveyJsPane} from './survey-js-pane'
 
 const Panel = ({title, children, open = false}: {title: string; children: string; open?: boolean}) => (
   <details open={open}>
@@ -20,7 +19,7 @@ const FORMS: Record<string, FormToolkitForm> = {
   'field-types': fieldTypesForm,
 }
 
-/** One form document, one `toJsonSchema()` call, three renderers. */
+/** One form document, one `toJsonSchema()` call, two renderers. */
 export const App = () => {
   const [formId, setFormId] = useState<keyof typeof FORMS>('contact')
   const form = FORMS[formId] ?? contactForm
@@ -41,12 +40,11 @@ export const App = () => {
         </label>
       </div>
       <p className="text-muted-foreground mb-8 text-sm">
-        Authored with @sanity/form-toolkit, compiled once by sanity-jsonschema-forms, rendered by three independent form libraries.
+        Authored with @sanity/form-toolkit, compiled once by sanity-jsonschema-forms, rendered by two independent form libraries.
       </p>
-      <div className="grid gap-10 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-10 lg:grid-cols-2">
         <RjsfPane key={`rjsf-${formId}`} form={form} compiled={compiled} />
         <JsonFormsPane key={`jsonforms-${formId}`} form={form} compiled={compiled} />
-        <SurveyJsPane key={`surveyjs-${formId}`} form={form} compiled={compiled} />
       </div>
       <aside className="mt-12 grid gap-6 text-xs lg:grid-cols-3">
         <Panel title="schema" open>

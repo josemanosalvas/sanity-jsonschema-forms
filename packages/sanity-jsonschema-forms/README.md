@@ -2,8 +2,8 @@
 
 Compile a form authored in Sanity Studio with
 [`@sanity/form-toolkit`](https://www.npmjs.com/package/@sanity/form-toolkit)
-into JSON Schema, and render it with react-jsonschema-form, JSON Forms or
-SurveyJS through thin adapters.
+into JSON Schema, and render it with react-jsonschema-form or JSON Forms
+through thin adapters.
 
 ```bash
 pnpm add sanity-jsonschema-forms
@@ -18,7 +18,6 @@ const {schema, messages, diagnostics} = toJsonSchema(form) // form: the @sanity/
 ```ts
 import {toRjsfProps} from 'sanity-jsonschema-forms/rjsf'
 import {toJsonFormsProps} from 'sanity-jsonschema-forms/jsonforms'
-import {toSurveyJsProps} from 'sanity-jsonschema-forms/surveyjs'
 ```
 
 - `schema` is [JSON Schema Draft 7](https://json-schema.org/draft-07), declared by its `$schema` and valid on its own; validate submissions against it on the server with AJV.
@@ -33,8 +32,7 @@ a validator extension.
 Using the root entry needs no renderer dependencies; the adapters' peers are
 optional. The form document is typed structurally, so `@sanity/form-toolkit`
 need not be installed where the form is rendered. `./rjsf` needs
-`@rjsf/utils` (types only), `./jsonforms` uses `@jsonforms/core` at runtime,
-`./surveyjs` emits plain survey JSON.
+`@rjsf/utils` (types only), `./jsonforms` uses `@jsonforms/core` at runtime.
 
 Documentation, examples and the design record:
 https://github.com/josemanosalvas/sanity-jsonschema-forms

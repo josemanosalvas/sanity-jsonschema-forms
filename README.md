@@ -11,7 +11,6 @@ flowchart LR
   compile --> out["{ schema, messages, diagnostics }"]
   out --> rjsf["sanity-jsonschema-forms/rjsf"] --> RJSF["react-jsonschema-form"]
   out --> jsonforms["sanity-jsonschema-forms/jsonforms"] --> JF["JSON Forms"]
-  out --> surveyjs["sanity-jsonschema-forms/surveyjs"] --> SJ["SurveyJS"]
 ```
 
 The JSON Schema is the contract. It is [JSON Schema Draft 7](https://json-schema.org/draft-07)
@@ -81,15 +80,6 @@ const {schema, uischema, translate, initialData} = toJsonFormsProps(form, compil
 <JsonForms schema={schema} uischema={uischema} data={initialData} i18n={{translate}} renderers={vanillaRenderers} cells={vanillaCells} />
 ```
 
-```tsx
-import {Model} from 'survey-core'
-import {Survey} from 'survey-react-ui'
-import {toSurveyJsProps} from 'sanity-jsonschema-forms/surveyjs'
-
-const {surveyJson} = toSurveyJsProps(form, compiled)
-<Survey model={new Model(surveyJson)} />
-```
-
 And on the server:
 
 ```ts
@@ -113,19 +103,22 @@ const isValidSubmission = (submission: unknown) => ajv.validate(schema, submissi
   codes.
 - [docs/adapters/](docs/adapters): per-library usage and the quirks each
   adapter handles.
+- [docs/decisions/](docs/decisions): decision records. The first says why
+  SurveyJS, tried as a third adapter, is not one, and what a form library
+  must do to get an adapter here.
 
 ## Repository
 
 ```
 packages/sanity-jsonschema-forms/  the package
 packages/fixtures/                 private: form documents and submissions used by tests
-examples/compare/                  one compiled form rendered by all three adapters
+examples/compare/                  one compiled form rendered by both adapters
 docs/
 ```
 
 ```bash
 pnpm install
-pnpm test      # compiler, plain AJV, RJSF, JSON Forms and SurveyJS renders, validator parity
+pnpm test      # compiler, plain AJV, RJSF and JSON Forms renders, validator parity
 pnpm verify    # everything CI runs: lint, typecheck, test, build, example, publint
 pnpm dev       # examples/compare on http://localhost:5174
 ```

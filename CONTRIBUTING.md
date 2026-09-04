@@ -17,7 +17,7 @@ pnpm verify
 through [Ultracite](https://www.ultracite.ai/)'s preset; `oxlint.config.ts`
 and `oxfmt.config.ts` list the few rules and style options this repo
 overrides, each with its reason. `pnpm format` applies the fixes. `pnpm dev` starts `examples/compare`, which renders the same compiled
-form through all three adapters; use it to see a change in every renderer
+form through both adapters; use it to see a change in every renderer
 at once.
 
 Inside the workspace, the package's `exports` point at `src/`, so the
@@ -41,6 +41,12 @@ Read [docs/architecture.md](docs/architecture.md) first. In short:
   the form, add it there and say which second consumer would use it.
 - **No intermediate form model.** A proposal to add one needs evidence that
   two consumers share a behaviour JSON Schema cannot express.
+- **An adapter is for a library that consumes JSON Schema natively.** A
+  proposal for one says how `compiled.schema` reaches the library unchanged
+  and which of the library's own validators checks against it. A library
+  with its own form model gets a separate project, not an adapter;
+  [docs/decisions/001](docs/decisions/001-surveyjs-is-research-not-an-adapter.md)
+  is the worked case.
 - **Diagnostics over exceptions.** The compiler never throws on content;
   every loss gets a diagnostic with a stable code. Add codes, never rename.
 - **Fixtures are shared.** New behaviour gets a case in
@@ -62,8 +68,7 @@ addition. The steps are the same either way.
 3. Teach each adapter the presentation it needs, if any; the source type in
    `src/internal/fields.ts` is usually enough.
 4. Extend the compiler, AJV and render tests, and check the verdicts in
-   `test/parity.test.ts` across all four validators; a SurveyJS divergence
-   is listed there, not hidden.
+   `test/parity.test.ts` across all three validators; they must agree.
 5. Update the status in `docs/compatibility.md` (supported / supported
    with lossy rule / unsupported), `docs/json-schema-contract.md`, and the
    adapter docs' field-type tables.

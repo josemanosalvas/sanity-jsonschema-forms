@@ -8,7 +8,6 @@
 | `ajv` + `ajv-formats` | 8.20 / 2.1 | Draft 7 validation in tests and on the server |
 | `@rjsf/core`, `@rjsf/utils`, `@rjsf/validator-ajv8`, `@rjsf/shadcn` | 6.8.0 | `./rjsf` |
 | `@jsonforms/core`, `@jsonforms/react`, `@jsonforms/vanilla-renderers` | 3.8.0 | `./jsonforms` |
-| `survey-core`, `survey-react-ui` | 3.0.3 | `./surveyjs` |
 | Node | 22.12 or later | running and developing the package |
 
 ## Field types
@@ -123,12 +122,12 @@ others:
 
 | representation | fits | does not fit |
 | --- | --- | --- |
-| data URL (`format: data-url`) | RJSF's file widget | the server (a base64 body in JSON) and SurveyJS, which stores `{name, type, content}` objects |
+| data URL (`format: data-url`) | RJSF's file widget | the server (a base64 body in JSON) |
 | base64 string | any JSON validator | the browser without a custom control in every renderer |
 | `File` object or multipart body | native forms | JSON Schema, which cannot describe either |
 | uploaded asset reference (`{id, name, size, type}`) | a Sanity or S3 upload flow | any renderer without a bespoke uploader |
 
-None gives the same submission to all three consumers, so choosing one
+None gives the same submission to every consumer, so choosing one
 would make the schema's meaning depend on the renderer, which is the one
 thing the contract forbids. `file` stays dropped with
 `error unsupported-field-type`, and `maxSize`/`fileType` with it. A future
@@ -192,18 +191,18 @@ choices.
 
 Each adapter's document lists the library-specific behaviour it works
 around and the gaps that remain: [rjsf](adapters/rjsf.md),
-[jsonforms](adapters/jsonforms.md), [surveyjs](adapters/surveyjs.md).
+[jsonforms](adapters/jsonforms.md).
 The table below is the per-type summary; "native" means the library's own
 control for the type, "text" means it renders as a plain text input that
 still validates against the schema.
 
-| type | RJSF (`@rjsf/shadcn`) | JSON Forms (vanilla) | SurveyJS |
-| --- | --- | --- | --- |
-| `url` | native | text | native (`inputType: url`, no URL check of its own) |
-| `tel` | native | text | native |
-| `hidden` | hidden input | no control; value in `initialData` | invisible question, value kept on completion |
-| `date` | native | native | native |
-| `datetime-local` | native, value untouched | text | native |
-| `time` | native, value untouched | native (appends `:00`) | native |
-| `range` | slider | slider when the schema has `minimum`, `maximum` and `default`; else number input | slider |
-| `color` | native | text | native |
+| type | RJSF (`@rjsf/shadcn`) | JSON Forms (vanilla) |
+| --- | --- | --- |
+| `url` | native | text |
+| `tel` | native | text |
+| `hidden` | hidden input | no control; value in `initialData` |
+| `date` | native | native |
+| `datetime-local` | native, value untouched | text |
+| `time` | native, value untouched | native (appends `:00`) |
+| `range` | slider | slider when the schema has `minimum`, `maximum` and `default`; else number input |
+| `color` | native | text |

@@ -143,12 +143,13 @@ A dropped rule's message is dropped with it. The compiler's own patterns
 rule to write one on.
 
 Delivery is per renderer: RJSF through `transformErrors`, JSON Forms through
-`i18n.translate` answering `<field>.error.<keyword>`, SurveyJS as each
-validator's `text`. All are built by the adapters from this map.
+`i18n.translate` answering `<field>.error.<keyword>`. Both are built by the
+adapters from this map.
 
 **Submissions must be validated with AJV against this schema on the server,
-whatever rendered the form.** SurveyJS in particular validates what its
-widgets can produce, not an arbitrary payload (see [adapters/surveyjs.md](adapters/surveyjs.md)).
+whatever rendered the form.** A renderer validates what its widgets can
+produce, not an arbitrary payload; the SurveyJS adapter of spike 3 made
+that plain (see [decisions/001](decisions/001-surveyjs-is-research-not-an-adapter.md)).
 
 ## Deliberately not in the schema
 
@@ -165,7 +166,7 @@ widgets can produce, not an arbitrary payload (see [adapters/surveyjs.md](adapte
 
 ## What each adapter needs beyond the schema
 
-All three adapters (RJSF, JSON Forms, SurveyJS) read `form.fields` again through one internal helper,
+Both adapters (RJSF, JSON Forms) read `form.fields` again through one internal helper,
 `presentationFields(form, schema)`, which returns for every property in the
 schema the source `type` and `placeholder` and nothing else. 0.2 added
 eight source types to that `type` and no new fact: a `string` with a
