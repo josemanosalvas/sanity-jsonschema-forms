@@ -8,3 +8,5 @@ minimumReleaseAgeExclude:
   - '@vitest/spy@5.0.0'
   - tsdown@0.23.0
   - vitest@5.0.0
+  - survey-core@3.0.3
+  - survey-react-ui@3.0.3

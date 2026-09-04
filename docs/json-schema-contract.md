@@ -83,8 +83,12 @@ checkbox: form-toolkit stores no message for "required", and AJV's own
 ("must be equal to constant") would mislead, so the compiler supplies one.
 
 Delivery is per renderer: RJSF through `transformErrors`, JSON Forms through
-`i18n.translate` answering `<field>.error.<keyword>`. Both are built by the
-adapters from this map.
+`i18n.translate` answering `<field>.error.<keyword>`, SurveyJS as each
+validator's `text`. All are built by the adapters from this map.
+
+**Submissions must be validated with AJV against this schema on the server,
+whatever rendered the form.** SurveyJS in particular validates what its
+widgets can produce, not an arbitrary payload (see assessment 3).
 
 ## Deliberately not in the schema
 
@@ -100,7 +104,7 @@ adapters from this map.
 
 ## What each adapter needs beyond the schema
 
-Both adapters read `form.fields` again through one internal helper,
+All three adapters (RJSF, JSON Forms, SurveyJS) read `form.fields` again through one internal helper,
 `presentationFields(form, schema)`, which returns for every property in the
 schema the source `type` and `placeholder` and nothing else. That helper is
 the entire "intermediate model" shared between renderers. Its size, and each

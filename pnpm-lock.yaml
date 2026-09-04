@@ -50,6 +50,12 @@ importers:
       sanity-json-schema:
         specifier: workspace:*
         version: link:../../packages/sanity-json-schema
+      survey-core:
+        specifier: 3.0.3
+        version: 3.0.3
+      survey-react-ui:
+        specifier: 3.0.3
+        version: 3.0.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(survey-core@3.0.3)
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.3.3
@@ -194,6 +200,12 @@ importers:
       sanity-rjsf:
         specifier: workspace:*
         version: link:../sanity-rjsf
+      survey-core:
+        specifier: 3.0.3
+        version: 3.0.3
+      survey-react-ui:
+        specifier: 3.0.3
+        version: 3.0.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(survey-core@3.0.3)
       tsdown:
         specifier: ^0.23.0
         version: 0.23.0(tsx@4.23.13)(typescript@5.9.3)
@@ -5222,6 +5234,16 @@ packages:
   supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  survey-core@3.0.3:
+    resolution: {integrity: sha512-K2UbtyMxlss0V1f0XWInxvSFusej4fdJBKaHS1+rKH3/mIT6BmjznAmFCCY20XzAN/mAvzg+hLrEiCKTpHe9aw==}
+
+  survey-react-ui@3.0.3:
+    resolution: {integrity: sha512-tlwAFE++9BcOxdfe/omSK3wCL1pf5dJgFbKS9Xlmx/BBOgYBaHWbk9hZAusx0N/JCA1WXpALt+22tQR8bjWqwQ==}
+    peerDependencies:
+      react: ^16.5.0 || ^17.0.1 || ^18.1.0 || ^19.0.0
+      react-dom: ^16.5.0 || ^17.0.1 || ^18.1.0 || ^19.0.0
+      survey-core: 3.0.3
 
   swr@2.5.1:
     resolution: {integrity: sha512-BRw55e8r0B7SpDN20CAzoQAHl7y1yP7/Zt7oqUjMv0vSt2u2Xnkm88Ws+VypbV9BXHQVuSuyVq7zMjO16wSExw==}
@@ -11188,6 +11210,14 @@ snapshots:
       has-flag: 4.0.0
 
   supports-preserve-symlinks-flag@1.0.0: {}
+
+  survey-core@3.0.3: {}
+
+  survey-react-ui@3.0.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(survey-core@3.0.3):
+    dependencies:
+      react: 19.2.8
+      react-dom: 19.2.8(react@19.2.8)
+      survey-core: 3.0.3
 
   swr@2.5.1(react@19.2.8):
     dependencies:
