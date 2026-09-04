@@ -25,14 +25,16 @@ validates submissions against it whatever rendered the form.
 pnpm add sanity-jsonschema-forms
 ```
 
-Then the form library of your choice. The root entry has no peer
-dependencies; each adapter's peers are listed in [docs/adapters](docs/adapters).
+Then the form library of your choice. Using the root entry needs no renderer
+dependencies; each adapter's peer is optional and listed in [docs/adapters](docs/adapters).
 
 ## Use
 
 ```ts
+import {createClient} from '@sanity/client'
 import {toJsonSchema} from 'sanity-jsonschema-forms'
 
+const client = createClient({projectId: '<project-id>', dataset: 'production', apiVersion: '2026-09-04', useCdn: true})
 const form = await client.fetch(
   `*[_type == "form" && id.current == $id][0]{
     title, id, submitButton,
@@ -54,6 +56,8 @@ throws on content.
 Then one of:
 
 ```tsx
+import Form from '@rjsf/shadcn' // or any RJSF theme
+import validator from '@rjsf/validator-ajv8'
 import {toRjsfProps} from 'sanity-jsonschema-forms/rjsf'
 
 const {schema, uiSchema, formProps, transformErrors} = toRjsfProps(form, compiled)
@@ -61,13 +65,17 @@ const {schema, uiSchema, formProps, transformErrors} = toRjsfProps(form, compile
 ```
 
 ```tsx
+import {JsonForms} from '@jsonforms/react'
+import {vanillaCells, vanillaRenderers} from '@jsonforms/vanilla-renderers'
 import {toJsonFormsProps} from 'sanity-jsonschema-forms/jsonforms'
 
 const {schema, uischema, translate, initialData} = toJsonFormsProps(form, compiled)
-<JsonForms schema={schema} uischema={uischema} data={initialData} i18n={{translate}} renderers={renderers} cells={cells} />
+<JsonForms schema={schema} uischema={uischema} data={initialData} i18n={{translate}} renderers={vanillaRenderers} cells={vanillaCells} />
 ```
 
 ```tsx
+import {Model} from 'survey-core'
+import {Survey} from 'survey-react-ui'
 import {toSurveyJsProps} from 'sanity-jsonschema-forms/surveyjs'
 
 const {surveyJson} = toSurveyJsProps(form, compiled)
@@ -82,7 +90,7 @@ import addFormats from 'ajv-formats'
 
 const ajv = new Ajv({allErrors: true})
 addFormats(ajv)
-const valid = ajv.validate(schema, submission)
+const isValidSubmission = (submission: unknown) => ajv.validate(schema, submission)
 ```
 
 ## Documentation

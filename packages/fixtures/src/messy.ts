@@ -26,6 +26,7 @@ export const messyForm: FormDataProps = {
     },
     {label: 'Bad default', name: 'badDefault', options: {defaultValue: 'lots'}, type: 'number'},
     {choices: [], label: 'No choices', name: 'empty', type: 'select'},
+    {label: 'Empty again', name: 'empty', options: {placeholder: 'Write instead'}, type: 'textarea'},
     {
       choices: [
         {label: 'A', value: 'a'},

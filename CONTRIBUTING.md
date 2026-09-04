@@ -2,9 +2,8 @@
 
 ## Setup
 
-Development needs Node 22.12 or later and pnpm 10 or later. The published
-package itself runs on Node 20 or later; the stricter development floor
-comes from the build and test tooling.
+Node 22.12 or later and pnpm 10 or later, for developing the package and
+for running it.
 
 ```bash
 git clone https://github.com/josemanosalvas/sanity-jsonschema-forms.git

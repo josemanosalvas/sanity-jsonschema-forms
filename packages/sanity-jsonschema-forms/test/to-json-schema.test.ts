@@ -103,6 +103,7 @@ describe('toJsonSchema: messy content', () => {
       'unlabeled',
       'badRules',
       'badDefault',
+      'empty',
       'dupChoices',
       'radioPh',
       'groupDefault',
@@ -122,10 +123,15 @@ describe('toJsonSchema: messy content', () => {
         ['fields[7]', 'duplicate-field-name', 'error'],
         ['fields[8]', 'missing-label', 'info'],
         ['fields[11]', 'missing-choices', 'error'],
-        ['fields[13]', 'ignored-placeholder', 'info'],
-        ['fields[14]', 'ignored-default-value', 'info'],
+        ['fields[14]', 'ignored-placeholder', 'info'],
+        ['fields[15]', 'ignored-default-value', 'info'],
       ]),
     )
+  })
+
+  test('a dropped field does not reserve its name', () => {
+    expect(schema.properties?.empty).toStrictEqual({title: 'Empty again', type: 'string'})
+    expect(codes.filter(([path]) => path === 'fields[12]')).toStrictEqual([])
   })
 
   test('normalises choices into oneOf', () => {
@@ -141,7 +147,7 @@ describe('toJsonSchema: messy content', () => {
 
   test('a lone required checkbox is const true; group rules do not apply to it', () => {
     expect(schema.properties?.boolRules).toStrictEqual({const: true, title: 'Bool', type: 'boolean'})
-    expect(diagnostics.filter((d) => d.path === 'fields[15]').map((d) => d.code)).toStrictEqual([
+    expect(diagnostics.filter((d) => d.path === 'fields[16]').map((d) => d.code)).toStrictEqual([
       'invalid-default-value',
       'inapplicable-validation-rule',
     ])

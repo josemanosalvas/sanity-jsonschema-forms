@@ -119,11 +119,18 @@ describe('SurveyJS presentation adapter', () => {
       'unlabeled',
       'badRules',
       'badDefault',
+      'empty',
       'dupChoices',
       'radioPh',
       'groupDefault',
       'boolRules',
     ])
+    expect(messy.elements.find((q) => q.name === 'empty')).toStrictEqual({
+      name: 'empty',
+      placeholder: 'Write instead',
+      title: 'Empty again',
+      type: 'comment',
+    })
     expect(messy.elements.at(-1)).toMatchObject({
       isRequired: true,
       type: 'boolean',

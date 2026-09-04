@@ -1,9 +1,8 @@
 import type {JSONSchema7} from 'json-schema'
 
 /**
- * The form document as `@sanity/form-toolkit` stores it, limited to what this
- * package reads. Structurally identical to form-toolkit's `FormDataProps`
- * (checked in `test/types.test.ts`), so consumers need not install it.
+ * The form document as `@sanity/form-toolkit` stores it, limited to the properties this package reads.
+ * `test/types.test.ts` checks that form-toolkit's `FormDataProps` is assignable to it, so consumers need not install form-toolkit.
  */
 export interface FormToolkitForm {
   title: string
