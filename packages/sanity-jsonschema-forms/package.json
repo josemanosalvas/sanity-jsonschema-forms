@@ -3,80 +3,69 @@
   "version": "0.1.0",
   "description": "Compile @sanity/form-toolkit forms to JSON Schema, with adapters for RJSF, JSON Forms and SurveyJS.",
   "keywords": [
-    "sanity",
     "form-toolkit",
-    "json-schema",
     "forms",
-    "rjsf",
-    "react-jsonschema-form",
+    "json-schema",
     "jsonforms",
+    "react-jsonschema-form",
+    "rjsf",
+    "sanity",
     "surveyjs"
   ],
-  "license": "MIT",
-  "author": "Jos\u00e9 Manosalvas",
   "homepage": "https://github.com/josemanosalvas/sanity-jsonschema-forms#readme",
+  "bugs": {
+    "url": "https://github.com/josemanosalvas/sanity-jsonschema-forms/issues"
+  },
+  "license": "MIT",
+  "author": "José Manosalvas",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/josemanosalvas/sanity-jsonschema-forms.git",
     "directory": "packages/sanity-jsonschema-forms"
   },
-  "bugs": {
-    "url": "https://github.com/josemanosalvas/sanity-jsonschema-forms/issues"
-  },
-  "type": "module",
-  "sideEffects": false,
   "files": [
     "dist"
   ],
+  "type": "module",
+  "sideEffects": false,
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./rjsf": {
-      "types": "./dist/rjsf.d.ts",
-      "default": "./dist/rjsf.js"
-    },
-    "./jsonforms": {
-      "types": "./dist/jsonforms.d.ts",
-      "default": "./dist/jsonforms.js"
-    },
-    "./surveyjs": {
-      "types": "./dist/surveyjs.d.ts",
-      "default": "./dist/surveyjs.js"
-    },
+    ".": "./src/index.ts",
+    "./rjsf": "./src/rjsf.ts",
+    "./jsonforms": "./src/jsonforms.ts",
+    "./surveyjs": "./src/surveyjs.ts",
     "./package.json": "./package.json"
   },
   "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./rjsf": {
+        "types": "./dist/rjsf.d.ts",
+        "default": "./dist/rjsf.js"
+      },
+      "./jsonforms": {
+        "types": "./dist/jsonforms.d.ts",
+        "default": "./dist/jsonforms.js"
+      },
+      "./surveyjs": {
+        "types": "./dist/surveyjs.d.ts",
+        "default": "./dist/surveyjs.js"
+      },
+      "./package.json": "./package.json"
+    },
     "access": "public"
-  },
-  "engines": {
-    "node": ">=20"
   },
   "scripts": {
     "build": "tsdown",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "publint": "publint --pack pnpm --strict"
   },
   "dependencies": {
     "@types/json-schema": "^7.0.15"
-  },
-  "peerDependencies": {
-    "@jsonforms/core": "3.8.0",
-    "@rjsf/utils": "^6.8.0",
-    "@sanity/form-toolkit": "^3.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@jsonforms/core": {
-      "optional": true
-    },
-    "@rjsf/utils": {
-      "optional": true
-    },
-    "@sanity/form-toolkit": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "@jsonforms/core": "3.8.0",
@@ -87,6 +76,7 @@
     "@rjsf/utils": "^6.8.0",
     "@rjsf/validator-ajv8": "^6.8.0",
     "@sanity/form-toolkit": "^3.0.17",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
@@ -102,5 +92,20 @@
     "tsdown": "^0.23.0",
     "typescript": "^5.9.3",
     "vitest": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@jsonforms/core": "3.8.0",
+    "@rjsf/utils": "^6.8.0"
+  },
+  "peerDependenciesMeta": {
+    "@jsonforms/core": {
+      "optional": true
+    },
+    "@rjsf/utils": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

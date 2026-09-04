@@ -1,14 +1,43 @@
-import type {FormDataProps} from '@sanity/form-toolkit/form-renderer'
 import type {JSONSchema7} from 'json-schema'
 
 /**
- * The form document as `@sanity/form-toolkit` types it. Derived from the one
- * type form-toolkit exports; this package adds no authoring type of its own.
+ * The form document as `@sanity/form-toolkit` stores it, limited to what this
+ * package reads. Structurally identical to form-toolkit's `FormDataProps`
+ * (checked in `test/types.test.ts`), so consumers need not install it.
  */
-export type FormToolkitForm = FormDataProps
-export type FormToolkitField = NonNullable<FormDataProps['fields']>[number]
-export type FormToolkitValidationRule = NonNullable<FormToolkitField['validation']>[number]
-export type FormToolkitChoice = NonNullable<FormToolkitField['choices']>[number]
+export interface FormToolkitForm {
+  title: string
+  fields?: FormToolkitField[]
+  submitButton?: {
+    text: string
+    position: 'left' | 'center' | 'right'
+  }
+}
+
+export interface FormToolkitField {
+  type: string
+  label?: string
+  name: string
+  required?: boolean
+  validation?: FormToolkitValidationRule[]
+  options?: {
+    placeholder?: string
+    defaultValue?: string
+  }
+  choices?: FormToolkitChoice[]
+  _key?: string
+}
+
+export interface FormToolkitValidationRule {
+  type: string
+  value: string
+  message: string
+}
+
+export interface FormToolkitChoice {
+  label: string
+  value: string
+}
 
 export type DiagnosticSeverity = 'error' | 'warning' | 'info'
 
@@ -46,16 +75,11 @@ export interface Diagnostic {
  */
 export type MessageKeyword = 'minLength' | 'maxLength' | 'pattern' | 'minimum' | 'maximum' | 'minItems' | 'maxItems' | 'const'
 
-/**
- * Editor-written error messages, keyed by field name and then by the AJV
- * keyword whose failure they describe. Standard JSON Schema has no message
- * keyword, so this travels beside the schema; each renderer adapter delivers
- * it through that renderer's own hook.
- */
+/** Editor-written error messages by field name, then by the AJV keyword whose failure they describe. */
 export type MessageMap = Record<string, Partial<Record<MessageKeyword, string>>>
 
 export interface ToJsonSchemaResult {
-  /** Draft-07 JSON Schema. No `ui:*`, no `errorMessage`, no `$id`. */
+  /** JSON Schema Draft 7, declared by `$schema`. No `ui:*`, no `errorMessage`, no `$id`. */
   schema: JSONSchema7
   messages: MessageMap
   /** Everything that did not map one-to-one, in source order. */

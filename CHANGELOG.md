@@ -8,7 +8,9 @@ All notable changes to `sanity-jsonschema-forms`. Semantic versioning; until
 First release.
 
 - `toJsonSchema(form)`: compiles a `@sanity/form-toolkit` form document to
-  draft-07 JSON Schema with a message map and diagnostics. Field types:
+  JSON Schema Draft 7, declared by `$schema`, with a message map and
+  diagnostics. The form document is typed structurally; `@sanity/form-toolkit`
+  is not a peer dependency. Field types:
   `text`, `textarea`, `email`, `number`, `checkbox` (boolean or group),
   `select`, `radio`. Rules: `minLength`, `maxLength`, `pattern`, `min`,
   `max`, `minSelectedCount`, `maxSelectedCount`.

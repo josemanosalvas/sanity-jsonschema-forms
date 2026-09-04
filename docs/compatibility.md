@@ -4,12 +4,13 @@
 
 | Library | Version | Role |
 | --- | --- | --- |
-| `@sanity/form-toolkit` | 3.0.17 | authoring; type-only peer |
-| `ajv` + `ajv-formats` | 8.20 / 2.1 | draft-07 validation in tests and on the server |
+| `@sanity/form-toolkit` | 3.0.17 | authoring; development-only, its `FormDataProps` is checked against this package's structural input type |
+| `ajv` + `ajv-formats` | 8.20 / 2.1 | Draft 7 validation in tests and on the server |
 | `@rjsf/core`, `@rjsf/utils`, `@rjsf/validator-ajv8`, `@rjsf/shadcn` | 6.8.0 | `./rjsf` |
 | `@jsonforms/core`, `@jsonforms/react`, `@jsonforms/vanilla-renderers` | 3.8.0 | `./jsonforms` |
 | `survey-core`, `survey-react-ui` | 3.0.3 | `./surveyjs` |
-| Node | 20 or later | |
+| Node | 20 or later | running the package |
+| Node | 22.12 or later | developing it (build and test tooling) |
 
 ## Field types
 

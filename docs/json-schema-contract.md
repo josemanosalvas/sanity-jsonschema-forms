@@ -9,9 +9,28 @@ Verified against `@sanity/form-toolkit` 3.0.17, plain `ajv` 8.20 with
 const {schema, messages, diagnostics} = toJsonSchema(form)
 ```
 
-- `schema` is draft-07 JSON Schema typed as `JSONSchema7` from `@types/json-schema`. It validates on its own with any draft-07 validator. It contains no `ui:*` key, no `errorMessage`, no `$id`.
+- `schema` is [JSON Schema Draft 7](https://json-schema.org/draft-07), typed as `JSONSchema7` from `@types/json-schema`. It declares its dialect (`$schema: "http://json-schema.org/draft-07/schema#"`, exported as `JSON_SCHEMA_DRAFT_7`) and validates on its own with any validator that supports that draft. It contains no `ui:*` key, no `errorMessage`, no `$id`.
 - `messages` is `Record<field, Record<keyword, text>>`: the error messages editors wrote, keyed by the AJV keyword whose failure they describe.
 - `diagnostics` lists everything that did not map one-to-one, in source order; codes are stable and listed in [compatibility.md](compatibility.md).
+
+## Why Draft 7
+
+JSON Schema's current release is [2020-12](https://json-schema.org/draft/2020-12),
+two releases after Draft 7. The schema targets Draft 7 because it is what
+every consumer validates with unless told otherwise: AJV's default
+`Ajv` class, `@rjsf/validator-ajv8` and JSON Forms' built-in AJV all speak
+Draft 7, and `@types/json-schema` has a `JSONSchema7` type and none for a
+later draft. Targeting 2020-12 would make every adapter configure a
+different validator for no gain: the keywords this schema uses (`type`,
+`properties`, `required`, `oneOf`, `const`, `title`, `default`, `format`,
+`minLength`, `maxLength`, `pattern`, `minimum`, `maximum`, `items`,
+`uniqueItems`, `minItems`, `maxItems`) mean the same in both. A consumer
+that wants a later dialect can replace `$schema`; nothing else changes.
+
+The `$schema` is declared so the document is self-describing rather than
+relying on the consumer being configured for the right draft. `$id` is
+not, because AJV caches compiled schemas by `$id` and recompiling the same
+form would collide.
 
 ## Field types
 
@@ -93,12 +112,12 @@ widgets can produce, not an arbitrary payload (see [adapters/surveyjs.md](adapte
 
 | what | where it goes | why |
 | --- | --- | --- |
-| placeholder | adapter (`ui:placeholder` / `options.placeholder`) | no draft-07 keyword; `examples` means something else |
+| placeholder | adapter (`ui:placeholder` / `options.placeholder`) | no JSON Schema keyword; `examples` means something else |
 | which input (`textarea` vs `text`, `radio` vs `select`) | adapter (`ui:widget` / `options.multi`, `options.format`) | presentation |
 | field order | `properties` insertion order; the RJSF adapter also writes `ui:order` | JSON Schema does not define property order, but every implementation preserves it |
 | submit button text | adapter (`ui:submitButtonOptions` / returned `submitText`) | not part of the data |
-| submit button position | nowhere (`info lossy-submit-position`) | neither renderer has it |
-| `$id` | nowhere | AJV caches by `$id`; recompiling the same form would collide |
+| submit button position | nowhere (`info lossy-submit-position`) | JSON Schema has no such concept; the renderer's theme decides |
+| `$id` | nowhere | AJV caches by `$id`; recompiling the same form would collide (`$schema` is declared, see above) |
 | descriptions, conditions, pages | nowhere | form-toolkit cannot author them |
 
 ## What each adapter needs beyond the schema

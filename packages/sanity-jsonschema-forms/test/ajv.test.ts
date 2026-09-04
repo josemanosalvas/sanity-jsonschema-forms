@@ -1,15 +1,13 @@
-import Ajv, {type ErrorObject, type SchemaObject} from 'ajv'
+import Ajv from 'ajv'
+import type {ErrorObject, SchemaObject} from 'ajv'
 import addFormats from 'ajv-formats'
 import {contactForm, contactSubmissions} from 'sanity-form-fixtures'
 import {describe, expect, test} from 'vitest'
 
-import {toJsonSchema} from '../src'
 import type {MessageKeyword} from '../src'
+import {toJsonSchema} from '../src'
 
-/**
- * The compiled schema through plain AJV (draft-07 default) with ajv-formats,
- * no renderer involved: the contract must validate on its own.
- */
+/** Plain AJV, no renderer: the contract must validate on its own. */
 describe('compiled schema validates with plain AJV', () => {
   const {schema, messages} = toJsonSchema(contactForm)
   const ajv = new Ajv({allErrors: true})
@@ -23,7 +21,7 @@ describe('compiled schema validates with plain AJV', () => {
   }
   const run = (data: unknown) => {
     const ok = validate(data)
-    return {ok, errors: (validate.errors ?? []).map(describeError)}
+    return {errors: (validate.errors ?? []).map(describeError), ok}
   }
 
   test.each(Object.entries(contactSubmissions))('%s reaches the expected verdict', (_, submission) => {
@@ -31,17 +29,17 @@ describe('compiled schema validates with plain AJV', () => {
   })
 
   test('an empty submission names every required property', () => {
-    expect(run({}).errors).toEqual([
-      'fullName required: must have required property \'fullName\'',
-      'email required: must have required property \'email\'',
-      'topic required: must have required property \'topic\'',
-      'message required: must have required property \'message\'',
-      'consent required: must have required property \'consent\'',
+    expect(run({}).errors).toStrictEqual([
+      "fullName required: must have required property 'fullName'",
+      "email required: must have required property 'email'",
+      "topic required: must have required property 'topic'",
+      "message required: must have required property 'message'",
+      "consent required: must have required property 'consent'",
     ])
   })
 
   test('every authored message can be looked up by (field, keyword)', () => {
-    expect(run(contactSubmissions.everyRuleFails.data).errors).toEqual([
+    expect(run(contactSubmissions.everyRuleFails.data).errors).toStrictEqual([
       'fullName pattern: Names cannot contain digits.',
       'email format: must match format "email"',
       'partySize minimum: At least one person.',
@@ -60,7 +58,7 @@ describe('compiled schema validates with plain AJV', () => {
   })
 
   test('minLength and maximum carry their messages', () => {
-    expect(run(contactSubmissions.minLengthAndMaximum.data).errors).toEqual([
+    expect(run(contactSubmissions.minLengthAndMaximum.data).errors).toStrictEqual([
       'fullName minLength: Please enter at least two characters.',
       'partySize maximum: We can seat 12 at most.',
     ])

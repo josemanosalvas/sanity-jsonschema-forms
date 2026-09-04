@@ -5,11 +5,8 @@ import {isSupportedType} from '../to-json-schema'
 import type {FormToolkitForm} from '../types'
 
 /**
- * The presentation facts a renderer adapter needs that JSON Schema cannot
- * carry: which input the editor chose (a textarea and a text field share one
- * schema) and its placeholder. Deliberately nothing else, and deliberately
- * not exported from any package entry: this is the whole "intermediate model"
- * the adapters share.
+ * What adapters need that JSON Schema cannot carry: which input the editor
+ * chose (textarea and text share one schema) and its placeholder.
  */
 export interface PresentationField {
   name: string
@@ -18,16 +15,14 @@ export interface PresentationField {
 }
 
 const trimmed = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') return undefined
+  if (typeof value !== 'string') {
+    return undefined
+  }
   const text = value.trim()
   return text.length === 0 ? undefined : text
 }
 
-/**
- * Walks the source fields and keeps the ones the compiler kept, in schema
- * order. The compiler already dropped duplicates, bad names and unsupported
- * types; membership in `schema.properties` is the only filter needed here.
- */
+/** The source fields the compiler kept, in schema order. */
 export const presentationFields = (form: FormToolkitForm, schema: JSONSchema7): PresentationField[] => {
   const properties = schema.properties ?? {}
   const seen = new Set<string>()
@@ -35,11 +30,15 @@ export const presentationFields = (form: FormToolkitForm, schema: JSONSchema7): 
   for (const field of form.fields ?? []) {
     const name = trimmed(field?.name)
     const type = trimmed(field?.type)
-    if (name === undefined || type === undefined || !isSupportedType(type)) continue
-    if (!Object.hasOwn(properties, name) || seen.has(name)) continue
+    if (name === undefined || type === undefined || !isSupportedType(type)) {
+      continue
+    }
+    if (!Object.hasOwn(properties, name) || seen.has(name)) {
+      continue
+    }
     seen.add(name)
     const placeholder = trimmed(field.options?.placeholder)
-    out.push(placeholder === undefined ? {name, type} : {name, type, placeholder})
+    out.push(placeholder === undefined ? {name, type} : {name, placeholder, type})
   }
   return out
 }

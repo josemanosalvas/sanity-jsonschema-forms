@@ -37,7 +37,7 @@ Peer: `@jsonforms/core` 3.8.0 (runtime: `createDefaultValue`). Tested with
   `<field>.error.<keyword>`. The translator must return the default for any
   other key or labels blank out; `translate` does.
 - **The vanilla renderer set has no control for an array of enums**, so a
-  checkbox group renders as "unknown". `examples/compare/src/CheckboxGroupControl.tsx`
+  checkbox group renders as "unknown". `examples/compare/src/checkbox-group-control.tsx`
   is a 40-line renderer with a tester you can register through `renderers`.
 - **Required errors** sit on the object and use JSON Forms' wording ("is a
   required property"); form-toolkit has no message for "required".

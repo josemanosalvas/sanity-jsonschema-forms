@@ -4,11 +4,7 @@
     {
       "name": "compare-example",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "--filter",
-        "compare-example",
-        "dev"
-      ],
+      "runtimeArgs": ["--filter", "compare-example", "dev"],
       "port": 5174
     }
   ]

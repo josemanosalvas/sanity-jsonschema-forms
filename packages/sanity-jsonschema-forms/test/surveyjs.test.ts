@@ -11,7 +11,7 @@ const verdictOf = (surveyJson: object, data: Record<string, unknown>) => {
   model.data = data
   const ok = model.validate(true, false)
   const errors = model.getAllQuestions().flatMap((q) => q.errors.map((e) => `${q.name}: ${e.getText()}`))
-  return {ok, errors}
+  return {errors, ok}
 }
 
 describe('SurveyJS presentation adapter', () => {
@@ -19,95 +19,122 @@ describe('SurveyJS presentation adapter', () => {
   const {surveyJson, fromSchema, fromForm} = toSurveyJsProps(contactForm, compiled)
 
   test('builds the survey JSON from the schema, reaching for the form only for presentation', () => {
-    expect(surveyJson).toEqual({
-      title: 'Contact us',
-      showQuestionNumbers: 'off',
+    expect(surveyJson).toStrictEqual({
       completeText: 'Send message',
       elements: [
         {
-          type: 'text',
-          name: 'fullName',
-          title: 'Full name',
-          isRequired: true,
           inputType: 'text',
+          isRequired: true,
+          name: 'fullName',
           placeholder: 'Ada Lovelace',
+          title: 'Full name',
+          type: 'text',
           validators: [
-            {type: 'text', minLength: 2, text: 'Please enter at least two characters.'},
-            {type: 'text', maxLength: 80, text: 'Names are limited to 80 characters.'},
-            {type: 'regex', regex: '^[^0-9]*$', text: 'Names cannot contain digits.'},
+            {minLength: 2, text: 'Please enter at least two characters.', type: 'text'},
+            {maxLength: 80, text: 'Names are limited to 80 characters.', type: 'text'},
+            {regex: '^[^0-9]*$', text: 'Names cannot contain digits.', type: 'regex'},
           ],
         },
-        {type: 'text', name: 'email', title: 'Email', isRequired: true, inputType: 'email', placeholder: 'you@example.com', validators: [{type: 'email'}]},
         {
+          inputType: 'email',
+          isRequired: true,
+          name: 'email',
+          placeholder: 'you@example.com',
+          title: 'Email',
           type: 'text',
-          name: 'partySize',
-          title: 'Party size',
+          validators: [{type: 'email'}],
+        },
+        {
           defaultValue: 2,
           inputType: 'number',
+          name: 'partySize',
           placeholder: 'How many?',
+          title: 'Party size',
+          type: 'text',
           validators: [
-            {type: 'numeric', minValue: 1, text: 'At least one person.'},
-            {type: 'numeric', maxValue: 12, text: 'We can seat 12 at most.'},
+            {minValue: 1, text: 'At least one person.', type: 'numeric'},
+            {maxValue: 12, text: 'We can seat 12 at most.', type: 'numeric'},
           ],
         },
         {
-          type: 'dropdown',
+          choices: [
+            {text: 'Sales', value: 'sales'},
+            {text: 'Support', value: 'support'},
+            {text: 'Press', value: 'press'},
+          ],
+          isRequired: true,
           name: 'topic',
           title: 'Topic',
-          isRequired: true,
-          choices: [
-            {value: 'sales', text: 'Sales'},
-            {value: 'support', text: 'Support'},
-            {value: 'press', text: 'Press'},
-          ],
+          type: 'dropdown',
         },
         {
-          type: 'radiogroup',
+          choices: [
+            {text: 'Email', value: 'email'},
+            {text: 'Phone', value: 'phone'},
+          ],
+          defaultValue: 'email',
           name: 'contactMethod',
           title: 'Preferred contact method',
-          defaultValue: 'email',
-          choices: [
-            {value: 'email', text: 'Email'},
-            {value: 'phone', text: 'Phone'},
-          ],
+          type: 'radiogroup',
         },
         {
-          type: 'checkbox',
+          choices: [
+            {text: 'Product updates', value: 'updates'},
+            {text: 'Events', value: 'events'},
+            {text: 'Newsletter', value: 'newsletter'},
+          ],
           name: 'interests',
           title: 'Interests',
-          choices: [
-            {value: 'updates', text: 'Product updates'},
-            {value: 'events', text: 'Events'},
-            {value: 'newsletter', text: 'Newsletter'},
-          ],
-          validators: [{type: 'answercount', maxCount: 2, text: 'Pick two at most.'}],
+          type: 'checkbox',
+          validators: [{maxCount: 2, text: 'Pick two at most.', type: 'answercount'}],
         },
-        {type: 'comment', name: 'message', title: 'Message', isRequired: true, placeholder: 'How can we help?', validators: [{type: 'text', maxLength: 500, text: 'Keep it under 500 characters.'}]},
         {
-          type: 'boolean',
-          name: 'consent',
-          title: 'I agree to be contacted',
           isRequired: true,
+          name: 'message',
+          placeholder: 'How can we help?',
+          title: 'Message',
+          type: 'comment',
+          validators: [{maxLength: 500, text: 'Keep it under 500 characters.', type: 'text'}],
+        },
+        {
+          isRequired: true,
+          name: 'consent',
           renderAs: 'checkbox',
-          validators: [{type: 'expression', expression: '{consent} = true', text: 'This box must be checked.'}],
+          title: 'I agree to be contacted',
+          type: 'boolean',
+          validators: [{expression: '{consent} = true', text: 'This box must be checked.', type: 'expression'}],
         },
       ],
+      showQuestionNumbers: 'off',
+      title: 'Contact us',
     })
-    expect(fromForm.sort()).toEqual(['completeText', 'placeholder', 'type'])
+    expect(fromForm.toSorted()).toStrictEqual(['completeText', 'placeholder', 'type'])
     expect(fromSchema).toContain('validators')
   })
 
   test('the messy form compiles to a question per surviving property', () => {
     const {surveyJson: messy} = toSurveyJsProps(messyForm, toJsonSchema(messyForm))
-    expect(messy.elements.map((q) => q.name)).toEqual(['dup', 'unlabeled', 'badRules', 'badDefault', 'dupChoices', 'radioPh', 'groupDefault', 'boolRules'])
-    expect(messy.elements.at(-1)).toMatchObject({type: 'boolean', isRequired: true, validators: [{type: 'expression', expression: '{boolRules} = true'}]})
+    expect(messy.elements.map((q) => q.name)).toStrictEqual([
+      'dup',
+      'unlabeled',
+      'badRules',
+      'badDefault',
+      'dupChoices',
+      'radioPh',
+      'groupDefault',
+      'boolRules',
+    ])
+    expect(messy.elements.at(-1)).toMatchObject({
+      isRequired: true,
+      type: 'boolean',
+      validators: [{expression: '{boolRules} = true', type: 'expression'}],
+    })
   })
 
   /**
-   * Accept/reject parity with AJV. Two submissions diverge by design:
-   * SurveyJS validates what its own UI can produce, not an
-   * arbitrary payload. A duplicate in a checkbox answer and an off-list
-   * dropdown value cannot come from its widgets, so it does not reject them.
+   * Verdict parity with AJV, except where SurveyJS validates only what its
+   * widgets can produce: a duplicate checkbox value and an off-list dropdown
+   * value pass.
    */
   const surveyJsDivergence: Partial<Record<keyof typeof contactSubmissions, 'accept'>> = {
     duplicateInterests: 'accept',
@@ -120,7 +147,7 @@ describe('SurveyJS presentation adapter', () => {
 
   test('every authored message surfaces through the SurveyJS validators', () => {
     const {errors} = verdictOf(surveyJson, contactSubmissions.everyRuleFails.data)
-    expect(errors).toEqual(
+    expect(errors).toStrictEqual(
       expect.arrayContaining([
         'fullName: Names cannot contain digits.',
         'partySize: At least one person.',
@@ -134,14 +161,14 @@ describe('SurveyJS presentation adapter', () => {
 
   test('an off-list dropdown value is where SurveyJS and AJV part ways', () => {
     const {ok, errors} = verdictOf(surveyJson, {...contactSubmissions.valid.data, topic: 'other'})
-    // Documented divergence: SurveyJS keeps or clears the value; it does not error on it.
-    expect(errors.filter((e) => e.startsWith('topic:'))).toEqual([])
-    expect(typeof ok).toBe('boolean')
+    // SurveyJS keeps or clears the value rather than erroring; see docs/adapters/surveyjs.md.
+    expect(errors.filter((e) => e.startsWith('topic:'))).toStrictEqual([])
+    expect(ok).toBeTypeOf('boolean')
   })
 
   test('an empty submission fails on required questions', () => {
     const {ok, errors} = verdictOf(surveyJson, {})
     expect(ok).toBe(false)
-    expect(errors.map((e) => e.split(':')[0])).toEqual(['fullName', 'email', 'topic', 'message', 'consent'])
+    expect(errors.map((e) => e.split(':')[0])).toStrictEqual(['fullName', 'email', 'topic', 'message', 'consent'])
   })
 })
