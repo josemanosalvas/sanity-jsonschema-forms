@@ -53,6 +53,14 @@ installed. `diagnostics` lists every field, rule or value the compiler could
 not carry, with its position in the source document; the compiler never
 throws on content.
 
+Fifteen of form-toolkit's sixteen built-in field types compile. Where the
+Studio can author a rule that JSON Schema Draft 7 cannot carry without a
+validator extension (a date bound, a range step that does not count from
+zero), the field compiles and the rule is reported as lossy; `file` has no
+portable JSON representation and is reported as unsupported.
+[docs/compatibility.md](docs/compatibility.md) gives each type its status
+and the reasoning.
+
 Then one of:
 
 ```tsx
@@ -100,8 +108,9 @@ const isValidSubmission = (submission: unknown) => ajv.validate(schema, submissi
   there is no intermediate form model.
 - [docs/json-schema-contract.md](docs/json-schema-contract.md): exactly what
   the schema and the message map contain, and why Draft 7.
-- [docs/compatibility.md](docs/compatibility.md): versions tested, supported
-  and planned field types, diagnostic codes.
+- [docs/compatibility.md](docs/compatibility.md): versions tested, every
+  field type's status and why, per-renderer control support, diagnostic
+  codes.
 - [docs/adapters/](docs/adapters): per-library usage and the quirks each
   adapter handles.
 
@@ -116,7 +125,7 @@ docs/
 
 ```bash
 pnpm install
-pnpm test      # compiler, plain AJV, RJSF, JSON Forms and SurveyJS renders
+pnpm test      # compiler, plain AJV, RJSF, JSON Forms and SurveyJS renders, validator parity
 pnpm verify    # everything CI runs: lint, typecheck, test, build, example, publint
 pnpm dev       # examples/compare on http://localhost:5174
 ```

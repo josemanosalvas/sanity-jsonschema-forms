@@ -25,6 +25,11 @@ import {toSurveyJsProps} from 'sanity-jsonschema-forms/surveyjs'
 - `messages` carries the error messages editors wrote, keyed by field and AJV keyword; each adapter delivers them its own way.
 - `diagnostics` lists everything the compiler could not carry. It never throws on content.
 
+Fifteen of form-toolkit's sixteen built-in field types compile; `file` has
+no portable JSON representation. A rule Draft 7 cannot carry (a date bound,
+a range step that does not count from zero) is reported, never encoded as
+a validator extension.
+
 Using the root entry needs no renderer dependencies; the adapters' peers are
 optional. The form document is typed structurally, so `@sanity/form-toolkit`
 need not be installed where the form is rendered. `./rjsf` needs

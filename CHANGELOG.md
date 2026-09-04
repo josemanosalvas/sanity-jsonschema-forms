@@ -3,6 +3,48 @@
 All notable changes to `sanity-jsonschema-forms`. Semantic versioning; until
 `1.0`, breaking changes bump the minor version.
 
+## 0.2.0 (2026-09-04)
+
+Every built-in `@sanity/form-toolkit` field type that has a portable JSON
+Schema representation now compiles: fifteen of sixteen. Each has a
+researched status in `docs/compatibility.md`: supported, supported with a
+lossy rule, or unsupported. The canonical schema stays JSON Schema Draft 7
+with no validator extension.
+
+- Added: `url` (`format: uri`), `tel` (`string`), `hidden` (`string` with
+  `default`), `color` (pattern for `#rrggbb`), `date` (`format: date`),
+  `datetime-local` and `time` (patterns for the native local value, no
+  timezone; AJV's RFC 3339 formats would reject every value those inputs
+  produce), `range` (`number` with `minimum`/`maximum`; `step` becomes
+  `multipleOf` only when the step is a whole number and the HTML step base
+  is a multiple of it).
+- Added: diagnostic `lossy-validation-rule` for `minDate`/`maxDate` (no
+  Draft 7 keyword; `formatMinimum` is an AJV extension) and for a `step`
+  that `multipleOf` cannot reproduce; `missing-default-value` for a
+  required `hidden` field with no default. Existing codes are unchanged.
+- Added: `TIME_PATTERN`, `DATETIME_LOCAL_PATTERN`, `COLOR_PATTERN` exports;
+  `multipleOf` in `MessageKeyword`.
+- Adapters: RJSF names a widget or native input type per field and keeps
+  the native `datetime-local`/`time` values untouched; JSON Forms omits
+  the control for a hidden field and seeds its value through
+  `initialData`, asks for the time and slider cells; SurveyJS maps input
+  types, keeps hidden values through completion
+  (`clearInvisibleValues: 'none'`) and checks `multipleOf` with an
+  expression validator. Per-renderer control support is tabled in
+  `docs/compatibility.md`.
+- `file` stays unsupported, now by decision rather than omission: no
+  representation of a file gives the same submission to all three
+  consumers. The reasoning is in `docs/compatibility.md`.
+- Changed: a `minDate`/`maxDate`/`step`/`maxSize`/`fileType` rule on a
+  field type that does not offer it is now `inapplicable-validation-rule`
+  (was `unsupported-validation-rule`, which is now reserved for rule types
+  form-toolkit does not define). `SupportedFieldType` widened; a
+  `PresentationField` carries a placeholder only for types with a text
+  input.
+- Tests: `test/parity.test.ts` runs every fixture submission through plain
+  AJV, `@rjsf/validator-ajv8`, JSON Forms' AJV and SurveyJS and pins the
+  verdicts, listing where SurveyJS diverges.
+
 ## 0.1.1 (2026-09-04)
 
 - Fix: the renderer adapters (RJSF, JSON Forms, SurveyJS) took presentation

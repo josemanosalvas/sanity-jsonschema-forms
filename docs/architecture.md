@@ -26,15 +26,16 @@ flowchart TB
 | **Compiler output** | `schema`, `messages`, `diagnostics` | Editor-written error messages have no JSON Schema keyword, so they travel beside the schema keyed by field and AJV keyword. Everything that could not map one-to-one is a diagnostic; the compiler never throws on content. |
 | **Renderer and runtime concerns** | subpath adapters (`./rjsf`, `./jsonforms`, `./surveyjs`) | Each adds only what its library needs to present the schema: widget choice, placeholder, submit label, message delivery, and the library's own quirks. The schema passes through unchanged. Renderer dependencies are optional peers; the root entry has none. |
 | **Submission validation** | AJV against `schema`, server-side, whatever rendered the form | Renderers validate what their widgets can produce, not arbitrary payloads. SurveyJS, for one, accepts duplicate checkbox values and off-list dropdown values that the schema rejects. |
-| **Intermediate `FormDefinition` model** | **deliberately rejected** | Three consumers of very different shape (RJSF, JSON Forms, SurveyJS) consumed the same schema and message map through adapters of 60 to 140 lines plus one 45-line internal helper carrying two presentation facts per field. No behaviour shared by two consumers exists outside JSON Schema. |
+| **Intermediate `FormDefinition` model** | **deliberately rejected** | Three consumers of very different shape (RJSF, JSON Forms, SurveyJS) consumed the same schema and message map through adapters of 60 to 140 lines plus one 45-line internal helper carrying two presentation facts per field. No behaviour shared by two consumers exists outside JSON Schema. Widening to fifteen field types in 0.2 added source types to that helper and no new fact. |
 
 ## What an adapter is allowed to do
 
 - Read `compiled.schema` and `compiled.messages`.
 - Read the original form **only** for what JSON Schema cannot carry and is
-  purely presentational: which input the editor chose where two types share
-  one schema (`textarea`/`text`, `radio`/`select`), the placeholder, the
-  submit label. All three adapters get these through
+  purely presentational: which input the editor chose where types share
+  one schema (`textarea`/`text`, `radio`/`select`, the string types behind
+  a pattern, `range`/`number`, `hidden`), the placeholder, the submit
+  label. All three adapters get these through
   `src/internal/fields.ts`, which is not exported.
 - Return its library's native structures and nothing invented: RJSF
   `uiSchema` and `<Form>` props, JSON Forms `uischema` and `i18n` hooks,
@@ -61,6 +62,7 @@ packages/sanity-jsonschema-forms/  the published package
   src/jsonforms.ts                 ./jsonforms
   src/surveyjs.ts                  ./surveyjs
   src/internal/fields.ts           presentation facts shared by adapters (not exported)
+  test/parity.test.ts              every fixture submission through AJV, RJSF's validator, JSON Forms' AJV and SurveyJS
 packages/fixtures/                 private: form documents and submissions used by tests
 examples/compare/                  one compiled form rendered by all three adapters
 docs/                              this file, the contract, compatibility, per-adapter notes

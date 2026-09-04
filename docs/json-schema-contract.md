@@ -9,7 +9,7 @@ Verified against `@sanity/form-toolkit` 3.0.17, plain `ajv` 8.20 with
 const {schema, messages, diagnostics} = toJsonSchema(form)
 ```
 
-- `schema` is [JSON Schema Draft 7](https://json-schema.org/draft-07), typed as `JSONSchema7` from `@types/json-schema`. It declares its dialect (`$schema: "http://json-schema.org/draft-07/schema#"`, exported as `JSON_SCHEMA_DRAFT_7`) and validates on its own with any validator that supports that draft. It contains no `ui:*` key, no `errorMessage`, no `$id`.
+- `schema` is [JSON Schema Draft 7](https://json-schema.org/draft-07), typed as `JSONSchema7` from `@types/json-schema`. It declares its dialect (`$schema: "http://json-schema.org/draft-07/schema#"`, exported as `JSON_SCHEMA_DRAFT_7`) and validates on its own with any validator that supports that draft. It contains no `ui:*` key, no `errorMessage`, no `$id`, and no validator extension such as `formatMinimum`; a test checks every fixture for these.
 - `messages` is `Record<field, Record<keyword, text>>`: the error messages editors wrote, keyed by the AJV keyword whose failure they describe.
 - `diagnostics` lists everything that did not map one-to-one, in source order; codes are stable and listed in [compatibility.md](compatibility.md).
 
@@ -23,9 +23,10 @@ Draft 7, and `@types/json-schema` has a `JSONSchema7` type and none for a
 later draft. Targeting 2020-12 would make every adapter configure a
 different validator for no gain: the keywords this schema uses (`type`,
 `properties`, `required`, `oneOf`, `const`, `title`, `default`, `format`,
-`minLength`, `maxLength`, `pattern`, `minimum`, `maximum`, `items`,
-`uniqueItems`, `minItems`, `maxItems`) mean the same in both. A consumer
-that wants a later dialect can replace `$schema`; nothing else changes.
+`pattern`, `minLength`, `maxLength`, `minimum`, `maximum`, `multipleOf`,
+`items`, `uniqueItems`, `minItems`, `maxItems`) mean the same in both. A
+consumer that wants a later dialect can replace `$schema`; nothing else
+changes.
 
 The `$schema` is declared so the document is self-describing rather than
 relying on the consumer being configured for the right draft. `$id` is
@@ -39,11 +40,26 @@ form would collide.
 | `text` | `{type: "string"}` | |
 | `textarea` | `{type: "string"}` | indistinguishable from `text` in the schema; the input choice is presentation |
 | `email` | `{type: "string", format: "email"}` | |
+| `url` | `{type: "string", format: "uri"}` | RFC 3986 URI: absolute, scheme required, printable ASCII (non-ASCII must be percent-encoded). A native `url` input is looser on non-ASCII; the schema is the contract |
+| `tel` | `{type: "string"}` | no value contract beyond an authored `pattern`; the input type is presentation |
+| `hidden` | `{type: "string", default}` | the value is the default; see "Required" |
 | `number` | `{type: "number"}` | |
+| `range` | `{type: "number"}` | indistinguishable from `number` in the schema; the slider is presentation |
 | `checkbox` without choices | `{type: "boolean"}`; required adds `const: true` | see "Required" |
 | `checkbox` with choices | `{type: "array", uniqueItems: true, items: {type: "string", oneOf: [...]}}` | |
 | `select`, `radio` | `{type: "string", oneOf: [{const, title}, ...]}` | indistinguishable in the schema; the widget is presentation |
-| nine others | not compiled yet | listed with their planned mappings in [compatibility.md](compatibility.md) |
+| `date` | `{type: "string", format: "date"}` | RFC 3339 `full-date`, the native value exactly |
+| `datetime-local` | `{type: "string", pattern: DATETIME_LOCAL_PATTERN}` | `YYYY-MM-DDTHH:MM`, optional `:SS` and `.sss`, never a timezone; month lengths checked, 29 February accepted in every year |
+| `time` | `{type: "string", pattern: TIME_PATTERN}` | `HH:MM`, optional `:SS` and `.sss`, never a timezone |
+| `color` | `{type: "string", pattern: COLOR_PATTERN}` | `#` and six hexadecimal digits, either case; a default is lowercased as the native input reports it |
+| `file` | not compiled | no portable JSON representation; see [compatibility.md](compatibility.md) |
+
+`TIME_PATTERN`, `DATETIME_LOCAL_PATTERN` and `COLOR_PATTERN` are exported
+from the root entry. The temporal types use a `pattern` because AJV's
+`time` and `date-time` formats are RFC 3339 and demand a timezone that a
+native input never supplies; see [compatibility.md](compatibility.md).
+No custom `format` name is introduced: a `format` a validator does not
+know is either ignored or an error, depending on its configuration.
 
 ## Choices: `oneOf` with `const` and `title`
 
@@ -66,13 +82,29 @@ the value. A choice field with no usable choice is dropped
 
 | field | expressed as | why |
 | --- | --- | --- |
-| text, textarea, email, number, select, radio | `required: [name]` | direct |
+| every type but the two below | `required: [name]` | direct |
 | lone checkbox | `required: [name]` and `const: true` | `required` checks presence; an unticked box is `false`, which is present |
 | checkbox group | `required: [name]` and `minItems: 1` | an empty array is present; an authored `minSelectedCount` of 1 or more takes precedence |
 
 `const: true` is the idiomatic constraint. Some renderers read a `const` as
 a default; the contract keeps the plain form and leaves that concern to the
 adapter of the renderer that needs it.
+
+A required `hidden` field with no default is `required` and nothing else.
+The compiler does not invent a value: it reports
+`warning missing-default-value`, and the host either seeds the value or
+drops `required`. (A native hidden input would submit an empty string and
+skip constraint validation; JSON Schema `required` has no such exemption.)
+
+## Defaults
+
+A stored default enters the schema as `default` when it has the value shape
+the type implies: a number for `number` and `range`, `true`/`false` for a
+lone checkbox, one of the choices for `select`/`radio`, a calendar date
+for `date`, the pattern's form for `datetime-local`, `time` and `color`,
+an absolute ASCII URL for `url`. Anything else is dropped with
+`warning invalid-default-value` so a form never starts invalid. Authored
+rules are not checked against defaults, for any type.
 
 ## Validation rules
 
@@ -82,15 +114,22 @@ fit its keyword is dropped with `warning invalid-validation-rule`.
 | form-toolkit rule | keyword | applies to |
 | --- | --- | --- |
 | `minLength`, `maxLength` | `minLength`, `maxLength` (integer ≥ 0) | text, textarea |
-| `pattern` | `pattern` (must compile with the `u` flag, as AJV compiles it) | text, email |
-| `min`, `max` | `minimum`, `maximum` | number |
+| `pattern` | `pattern` (must compile with the `u` flag, as AJV compiles it) | text, email, url, tel |
+| `min`, `max` | `minimum`, `maximum` | number, range |
+| `step` | `multipleOf` (whole number; the step base must be a multiple of it) | range |
 | `minSelectedCount`, `maxSelectedCount` | `minItems`, `maxItems` | checkbox group |
+| `minDate`, `maxDate` | none | date, datetime-local: checked, then dropped with `warning lossy-validation-rule` |
+
+`step` and the date bounds are the two places Draft 7 cannot follow the
+Studio; [compatibility.md](compatibility.md) has the reasoning and the
+exact conditions.
 
 ## Messages
 
 ```json
 {
   "fullName": {"pattern": "Names cannot contain digits."},
+  "satisfaction": {"multipleOf": "Even numbers only."},
   "consent": {"const": "This box must be checked."}
 }
 ```
@@ -99,6 +138,9 @@ Keys are field names, then AJV keywords. Every entry but one is an
 editor-written rule message. The exception is `const` on a required lone
 checkbox: form-toolkit stores no message for "required", and AJV's own
 ("must be equal to constant") would mislead, so the compiler supplies one.
+A dropped rule's message is dropped with it. The compiler's own patterns
+(`datetime-local`, `time`, `color`) carry no message: the Studio offers no
+rule to write one on.
 
 Delivery is per renderer: RJSF through `transformErrors`, JSON Forms through
 `i18n.translate` answering `<field>.error.<keyword>`, SurveyJS as each
@@ -113,7 +155,8 @@ widgets can produce, not an arbitrary payload (see [adapters/surveyjs.md](adapte
 | what | where it goes | why |
 | --- | --- | --- |
 | placeholder | adapter (`ui:placeholder` / `options.placeholder`) | no JSON Schema keyword; `examples` means something else |
-| which input (`textarea` vs `text`, `radio` vs `select`) | adapter (`ui:widget` / `options.multi`, `options.format`) | presentation |
+| which input (`textarea` vs `text`, `radio` vs `select`, `tel`, `datetime-local`, `time`, `color`, `range`, `hidden`) | adapter (`ui:widget`, `ui:options.inputType` / `options` / `inputType`, `visible`) | presentation; the schema carries the value contract, not the control |
+| `minDate`, `maxDate`, a misaligned `step` | nowhere (`warning lossy-validation-rule`) | no Draft 7 keyword without a validator extension |
 | field order | `properties` insertion order; the RJSF adapter also writes `ui:order` | JSON Schema does not define property order, but every implementation preserves it |
 | submit button text | adapter (`ui:submitButtonOptions` / returned `submitText`) | not part of the data |
 | submit button position | nowhere (`info lossy-submit-position`) | JSON Schema has no such concept; the renderer's theme decides |
@@ -124,6 +167,9 @@ widgets can produce, not an arbitrary payload (see [adapters/surveyjs.md](adapte
 
 All three adapters (RJSF, JSON Forms, SurveyJS) read `form.fields` again through one internal helper,
 `presentationFields(form, schema)`, which returns for every property in the
-schema the source `type` and `placeholder` and nothing else. That helper is
-the entire "intermediate model" shared between renderers; see
-[architecture.md](architecture.md) for why it stays that small.
+schema the source `type` and `placeholder` and nothing else. 0.2 added
+eight source types to that `type` and no new fact: a `string` with a
+pattern is a `tel`, a `time` or a `color` only by its source type, and
+that is all an adapter asks. That helper is the entire "intermediate
+model" shared between renderers; see [architecture.md](architecture.md)
+for why it stays that small.
