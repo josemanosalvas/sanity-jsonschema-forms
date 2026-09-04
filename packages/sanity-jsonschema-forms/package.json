@@ -1,6 +1,6 @@
 {
   "name": "sanity-jsonschema-forms",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Compile @sanity/form-toolkit forms to JSON Schema, with adapters for RJSF, JSON Forms and SurveyJS.",
   "keywords": [
     "form-toolkit",

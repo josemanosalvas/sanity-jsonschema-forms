@@ -3,6 +3,15 @@
 All notable changes to `sanity-jsonschema-forms`. Semantic versioning; until
 `1.0`, breaking changes bump the minor version.
 
+## 0.1.1 (2026-09-04)
+
+- Fix: the renderer adapters (RJSF, JSON Forms, SurveyJS) took presentation
+  from a dropped field when a later valid field reused its name. A `select`
+  with no choices followed by a `radio` of the same name compiled correctly
+  but rendered as a select. The adapters now run the compiler's own
+  acceptance check, so the field that survived is the one that decides
+  radio versus select and the placeholder. No public API change.
+
 ## 0.1.0 (2026-09-04)
 
 First release.

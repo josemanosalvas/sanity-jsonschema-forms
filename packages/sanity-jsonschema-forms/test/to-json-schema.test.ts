@@ -1,4 +1,4 @@
-import {contactForm, messyForm} from 'sanity-form-fixtures'
+import {contactForm, messyForm, namesakeForm} from 'sanity-form-fixtures'
 import {describe, expect, test} from 'vitest'
 
 import {toJsonSchema} from '../src'
@@ -132,6 +132,22 @@ describe('toJsonSchema: messy content', () => {
   test('a dropped field does not reserve its name', () => {
     expect(schema.properties?.empty).toStrictEqual({title: 'Empty again', type: 'string'})
     expect(codes.filter(([path]) => path === 'fields[12]')).toStrictEqual([])
+  })
+
+  test('a dropped choice field does not reserve its name from a later choice field', () => {
+    const namesakes = toJsonSchema(namesakeForm)
+    expect(namesakes.schema.properties).toStrictEqual({
+      radioThenRadio: {oneOf: [{const: 'd', title: 'D'}], title: 'Kept radio', type: 'string'},
+      radioThenSelect: {oneOf: [{const: 'b', title: 'B'}], title: 'Kept select', type: 'string'},
+      selectThenRadio: {oneOf: [{const: 'a', title: 'A'}], title: 'Kept radio', type: 'string'},
+      selectThenSelect: {oneOf: [{const: 'c', title: 'C'}], title: 'Kept select', type: 'string'},
+    })
+    expect(namesakes.diagnostics.map((d) => [d.path, d.code])).toStrictEqual([
+      ['fields[0]', 'missing-choices'],
+      ['fields[2]', 'missing-choices'],
+      ['fields[4]', 'missing-choices'],
+      ['fields[6]', 'missing-choices'],
+    ])
   })
 
   test('normalises choices into oneOf', () => {

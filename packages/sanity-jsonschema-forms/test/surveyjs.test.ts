@@ -1,4 +1,4 @@
-import {contactForm, contactSubmissions, messyForm} from 'sanity-form-fixtures'
+import {contactForm, contactSubmissions, messyForm, namesakeForm} from 'sanity-form-fixtures'
 import {Model} from 'survey-core'
 import {describe, expect, test} from 'vitest'
 
@@ -136,6 +136,17 @@ describe('SurveyJS presentation adapter', () => {
       type: 'boolean',
       validators: [{expression: '{boolRules} = true', type: 'expression'}],
     })
+  })
+
+  test('takes radiogroup/dropdown and placeholder from the kept namesake even when both are choice fields', () => {
+    const {surveyJson: namesakes, fromForm: namesakesFromForm} = toSurveyJsProps(namesakeForm, toJsonSchema(namesakeForm))
+    expect(namesakes.elements).toStrictEqual([
+      {choices: [{text: 'A', value: 'a'}], name: 'selectThenRadio', title: 'Kept radio', type: 'radiogroup'},
+      {choices: [{text: 'B', value: 'b'}], name: 'radioThenSelect', placeholder: 'Pick one', title: 'Kept select', type: 'dropdown'},
+      {choices: [{text: 'C', value: 'c'}], name: 'selectThenSelect', placeholder: 'Pick one', title: 'Kept select', type: 'dropdown'},
+      {choices: [{text: 'D', value: 'd'}], name: 'radioThenRadio', title: 'Kept radio', type: 'radiogroup'},
+    ])
+    expect(namesakesFromForm).toStrictEqual(['type', 'placeholder'])
   })
 
   /**

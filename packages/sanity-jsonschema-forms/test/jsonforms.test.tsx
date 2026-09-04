@@ -4,7 +4,7 @@ import type {ControlElement, ControlProps, JsonSchema, RankedTester, VerticalLay
 import {JsonForms, withJsonFormsControlProps} from '@jsonforms/react'
 import {vanillaCells, vanillaRenderers} from '@jsonforms/vanilla-renderers'
 import {cleanup, fireEvent, render, waitFor} from '@testing-library/react'
-import {contactForm, messyForm} from 'sanity-form-fixtures'
+import {contactForm, messyForm, namesakeForm} from 'sanity-form-fixtures'
 import {afterEach, describe, expect, test} from 'vitest'
 
 import {toJsonSchema} from '../src'
@@ -78,6 +78,16 @@ describe('JSON Forms presentation adapter', () => {
       scope: '#/properties/empty',
       type: 'Control',
     })
+  })
+
+  test('takes radio/select and placeholder from the kept namesake even when both are choice fields', () => {
+    const namesakes = toJsonFormsProps(namesakeForm, toJsonSchema(namesakeForm)).uischema as VerticalLayout
+    expect(namesakes.elements).toStrictEqual([
+      {i18n: 'selectThenRadio', options: {format: 'radio'}, scope: '#/properties/selectThenRadio', type: 'Control'},
+      {i18n: 'radioThenSelect', options: {placeholder: 'Pick one'}, scope: '#/properties/radioThenSelect', type: 'Control'},
+      {i18n: 'selectThenSelect', options: {placeholder: 'Pick one'}, scope: '#/properties/selectThenSelect', type: 'Control'},
+      {i18n: 'radioThenRadio', options: {format: 'radio'}, scope: '#/properties/radioThenRadio', type: 'Control'},
+    ])
   })
 
   test('translate answers error keys and passes everything else through', () => {
