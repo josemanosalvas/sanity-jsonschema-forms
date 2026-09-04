@@ -5,11 +5,8 @@ import {isSupportedType} from '../to-json-schema'
 import type {FormToolkitForm} from '../types'
 
 /**
- * The presentation facts a renderer adapter needs that JSON Schema cannot
- * carry: which input the editor chose (a textarea and a text field share one
- * schema) and its placeholder. Deliberately nothing else, and deliberately
- * not exported from any package entry: this is the whole "intermediate model"
- * the adapters share.
+ * What adapters need that JSON Schema cannot carry: which input the editor
+ * chose (textarea and text share one schema) and its placeholder.
  */
 export interface PresentationField {
   name: string
@@ -25,11 +22,7 @@ const trimmed = (value: unknown): string | undefined => {
   return text.length === 0 ? undefined : text
 }
 
-/**
- * Walks the source fields and keeps the ones the compiler kept, in schema
- * order. The compiler already dropped duplicates, bad names and unsupported
- * types; membership in `schema.properties` is the only filter needed here.
- */
+/** The source fields the compiler kept, in schema order. */
 export const presentationFields = (form: FormToolkitForm, schema: JSONSchema7): PresentationField[] => {
   const properties = schema.properties ?? {}
   const seen = new Set<string>()

@@ -2,11 +2,7 @@ import {and, rankWith, schemaMatches, uiTypeIs} from '@jsonforms/core'
 import type {ControlProps, JsonSchema, RankedTester} from '@jsonforms/core'
 import {withJsonFormsControlProps} from '@jsonforms/react'
 
-/**
- * JSON Forms' vanilla renderer set has no control for an array of enum
- * values, so a checkbox group renders as "unknown" without this. It is the
- * one renderer the JSON Forms side needed that the RJSF side did not.
- */
+/** JSON Forms' vanilla renderers have no control for an array of enums; without this a checkbox group renders as "unknown". */
 const CheckboxGroup = ({data, handleChange, path, label, schema, errors, id}: ControlProps) => {
   const items = schema.items as JsonSchema
   const options = (items.oneOf ?? []).map((o) => ({label: (o as JsonSchema).title ?? '', value: String((o as JsonSchema).const)}))

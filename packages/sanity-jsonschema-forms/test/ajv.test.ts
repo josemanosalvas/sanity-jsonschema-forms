@@ -7,10 +7,7 @@ import {describe, expect, test} from 'vitest'
 import type {MessageKeyword} from '../src'
 import {toJsonSchema} from '../src'
 
-/**
- * The compiled schema through plain AJV, whose default dialect is Draft 7, with ajv-formats,
- * no renderer involved: the contract must validate on its own.
- */
+/** Plain AJV, no renderer: the contract must validate on its own. */
 describe('compiled schema validates with plain AJV', () => {
   const {schema, messages} = toJsonSchema(contactForm)
   const ajv = new Ajv({allErrors: true})

@@ -11,10 +11,7 @@ import {toJsonSchema} from '../src'
 import {toJsonFormsProps} from '../src/jsonforms'
 import {query} from './dom'
 
-/**
- * Vanilla renderers have no control for an array of enum values, so the
- * checkbox group needs this. Test-local; the example app carries a copy.
- */
+/** The vanilla renderers have no control for an array of enums; the example app carries the same one. */
 const CheckboxGroup = withJsonFormsControlProps(({data, handleChange, path, label, schema, errors}: ControlProps) => {
   const items = schema.items as JsonSchema
   const options = (items.oneOf ?? []).map((o) => ({label: (o as JsonSchema).title ?? '', value: String((o as JsonSchema).const)}))

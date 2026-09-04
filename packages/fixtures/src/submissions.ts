@@ -1,8 +1,4 @@
-/**
- * Submissions for the contact form, with the verdict every compiler's schema
- * must reach. The verdict is what parity between renderers is judged on;
- * error counts and wording may differ per validator.
- */
+/** Contact-form submissions with the verdict the schema must reach; error counts and wording may differ per validator. */
 export interface Submission {
   data: Record<string, unknown>
   verdict: 'accept' | 'reject'

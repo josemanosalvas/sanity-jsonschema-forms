@@ -13,11 +13,7 @@ const Panel = ({title, children, open = false}: {title: string; children: string
   </details>
 )
 
-/**
- * One @sanity/form-toolkit document, one toJsonSchema() call, three renderers.
- * The fixture is the shape the Studio's formSchema plugin stores; swap it for
- * a @sanity/client fetch and nothing else changes.
- */
+/** One form document, one `toJsonSchema()` call, three renderers. Swap the fixture for a `@sanity/client` fetch. */
 export const App = () => {
   const compiled = useMemo(() => toJsonSchema(contactForm), [])
   return (

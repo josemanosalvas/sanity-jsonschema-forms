@@ -1,11 +1,9 @@
 import type {JSONSchema7} from 'json-schema'
 
 /**
- * The form document as `@sanity/form-toolkit` stores it, reduced to the
- * members this package reads. A structural copy of form-toolkit's
- * `FormDataProps`, checked against it in `test/types.test.ts`, so a frontend
- * can compile a fetched document without installing `@sanity/form-toolkit`,
- * whose peers include `sanity` itself.
+ * The form document as `@sanity/form-toolkit` stores it, limited to what this
+ * package reads. Structurally identical to form-toolkit's `FormDataProps`
+ * (checked in `test/types.test.ts`), so consumers need not install it.
  */
 export interface FormToolkitForm {
   title: string
@@ -77,12 +75,7 @@ export interface Diagnostic {
  */
 export type MessageKeyword = 'minLength' | 'maxLength' | 'pattern' | 'minimum' | 'maximum' | 'minItems' | 'maxItems' | 'const'
 
-/**
- * Editor-written error messages, keyed by field name and then by the AJV
- * keyword whose failure they describe. Standard JSON Schema has no message
- * keyword, so this travels beside the schema; each renderer adapter delivers
- * it through that renderer's own hook.
- */
+/** Editor-written error messages by field name, then by the AJV keyword whose failure they describe. */
 export type MessageMap = Record<string, Partial<Record<MessageKeyword, string>>>
 
 export interface ToJsonSchemaResult {

@@ -1,10 +1,6 @@
 import type {FormDataProps} from '@sanity/form-toolkit/form-renderer'
 
-/**
- * A contact form as a `@sanity/form-toolkit` `form` document comes back from
- * GROQ (`*[_type == "form" && id.current == $id][0]`), exercising every
- * supported field type and every supported validation rule once.
- */
+/** A form document as GROQ returns it, using every supported field type and validation rule once. */
 export const contactForm: FormDataProps = {
   fields: [
     {

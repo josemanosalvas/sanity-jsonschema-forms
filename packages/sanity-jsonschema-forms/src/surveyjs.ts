@@ -46,7 +46,7 @@ export interface SurveyJson {
   elements: SurveyQuestionJson[]
 }
 
-/** Where each question property came from, so the schema/presentation split stays visible. */
+/** Which question properties came from the schema and which needed the form. */
 export interface SurveyJsProps {
   surveyJson: SurveyJson
   /** Question properties written from the JSON Schema alone. */
@@ -162,11 +162,9 @@ const questionOf = (
 }
 
 /**
- * SurveyJS presentation for a compiled form. SurveyJS has no separate
- * schema/uischema split: its survey JSON is both. So this adapter rebuilds
- * questions from `compiled.schema` and reaches for the original form only
- * where the schema is silent (textarea vs text, radio vs dropdown,
- * placeholder), and reports which properties needed it.
+ * SurveyJS has no schema/uischema split, so the adapter rebuilds questions
+ * from `compiled.schema` and reads the form only where the schema is silent
+ * (textarea vs text, radio vs dropdown, placeholder).
  */
 export const toSurveyJsProps = (form: FormToolkitForm, compiled: ToJsonSchemaResult): SurveyJsProps => {
   const {schema, messages} = compiled

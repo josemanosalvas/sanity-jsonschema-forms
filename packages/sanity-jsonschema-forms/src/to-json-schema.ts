@@ -65,7 +65,7 @@ const RULE_KEYWORDS = {
 
 type RuleType = keyof typeof RULE_KEYWORDS
 
-/** The dialect every consumer tried validates with by default; see docs/json-schema-contract.md. */
+/** See docs/json-schema-contract.md for why Draft 7. */
 export const JSON_SCHEMA_DRAFT_7 = 'http://json-schema.org/draft-07/schema#'
 
 /** form-toolkit has no message for "required"; this is the one message the compiler supplies. */
@@ -209,11 +209,7 @@ const applyRules = (schema: JSONSchema7, ctx: FieldContext): void => {
   }
 }
 
-/**
- * Choices as `oneOf` consts with `title`: the schema-native way to label an
- * option, readable by any consumer. RJSF treats a `oneOf` const as a default;
- * the RJSF adapter turns that off rather than bending the schema.
- */
+/** Choices as `oneOf` consts with `title`, the schema-native way to label an option. */
 const compileChoices = (ctx: FieldContext): JSONSchema7[] => {
   const {diagnostics, path, name, field} = ctx
   const seen = new Set<string>()
@@ -363,7 +359,6 @@ const compileField = (type: CompiledType, ctx: FieldContext): JSONSchema7 => {
       return schema
     }
     default: {
-      // Unreachable: `type` is narrowed to `never` once every case above is handled.
       throw new Error(`Unhandled field type "${String(type satisfies never)}"`)
     }
   }
@@ -371,10 +366,8 @@ const compileField = (type: CompiledType, ctx: FieldContext): JSONSchema7 => {
 
 /**
  * Compiles a `@sanity/form-toolkit` form document into JSON Schema Draft 7
- * plus the editor-written messages that JSON Schema cannot carry.
- *
- * Renderer-independent on purpose: nothing here knows about any renderer.
- * Never throws on content; every loss is a diagnostic.
+ * plus the editor-written messages JSON Schema cannot carry. Never throws on
+ * content; every loss is a diagnostic.
  */
 export const toJsonSchema = (form: FormToolkitForm): ToJsonSchemaResult => {
   const diagnostics = new Diagnostics()

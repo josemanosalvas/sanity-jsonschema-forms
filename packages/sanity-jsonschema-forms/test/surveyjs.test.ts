@@ -132,10 +132,9 @@ describe('SurveyJS presentation adapter', () => {
   })
 
   /**
-   * Accept/reject parity with AJV. Two submissions diverge by design:
-   * SurveyJS validates what its own UI can produce, not an
-   * arbitrary payload. A duplicate in a checkbox answer and an off-list
-   * dropdown value cannot come from its widgets, so it does not reject them.
+   * Verdict parity with AJV, except where SurveyJS validates only what its
+   * widgets can produce: a duplicate checkbox value and an off-list dropdown
+   * value pass.
    */
   const surveyJsDivergence: Partial<Record<keyof typeof contactSubmissions, 'accept'>> = {
     duplicateInterests: 'accept',
@@ -162,7 +161,7 @@ describe('SurveyJS presentation adapter', () => {
 
   test('an off-list dropdown value is where SurveyJS and AJV part ways', () => {
     const {ok, errors} = verdictOf(surveyJson, {...contactSubmissions.valid.data, topic: 'other'})
-    // Documented divergence: SurveyJS keeps or clears the value; it does not error on it.
+    // SurveyJS keeps or clears the value rather than erroring; see docs/adapters/surveyjs.md.
     expect(errors.filter((e) => e.startsWith('topic:'))).toStrictEqual([])
     expect(ok).toBeTypeOf('boolean')
   })

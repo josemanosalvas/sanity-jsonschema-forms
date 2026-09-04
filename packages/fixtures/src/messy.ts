@@ -1,10 +1,6 @@
 import type {FormDataProps} from '@sanity/form-toolkit/form-renderer'
 
-/**
- * Content an adapter meets in practice: unsupported types, custom types,
- * half-filled fields, bad operands, duplicates. Every field here should
- * produce a diagnostic rather than a throw.
- */
+/** Unsupported types, half-filled fields, bad operands, duplicates: every field must yield a diagnostic, not a throw. */
 export const messyForm: FormDataProps = {
   fields: [
     {label: 'Resume', name: 'resume', type: 'file', validation: [{message: 'Too big', type: 'maxSize', value: '5000000'}]},

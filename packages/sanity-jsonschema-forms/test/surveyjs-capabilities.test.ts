@@ -1,11 +1,7 @@
 import {Model} from 'survey-core'
 import {describe, expect, test} from 'vitest'
 
-/**
- * Not an adapter test. These pin the SurveyJS semantics that have no JSON
- * Schema counterpart, headless, so the adapter's documented limits rest on
- * observed behaviour rather than on SurveyJS's documentation.
- */
+/** Pins the SurveyJS behaviour docs/adapters/surveyjs.md describes as diverging from the schema. */
 describe('SurveyJS capabilities beyond JSON Schema (probe)', () => {
   test('pages: a survey is a sequence of pages with navigation state', () => {
     const m = new Model({
