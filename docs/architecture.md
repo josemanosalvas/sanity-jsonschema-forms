@@ -24,9 +24,9 @@ flowchart TB
 | **Canonical contract** | [JSON Schema Draft 7](https://json-schema.org/draft-07), declared by `$schema` | The dialect AJV, RJSF's validator and JSON Forms validate with by default, and the one every consumer tried reads natively. The schema uses no keyword that changed after Draft 7. Details and the case against 2020-12 in [json-schema-contract.md](json-schema-contract.md). |
 | **Compiler output** | `schema`, `messages`, `diagnostics` | Editor-written error messages have no JSON Schema keyword, so they travel beside the schema keyed by field and AJV keyword. Everything that could not map one-to-one is a diagnostic; the compiler never throws on content. |
 | **Renderer and runtime concerns** | subpath adapters (`./rjsf`, `./jsonforms`) | Each adds only what its library needs to present the schema: widget choice, placeholder, submit label, message delivery, and the library's own quirks. The schema passes through unchanged. Renderer dependencies are optional peers; the root entry has none. |
-| **Adapter admission** | the library must consume JSON Schema as its native data and validation contract | `compiled.schema` reaches the library unchanged and the library's own validator checks against it; the adapter adds presentation only. SurveyJS failed the rule (it needs its own survey JSON rebuilt from the schema, and validates what its widgets produce) and was removed in `0.2.0`; TanStack Form would fail it today. [decisions/001](decisions/001-surveyjs-is-research-not-an-adapter.md). |
-| **Submission validation** | AJV against `schema`, server-side, whatever rendered the form | Renderers validate what their widgets can produce, not arbitrary payloads. Spike 3 showed it with SurveyJS, which accepted duplicate checkbox values and off-list dropdown values the schema rejects. |
-| **Intermediate `FormDefinition` model** | **deliberately rejected** | Three consumers of very different shape (RJSF, JSON Forms, and SurveyJS in spike 3) consumed the same schema and message map through adapters of 60 to 140 lines plus one 45-line internal helper carrying two presentation facts per field. No behaviour shared by two consumers exists outside JSON Schema. Widening to fifteen field types in 0.2 added source types to that helper and no new fact. |
+| **Adapter admission** | the library must consume JSON Schema as its native data and validation contract | `compiled.schema` reaches the library unchanged and the library's own validator checks against it; the adapter adds presentation only. A library with its own form model is a different kind of integration and does not get an adapter here. |
+| **Submission validation** | AJV against `schema`, server-side, whatever rendered the form | Renderers validate what their widgets can produce, not arbitrary payloads. |
+| **Intermediate `FormDefinition` model** | **deliberately rejected** | Three consumers of very different shape (RJSF, JSON Forms, and SurveyJS in the third spike) consumed the same schema and message map through adapters of 60 to 140 lines plus one 45-line internal helper carrying two presentation facts per field. No behaviour shared by two consumers exists outside JSON Schema. Widening to fifteen field types in 0.2 added source types to that helper and no new fact. |
 
 ## What an adapter is allowed to do
 
@@ -63,7 +63,7 @@ packages/sanity-jsonschema-forms/  the published package
   test/parity.test.ts              every fixture submission through AJV, RJSF's validator and JSON Forms' AJV
 packages/fixtures/                 private: form documents and submissions used by tests
 examples/compare/                  one compiled form rendered by both adapters
-docs/                              this file, the contract, compatibility, per-adapter notes, decision records
+docs/                              this file, the contract, compatibility, per-adapter notes
 ```
 
 ## Design history
@@ -75,11 +75,5 @@ extracted a renderer-independent schema and moved those choices into a
 thin adapter, with JSON Forms as a second consumer. `surveyjs-spike-v3` used
 SurveyJS, the richest consumer available, to look for behaviour that would
 justify a shared model beyond JSON Schema, and found none. Each tag holds
-the code and the write-up of its experiment.
-
-The SurveyJS adapter shipped in `0.1.0` and `0.1.1`. Widening it to
-fifteen field types for `0.2` showed it reconstructing the contract rather
-than consuming it, and SurveyJS validating its own translation rather than
-the schema. [decisions/001](decisions/001-surveyjs-is-research-not-an-adapter.md)
-records why it was removed in `0.2.0`, the admission rule that follows,
-and the shape a SurveyJS integration with Sanity should take instead.
+the code and the write-up of its experiment. The SurveyJS spike was not
+pursued as an adapter; `0.2.0` removed it.

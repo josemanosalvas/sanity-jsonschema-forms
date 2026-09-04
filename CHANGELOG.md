@@ -32,16 +32,9 @@ with no validator extension.
   the control for a hidden field and seeds its value through
   `initialData`, asks for the time and slider cells. Per-renderer control
   support is tabled in `docs/compatibility.md`.
-- Removed (breaking): `sanity-jsonschema-forms/surveyjs` (`toSurveyJsProps`
-  and the `Survey*Json` types). SurveyJS does not consume JSON Schema as
-  its contract: the adapter rebuilt survey JSON from the schema, and
-  SurveyJS validated what its widgets can produce rather than the payload,
-  diverging from the three AJV consumers wherever the schema checked
-  something a widget cannot produce (a duplicate checkbox value, a
-  calendar date, a URL, a numeric string). The reasoning, the admission
-  rule for adapters and what a SurveyJS integration should look like
-  instead are in `docs/decisions/001-surveyjs-is-research-not-an-adapter.md`.
-  The spike stays tagged `surveyjs-spike-v3`; `0.1.x` keeps the adapter.
+- Removed (breaking): `sanity-jsonschema-forms/surveyjs`. It was a spike
+  that was not pursued; SurveyJS does not consume JSON Schema as its
+  contract. The spike stays tagged `surveyjs-spike-v3`.
 - `file` stays unsupported, now by decision rather than omission: no
   representation of a file gives the same submission to every consumer.
   The reasoning is in `docs/compatibility.md`.

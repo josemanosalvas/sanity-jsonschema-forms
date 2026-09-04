@@ -103,10 +103,6 @@ const isValidSubmission = (submission: unknown) => ajv.validate(schema, submissi
   codes.
 - [docs/adapters/](docs/adapters): per-library usage and the quirks each
   adapter handles.
-- [docs/decisions/](docs/decisions): decision records. The first says why
-  SurveyJS, tried as a third adapter, is not one, and what a form library
-  must do to get an adapter here.
-
 ## Repository
 
 ```

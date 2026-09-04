@@ -148,8 +148,7 @@ adapters from this map.
 
 **Submissions must be validated with AJV against this schema on the server,
 whatever rendered the form.** A renderer validates what its widgets can
-produce, not an arbitrary payload; the SurveyJS adapter of spike 3 made
-that plain (see [decisions/001](decisions/001-surveyjs-is-research-not-an-adapter.md)).
+produce, not an arbitrary payload.
 
 ## Deliberately not in the schema
 
