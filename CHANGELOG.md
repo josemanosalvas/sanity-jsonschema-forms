@@ -3,7 +3,7 @@
 All notable changes to `sanity-jsonschema-forms`. Semantic versioning; until
 `1.0`, breaking changes bump the minor version.
 
-## Unreleased
+## 0.2.1 (2026-09-05)
 
 - `test/properties.test.ts`: fast-check invariants over arbitrary form
   documents. `toJsonSchema` never throws, is a pure function of its input,
