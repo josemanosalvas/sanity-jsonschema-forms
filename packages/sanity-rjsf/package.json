@@ -1,0 +1,47 @@
+{
+  "name": "sanity-rjsf",
+  "version": "0.0.0",
+  "description": "Compile forms authored with @sanity/form-toolkit into RJSF JSON Schema + uiSchema.",
+  "keywords": ["sanity", "form-toolkit", "rjsf", "react-jsonschema-form", "json-schema"],
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "@rjsf/utils": "^6.8.0",
+    "@sanity/form-toolkit": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@sanity/form-toolkit": { "optional": true }
+  },
+  "devDependencies": {
+    "@rjsf/core": "^6.8.0",
+    "@rjsf/shadcn": "^6.8.0",
+    "@rjsf/utils": "^6.8.0",
+    "@rjsf/validator-ajv8": "^6.8.0",
+    "@sanity/form-toolkit": "^3.0.17",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "jsdom": "^30.0.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tsdown": "^0.23.0",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.0"
+  }
+}

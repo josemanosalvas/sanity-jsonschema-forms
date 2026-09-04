@@ -1,0 +1,22 @@
+{
+  "name": "sanity-rjsf-workspace",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Spike: compile @sanity/form-toolkit forms to RJSF schema + uiSchema.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r --filter sanity-rjsf build",
+    "test": "pnpm -r --filter sanity-rjsf test",
+    "typecheck": "pnpm -r typecheck",
+    "dev": "pnpm --filter rjsf-shadcn-example dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=22.12",
+    "pnpm": ">=10"
+  },
+  "packageManager": "pnpm@11.25.0"
+}
