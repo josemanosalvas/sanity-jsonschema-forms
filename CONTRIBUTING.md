@@ -41,10 +41,6 @@ Read [docs/architecture.md](docs/architecture.md) first. In short:
   the form, add it there and say which second consumer would use it.
 - **No intermediate form model.** A proposal to add one needs evidence that
   two consumers share a behaviour JSON Schema cannot express.
-- **An adapter is for a library that consumes JSON Schema natively.** A
-  proposal for one says how `compiled.schema` reaches the library unchanged
-  and which of the library's own validators checks against it. A library
-  with its own form model gets a separate project, not an adapter.
 - **Diagnostics over exceptions.** The compiler never throws on content;
   every loss gets a diagnostic with a stable code. Add codes, never rename.
 - **Fixtures are shared.** New behaviour gets a case in
