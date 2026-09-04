@@ -1,4 +1,4 @@
-import {contactForm, contactSubmissions, messyForm, namesakeForm} from 'sanity-form-fixtures'
+import {contactForm, contactSubmissions, fieldTypesForm, fieldTypesSubmissions, messyForm, namesakeForm} from 'sanity-form-fixtures'
 import {Model} from 'survey-core'
 import {describe, expect, test} from 'vitest'
 
@@ -188,5 +188,101 @@ describe('SurveyJS presentation adapter', () => {
     const {ok, errors} = verdictOf(surveyJson, {})
     expect(ok).toBe(false)
     expect(errors.map((e) => e.split(':')[0])).toStrictEqual(['fullName', 'email', 'topic', 'message', 'consent'])
+  })
+
+  describe('field types added in 0.2', () => {
+    const compiledTypes = toJsonSchema(fieldTypesForm)
+    const props = toSurveyJsProps(fieldTypesForm, compiledTypes)
+
+    test('maps every field to a text question with the native input type', () => {
+      expect(props.surveyJson).toStrictEqual({
+        clearInvisibleValues: 'none',
+        completeText: 'Save',
+        elements: [
+          {
+            defaultValue: 'https://example.com',
+            inputType: 'url',
+            isRequired: true,
+            name: 'website',
+            placeholder: 'https://',
+            title: 'Website',
+            type: 'text',
+            validators: [{regex: '^https://', text: 'Only https links.', type: 'regex'}],
+          },
+          {
+            inputType: 'tel',
+            name: 'phone',
+            placeholder: '+1 555 0100',
+            title: 'Phone',
+            type: 'text',
+            validators: [{regex: '^\\+?[0-9 ]+$', text: 'Digits, spaces and a leading + only.', type: 'regex'}],
+          },
+          {defaultValue: 'spring-2026', name: 'campaign', title: 'campaign', type: 'text', visible: false},
+          {
+            defaultValue: '#ff8800',
+            inputType: 'color',
+            name: 'brandColor',
+            title: 'Brand colour',
+            type: 'text',
+            validators: [{regex: '^#[0-9A-Fa-f]{6}$', type: 'regex'}],
+          },
+          {defaultValue: '2026-09-04', inputType: 'date', isRequired: true, name: 'startDate', title: 'Start date', type: 'text'},
+          {
+            defaultValue: '2026-09-04T18:30',
+            inputType: 'datetime-local',
+            name: 'pickup',
+            title: 'Pickup',
+            type: 'text',
+            validators: [
+              {
+                regex: compiledTypes.schema.properties?.pickup && (compiledTypes.schema.properties.pickup as {pattern: string}).pattern,
+                type: 'regex',
+              },
+            ],
+          },
+          {
+            defaultValue: '18:30',
+            inputType: 'time',
+            name: 'preferredTime',
+            title: 'Preferred time',
+            type: 'text',
+            validators: [{regex: '^(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d{1,3})?)?$', type: 'regex'}],
+          },
+          {
+            defaultValue: 6,
+            inputType: 'range',
+            max: 10,
+            min: 0,
+            name: 'satisfaction',
+            step: 2,
+            title: 'Satisfaction',
+            type: 'text',
+            validators: [
+              {minValue: 0, text: 'At least 0.', type: 'numeric'},
+              {maxValue: 10, text: 'At most 10.', type: 'numeric'},
+              {expression: '{satisfaction} % 2 = 0', text: 'Even numbers only.', type: 'expression'},
+            ],
+          },
+        ],
+        showQuestionNumbers: 'off',
+        title: 'Field types',
+      })
+      expect(props.fromForm.toSorted()).toStrictEqual(['completeText', 'inputType', 'placeholder', 'visible'])
+    })
+
+    test('a hidden field keeps its default through completion', () => {
+      const model = new Model(props.surveyJson)
+      model.completeLastPage()
+      expect(model.data.campaign).toBe('spring-2026')
+    })
+
+    test('the step message surfaces through the expression validator', () => {
+      const {errors} = verdictOf(props.surveyJson, fieldTypesSubmissions.satisfactionOdd.data)
+      expect(errors).toStrictEqual(['satisfaction: Even numbers only.'])
+    })
+
+    test('a time outside the clock fails the regex validator', () => {
+      expect(verdictOf(props.surveyJson, fieldTypesSubmissions.timeBadHour.data).ok).toBe(false)
+    })
   })
 })

@@ -13,7 +13,8 @@ export interface JsonFormsProps {
   /**
    * Schema `default`s as a data object. JSON Forms does not apply defaults to
    * the data it is given (its AJV runs without `useDefaults`), so the host
-   * must seed them; RJSF does this itself.
+   * must seed them; RJSF does this itself. A hidden field's value travels
+   * only here: it has no control.
    */
   initialData: Record<string, unknown>
   /** JSON Forms renders no submit button; the host does. */
@@ -26,13 +27,18 @@ const ERROR_KEY = /^(?<field>.+)\.error\.(?<keyword>[^.]+)$/u
 /**
  * JSON Forms presentation for a compiled form: one `VerticalLayout` of
  * `Control`s, with the input choice and placeholder in `options`. Labels
- * for choices need nothing here; JSON Forms reads `oneOf[].title`.
+ * for choices need nothing here; JSON Forms reads `oneOf[].title`. A
+ * hidden field gets no control at all: JSON Forms renders only what the
+ * layout lists, and the value rides in `initialData`.
  */
 export const toJsonFormsProps = (form: FormToolkitForm, compiled: ToJsonSchemaResult): JsonFormsProps => {
   const {schema, messages} = compiled
   const elements: ControlElement[] = []
 
   for (const field of presentationFields(form, schema)) {
+    if (field.type === 'hidden') {
+      continue
+    }
     const options: Record<string, unknown> = {}
     if (field.type === 'textarea') {
       options.multi = true
@@ -40,7 +46,15 @@ export const toJsonFormsProps = (form: FormToolkitForm, compiled: ToJsonSchemaRe
     if (field.type === 'radio') {
       options.format = 'radio'
     }
-    if (field.placeholder !== undefined && field.type !== 'radio' && field.type !== 'checkbox') {
+    // The schema carries a pattern, not `format: time`, so the time cell must be asked for.
+    if (field.type === 'time') {
+      options.format = 'time'
+    }
+    // The slider cell also needs `minimum`, `maximum` and `default` in the schema; without them a number input renders.
+    if (field.type === 'range') {
+      options.slider = true
+    }
+    if (field.placeholder !== undefined) {
       options.placeholder = field.placeholder
     }
     const control: ControlElement = {i18n: field.name, scope: `#/properties/${field.name}`, type: 'Control'}

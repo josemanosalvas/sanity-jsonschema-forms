@@ -2,7 +2,7 @@
 import {Form} from '@rjsf/shadcn'
 import validator from '@rjsf/validator-ajv8'
 import {cleanup, fireEvent, render} from '@testing-library/react'
-import {contactForm, messyForm, namesakeForm} from 'sanity-form-fixtures'
+import {contactForm, fieldTypeEdgesForm, fieldTypesForm, messyForm, namesakeForm} from 'sanity-form-fixtures'
 import {afterEach, describe, expect, test, vi} from 'vitest'
 
 import {toJsonSchema} from '../src'
@@ -103,5 +103,101 @@ describe('RJSF presentation adapter', () => {
     expect(text).toContain('At least one person.')
     expect(text).toContain('Keep it under 500 characters.')
     expect(text).toContain("must have required property 'I agree to be contacted'")
+  })
+
+  describe('field types added in 0.2', () => {
+    const compiledTypes = toJsonSchema(fieldTypesForm)
+    const props = toRjsfProps(fieldTypesForm, compiledTypes)
+
+    test('names a widget or a native input type for every field', () => {
+      expect(props.uiSchema).toStrictEqual({
+        brandColor: {'ui:widget': 'color'},
+        campaign: {'ui:widget': 'hidden'},
+        phone: {'ui:options': {inputType: 'tel'}, 'ui:placeholder': '+1 555 0100'},
+        pickup: {'ui:options': {inputType: 'datetime-local'}},
+        preferredTime: {'ui:options': {inputType: 'time'}},
+        satisfaction: {'ui:widget': 'range'},
+        startDate: {'ui:widget': 'date'},
+        'ui:order': ['website', 'phone', 'campaign', 'brandColor', 'startDate', 'pickup', 'preferredTime', 'satisfaction'],
+        'ui:submitButtonOptions': {submitText: 'Save'},
+        website: {'ui:placeholder': 'https://', 'ui:widget': 'uri'},
+      })
+    })
+
+    test('renders native inputs holding the defaults as the schema wrote them', () => {
+      const submissions: unknown[] = []
+      const {container} = render(
+        <Form
+          {...props.formProps}
+          schema={props.schema}
+          uiSchema={props.uiSchema}
+          validator={validator}
+          transformErrors={props.transformErrors}
+          onSubmit={({formData}) => submissions.push(formData)}
+          noHtml5Validate
+        />,
+      )
+      const input = (id: string) => query(container, `#${id}`) as HTMLInputElement
+      expect([input('root_website').type, input('root_website').value]).toStrictEqual(['url', 'https://example.com'])
+      expect(input('root_phone').type).toBe('tel')
+      expect([input('root_campaign').type, input('root_campaign').value]).toStrictEqual(['hidden', 'spring-2026'])
+      expect(container.textContent).not.toContain('campaign')
+      expect([input('root_brandColor').type, input('root_brandColor').value]).toStrictEqual(['color', '#ff8800'])
+      expect([input('root_startDate').type, input('root_startDate').value]).toStrictEqual(['date', '2026-09-04'])
+      expect([input('root_pickup').type, input('root_pickup').value]).toStrictEqual(['datetime-local', '2026-09-04T18:30'])
+      expect([input('root_preferredTime').type, input('root_preferredTime').value]).toStrictEqual(['time', '18:30'])
+      const slider = query(container, '[role="slider"]')
+      expect([
+        slider.getAttribute('aria-valuemin'),
+        slider.getAttribute('aria-valuemax'),
+        slider.getAttribute('aria-valuenow'),
+      ]).toStrictEqual(['0', '10', '6'])
+      fireEvent.submit(query(container, 'form'))
+      expect(submissions).toStrictEqual([
+        {
+          brandColor: '#ff8800',
+          campaign: 'spring-2026',
+          pickup: '2026-09-04T18:30',
+          preferredTime: '18:30',
+          satisfaction: 6,
+          startDate: '2026-09-04',
+          website: 'https://example.com',
+        },
+      ])
+    })
+
+    test('hands a typed local value through untouched and shows the authored messages', () => {
+      const {container} = render(
+        <Form
+          {...props.formProps}
+          schema={props.schema}
+          uiSchema={props.uiSchema}
+          validator={validator}
+          transformErrors={props.transformErrors}
+          noHtml5Validate
+          showErrorList={false}
+        />,
+      )
+      const set = (id: string, value: string) => fireEvent.change(query(container, `#${id}`), {target: {value}})
+      set('root_website', 'http://example.com')
+      set('root_phone', 'call me')
+      set('root_pickup', '2026-12-24T09:15')
+      fireEvent.submit(query(container, 'form'))
+      const text = container.textContent ?? ''
+      expect(text).toContain('Only https links.')
+      expect(text).toContain('Digits, spaces and a leading + only.')
+      // No UTC conversion: RJSF's DateTimeWidget would have made this an ISO string with a Z.
+      expect((query(container, '#root_pickup') as HTMLInputElement).value).toBe('2026-12-24T09:15')
+    })
+
+    test('a range without a default renders with the slider at its minimum and submits nothing for it', () => {
+      const edges = toJsonSchema(fieldTypeEdgesForm)
+      const edgeProps = toRjsfProps(fieldTypeEdgesForm, edges)
+      const {container} = render(
+        <Form {...edgeProps.formProps} schema={edgeProps.schema} uiSchema={edgeProps.uiSchema} validator={validator} noHtml5Validate />,
+      )
+      const slider = container.querySelector('#root_offsetStep [role="slider"], [role="slider"]')
+      expect(slider).not.toBeNull()
+    })
   })
 })

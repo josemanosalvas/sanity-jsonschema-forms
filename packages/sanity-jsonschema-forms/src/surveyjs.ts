@@ -33,7 +33,13 @@ export interface SurveyQuestionJson {
   isRequired?: boolean
   defaultValue?: unknown
   placeholder?: string
-  inputType?: 'text' | 'email' | 'number'
+  inputType?: 'text' | 'email' | 'number' | 'url' | 'tel' | 'date' | 'datetime-local' | 'time' | 'range' | 'color'
+  /** A hidden field: never shown, its default kept by `clearInvisibleValues: 'none'` on the survey. */
+  visible?: false
+  /** Slider bounds and step for `inputType: range`, from `minimum`, `maximum` and `multipleOf`. */
+  min?: number
+  max?: number
+  step?: number
   renderAs?: 'checkbox'
   choices?: SurveyChoiceJson[]
   validators?: SurveyValidatorJson[]
@@ -42,6 +48,8 @@ export interface SurveyQuestionJson {
 export interface SurveyJson {
   title?: string
   showQuestionNumbers: 'off'
+  /** Present when a hidden field exists: SurveyJS otherwise drops invisible questions' values on completion. */
+  clearInvisibleValues?: 'none'
   completeText?: string
   elements: SurveyQuestionJson[]
 }
@@ -87,6 +95,10 @@ const validatorsOf = (name: string, schema: JSONSchema7, messages: MessageMap): 
   if (schema.maximum !== undefined) {
     out.push(withText({maxValue: schema.maximum, type: 'numeric'}, m.maximum))
   }
+  // SurveyJS has no multiple-of validator; an expression does the division.
+  if (schema.multipleOf !== undefined) {
+    out.push(withText({expression: `{${name}} % ${schema.multipleOf} = 0`, type: 'expression'}, m.multipleOf))
+  }
   if (schema.minItems !== undefined) {
     out.push(withText({minCount: schema.minItems, type: 'answercount'}, m.minItems))
   }
@@ -101,14 +113,35 @@ const validatorsOf = (name: string, schema: JSONSchema7, messages: MessageMap): 
   return out
 }
 
-const inputTypeOf = (schema: JSONSchema7): NonNullable<SurveyQuestionJson['inputType']> => {
-  if (schema.format === 'email') {
-    return 'email'
+/** Input types the schema implies on its own. */
+const SCHEMA_INPUT_TYPES: Partial<Record<string, NonNullable<SurveyQuestionJson['inputType']>>> = {
+  date: 'date',
+  email: 'email',
+  uri: 'url',
+}
+
+/** Input types only the source field type tells apart from `text` or `number`. */
+const FORM_INPUT_TYPES: Partial<Record<string, NonNullable<SurveyQuestionJson['inputType']>>> = {
+  color: 'color',
+  'datetime-local': 'datetime-local',
+  range: 'range',
+  tel: 'tel',
+  time: 'time',
+}
+
+const inputTypeOf = (
+  schema: JSONSchema7,
+  field: PresentationField | undefined,
+): {inputType: NonNullable<SurveyQuestionJson['inputType']>; fromForm: boolean} => {
+  const fromSchema = schema.format === undefined ? undefined : SCHEMA_INPUT_TYPES[schema.format]
+  if (fromSchema !== undefined) {
+    return {fromForm: false, inputType: fromSchema}
   }
-  if (schema.type === 'number') {
-    return 'number'
+  const fromForm = field === undefined ? undefined : FORM_INPUT_TYPES[field.type]
+  if (fromForm !== undefined) {
+    return {fromForm: true, inputType: fromForm}
   }
-  return 'text'
+  return {fromForm: false, inputType: schema.type === 'number' ? 'number' : 'text'}
 }
 
 const questionOf = (
@@ -117,6 +150,7 @@ const questionOf = (
   field: PresentationField | undefined,
   required: boolean,
   messages: MessageMap,
+  fromForm: Set<string>,
 ): SurveyQuestionJson => {
   const isChoice = Array.isArray(schema.oneOf)
   const isGroup = schema.type === 'array'
@@ -132,6 +166,9 @@ const questionOf = (
   } else {
     type = 'text'
   }
+  if (type === 'comment' || type === 'radiogroup') {
+    fromForm.add('type')
+  }
 
   const question: SurveyQuestionJson = {name, title: schema.title ?? name, type}
   if (required) {
@@ -141,7 +178,27 @@ const questionOf = (
     question.defaultValue = schema.default
   }
   if (type === 'text') {
-    question.inputType = inputTypeOf(schema)
+    if (field?.type === 'hidden') {
+      question.visible = false
+      fromForm.add('visible')
+    } else {
+      const input = inputTypeOf(schema, field)
+      question.inputType = input.inputType
+      if (input.fromForm) {
+        fromForm.add('inputType')
+      }
+      if (input.inputType === 'range') {
+        if (typeof schema.minimum === 'number') {
+          question.min = schema.minimum
+        }
+        if (typeof schema.maximum === 'number') {
+          question.max = schema.maximum
+        }
+        if (typeof schema.multipleOf === 'number') {
+          question.step = schema.multipleOf
+        }
+      }
+    }
   }
   if (type === 'boolean') {
     question.renderAs = 'checkbox'
@@ -153,6 +210,7 @@ const questionOf = (
   }
   if (field?.placeholder !== undefined && (type === 'text' || type === 'comment' || type === 'dropdown')) {
     question.placeholder = field.placeholder
+    fromForm.add('placeholder')
   }
   const validators = validatorsOf(name, schema, messages)
   if (validators.length > 0) {
@@ -164,7 +222,8 @@ const questionOf = (
 /**
  * SurveyJS has no schema/uischema split, so the adapter rebuilds questions
  * from `compiled.schema` and reads the form only where the schema is silent
- * (textarea vs text, radio vs dropdown, placeholder).
+ * (textarea vs text, radio vs dropdown, the input type behind a pattern,
+ * hidden, placeholder).
  */
 export const toSurveyJsProps = (form: FormToolkitForm, compiled: ToJsonSchemaResult): SurveyJsProps => {
   const {schema, messages} = compiled
@@ -177,20 +236,15 @@ export const toSurveyJsProps = (form: FormToolkitForm, compiled: ToJsonSchemaRes
     if (!isSchema(property)) {
       continue
     }
-    const field = fields.get(name)
-    const question = questionOf(name, property, field, required.has(name), messages)
-    if (question.type === 'comment' || question.type === 'radiogroup') {
-      fromForm.add('type')
-    }
-    if (question.placeholder !== undefined) {
-      fromForm.add('placeholder')
-    }
-    elements.push(question)
+    elements.push(questionOf(name, property, fields.get(name), required.has(name), messages, fromForm))
   }
 
   const surveyJson: SurveyJson = {elements, showQuestionNumbers: 'off'}
   if (schema.title !== undefined) {
     surveyJson.title = schema.title
+  }
+  if (elements.some((question) => question.visible === false)) {
+    surveyJson.clearInvisibleValues = 'none'
   }
   const submitText = form.submitButton?.text?.trim()
   if (submitText) {
@@ -203,7 +257,8 @@ export const toSurveyJsProps = (form: FormToolkitForm, compiled: ToJsonSchemaRes
     'title',
     'isRequired',
     'defaultValue',
-    'inputType',
+    'inputType (text/email/number/url/date)',
+    'min, max, step (range)',
     'choices',
     'validators',
     'type (text/boolean/dropdown/checkbox)',
