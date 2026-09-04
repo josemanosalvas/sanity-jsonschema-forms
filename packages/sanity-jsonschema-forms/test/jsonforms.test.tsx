@@ -4,7 +4,7 @@ import type {ControlElement, ControlProps, JsonSchema, RankedTester, VerticalLay
 import {JsonForms, withJsonFormsControlProps} from '@jsonforms/react'
 import {vanillaCells, vanillaRenderers} from '@jsonforms/vanilla-renderers'
 import {cleanup, fireEvent, render, waitFor} from '@testing-library/react'
-import {contactForm, messyForm, namesakeForm} from 'sanity-form-fixtures'
+import {contactForm, fieldTypesForm, messyForm, namesakeForm} from 'sanity-form-fixtures'
 import {afterEach, describe, expect, test} from 'vitest'
 
 import {toJsonSchema} from '../src'
@@ -158,5 +158,77 @@ describe('JSON Forms presentation adapter', () => {
     fireEvent.change(query(container, 'input[placeholder="Ada Lovelace"]'), {target: {value: 'Ada'}})
     // JSON Forms reports changes on a short debounce.
     await waitFor(() => expect(latest).toMatchObject({fullName: 'Ada'}))
+  })
+
+  describe('field types added in 0.2', () => {
+    const compiledTypes = toJsonSchema(fieldTypesForm)
+    const props = toJsonFormsProps(fieldTypesForm, compiledTypes)
+
+    test('lists a control per visible field; the hidden value rides in initialData', () => {
+      expect(props.uischema).toStrictEqual({
+        elements: [
+          {i18n: 'website', options: {placeholder: 'https://'}, scope: '#/properties/website', type: 'Control'},
+          {i18n: 'phone', options: {placeholder: '+1 555 0100'}, scope: '#/properties/phone', type: 'Control'},
+          {i18n: 'brandColor', scope: '#/properties/brandColor', type: 'Control'},
+          {i18n: 'startDate', scope: '#/properties/startDate', type: 'Control'},
+          {i18n: 'pickup', scope: '#/properties/pickup', type: 'Control'},
+          {i18n: 'preferredTime', options: {format: 'time'}, scope: '#/properties/preferredTime', type: 'Control'},
+          {i18n: 'satisfaction', options: {slider: true}, scope: '#/properties/satisfaction', type: 'Control'},
+        ],
+        type: 'VerticalLayout',
+      })
+      expect(props.initialData).toStrictEqual({
+        brandColor: '#ff8800',
+        campaign: 'spring-2026',
+        pickup: '2026-09-04T18:30',
+        preferredTime: '18:30',
+        satisfaction: 6,
+        startDate: '2026-09-04',
+        website: 'https://example.com',
+      })
+    })
+
+    test('renders native date, time and range cells; url, tel, colour and datetime-local fall back to text', () => {
+      const {container} = render(
+        <JsonForms
+          schema={props.schema}
+          uischema={props.uischema}
+          data={props.initialData}
+          renderers={renderers}
+          cells={vanillaCells}
+          i18n={{translate: props.translate}}
+          validationMode="ValidateAndHide"
+        />,
+      )
+      const types = [...container.querySelectorAll('input')].map((input) => [input.type, input.value])
+      expect(types).toStrictEqual([
+        ['text', 'https://example.com'],
+        ['text', ''],
+        ['text', '#ff8800'],
+        ['date', '2026-09-04'],
+        ['text', '2026-09-04T18:30'],
+        ['time', '18:30'],
+        ['range', '6'],
+      ])
+      expect(container.textContent).not.toContain('campaign')
+    })
+
+    test('a hidden field seeded from initialData validates with the rest', async () => {
+      let latest: {data: unknown; errors?: unknown[]} | undefined
+      render(
+        <JsonForms
+          schema={props.schema}
+          uischema={props.uischema}
+          data={{...props.initialData, campaign: 42, preferredTime: '25:30'}}
+          renderers={renderers}
+          cells={vanillaCells}
+          i18n={{translate: props.translate}}
+          onChange={(event) => (latest = event)}
+        />,
+      )
+      await waitFor(() => expect(latest).toBeDefined())
+      const paths = (latest?.errors ?? []).map((e) => (e as {instancePath: string}).instancePath)
+      expect(paths.toSorted()).toStrictEqual(['/campaign', '/preferredTime'])
+    })
   })
 })

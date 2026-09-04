@@ -62,12 +62,6 @@ importers:
       sanity-jsonschema-forms:
         specifier: workspace:*
         version: link:../../packages/sanity-jsonschema-forms
-      survey-core:
-        specifier: 3.0.3
-        version: 3.0.3
-      survey-react-ui:
-        specifier: 3.0.3
-        version: 3.0.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(survey-core@3.0.3)
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.3.3
@@ -163,12 +157,6 @@ importers:
       sanity-form-fixtures:
         specifier: workspace:*
         version: link:../fixtures
-      survey-core:
-        specifier: 3.0.3
-        version: 3.0.3
-      survey-react-ui:
-        specifier: 3.0.3
-        version: 3.0.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(survey-core@3.0.3)
       tsdown:
         specifier: ^0.23.0
         version: 0.23.0(publint@0.3.24)(typescript@5.9.3)
@@ -2593,16 +2581,6 @@ packages:
     resolution: {integrity: sha512-VMBFLYgFuRdfeNQSMLbxGSLfmXL/xc+OO+BZp41Za/NRDBet/BNbkRJrYzCUu0u4GU0i/ml2dtT8b9qgkw9z6Q==}
     engines: {node: '>= 4.0'}
     deprecated: Please upgrade to superagent v10.2.2+, see release notes at https://github.com/forwardemail/superagent/releases/tag/v10.2.2 - maintenance is supported by Forward Email @ https://forwardemail.net
-
-  survey-core@3.0.3:
-    resolution: {integrity: sha512-K2UbtyMxlss0V1f0XWInxvSFusej4fdJBKaHS1+rKH3/mIT6BmjznAmFCCY20XzAN/mAvzg+hLrEiCKTpHe9aw==}
-
-  survey-react-ui@3.0.3:
-    resolution: {integrity: sha512-tlwAFE++9BcOxdfe/omSK3wCL1pf5dJgFbKS9Xlmx/BBOgYBaHWbk9hZAusx0N/JCA1WXpALt+22tQR8bjWqwQ==}
-    peerDependencies:
-      react: ^16.5.0 || ^17.0.1 || ^18.1.0 || ^19.0.0
-      react-dom: ^16.5.0 || ^17.0.1 || ^18.1.0 || ^19.0.0
-      survey-core: 3.0.3
 
   symbol-tree@3.2.4:
     resolution: {integrity: sha512-9QNk5KwDF+Bvz+PyObkmSYjI5ksVUYtjW7AU22r2NKcfLJcXp96hkDWU3+XndOsUb+AQ9QhfzfCT2O+CNWT5Tw==}
@@ -5029,14 +5007,6 @@ snapshots:
       readable-stream: 2.3.8
     transitivePeerDependencies:
       - supports-color
-
-  survey-core@3.0.3: {}
-
-  survey-react-ui@3.0.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(survey-core@3.0.3):
-    dependencies:
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-      survey-core: 3.0.3
 
   symbol-tree@3.2.4: {}
 

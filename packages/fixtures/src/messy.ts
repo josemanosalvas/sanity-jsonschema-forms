@@ -4,8 +4,6 @@ import type {FormDataProps} from '@sanity/form-toolkit/form-renderer'
 export const messyForm: FormDataProps = {
   fields: [
     {label: 'Resume', name: 'resume', type: 'file', validation: [{message: 'Too big', type: 'maxSize', value: '5000000'}]},
-    {label: 'When', name: 'when', type: 'date'},
-    {label: 'Rating', name: 'rating', type: 'range'},
     {label: 'Custom', name: 'custom', type: 'myCustomType'},
     {label: 'Bad name', name: '9lives', type: 'text'},
     {label: 'Reserved name', name: 'constructor', type: 'text'},

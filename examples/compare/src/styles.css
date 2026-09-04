@@ -55,12 +55,3 @@
   color: var(--destructive);
   font-size: 0.8125rem;
 }
-
-/* Keep SurveyJS's own theme inside its pane. */
-.surveyjs .sd-root-modern {
-  --sjs-general-backcolor: transparent;
-  background: transparent;
-}
-.surveyjs .sd-body {
-  padding: 0;
-}

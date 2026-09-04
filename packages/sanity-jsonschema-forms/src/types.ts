@@ -52,8 +52,10 @@ export type DiagnosticCode =
   | 'unsupported-validation-rule'
   | 'inapplicable-validation-rule'
   | 'invalid-validation-rule'
+  | 'lossy-validation-rule'
   | 'invalid-default-value'
   | 'ignored-default-value'
+  | 'missing-default-value'
   | 'ignored-placeholder'
   | 'lossy-submit-position'
 
@@ -72,13 +74,22 @@ export interface Diagnostic {
  * keyword with no form-toolkit rule behind it: a required lone checkbox
  * compiles to `const: true`, and form-toolkit has no "required" message.
  */
-export type MessageKeyword = 'minLength' | 'maxLength' | 'pattern' | 'minimum' | 'maximum' | 'minItems' | 'maxItems' | 'const'
+export type MessageKeyword =
+  | 'minLength'
+  | 'maxLength'
+  | 'pattern'
+  | 'minimum'
+  | 'maximum'
+  | 'multipleOf'
+  | 'minItems'
+  | 'maxItems'
+  | 'const'
 
 /** Editor-written error messages by field name, then by the AJV keyword whose failure they describe. */
 export type MessageMap = Record<string, Partial<Record<MessageKeyword, string>>>
 
 export interface ToJsonSchemaResult {
-  /** JSON Schema Draft 7, declared by `$schema`. No `ui:*`, no `errorMessage`, no `$id`. */
+  /** JSON Schema Draft 7, declared by `$schema`. No `ui:*`, no `errorMessage`, no `$id`, no validator extensions. */
   schema: JSONSchema7
   messages: MessageMap
   /** Everything that did not map one-to-one, in source order. */

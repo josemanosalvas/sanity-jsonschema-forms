@@ -1,7 +1,7 @@
 {
   "name": "sanity-jsonschema-forms",
-  "version": "0.1.1",
-  "description": "Compile @sanity/form-toolkit forms to JSON Schema, with adapters for RJSF, JSON Forms and SurveyJS.",
+  "version": "0.2.0",
+  "description": "Compile @sanity/form-toolkit forms to JSON Schema, with adapters for RJSF and JSON Forms.",
   "keywords": [
     "form-toolkit",
     "forms",
@@ -9,8 +9,7 @@
     "jsonforms",
     "react-jsonschema-form",
     "rjsf",
-    "sanity",
-    "surveyjs"
+    "sanity"
   ],
   "homepage": "https://github.com/josemanosalvas/sanity-jsonschema-forms#readme",
   "bugs": {
@@ -32,7 +31,6 @@
     ".": "./src/index.ts",
     "./rjsf": "./src/rjsf.ts",
     "./jsonforms": "./src/jsonforms.ts",
-    "./surveyjs": "./src/surveyjs.ts",
     "./package.json": "./package.json"
   },
   "publishConfig": {
@@ -48,10 +46,6 @@
       "./jsonforms": {
         "types": "./dist/jsonforms.d.ts",
         "default": "./dist/jsonforms.js"
-      },
-      "./surveyjs": {
-        "types": "./dist/surveyjs.d.ts",
-        "default": "./dist/surveyjs.js"
       },
       "./package.json": "./package.json"
     },
@@ -87,8 +81,6 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sanity-form-fixtures": "workspace:*",
-    "survey-core": "3.0.3",
-    "survey-react-ui": "3.0.3",
     "tsdown": "^0.23.0",
     "typescript": "^5.9.3",
     "vitest": "^5.0.0"

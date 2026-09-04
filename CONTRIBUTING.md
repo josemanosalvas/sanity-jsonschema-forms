@@ -17,7 +17,7 @@ pnpm verify
 through [Ultracite](https://www.ultracite.ai/)'s preset; `oxlint.config.ts`
 and `oxfmt.config.ts` list the few rules and style options this repo
 overrides, each with its reason. `pnpm format` applies the fixes. `pnpm dev` starts `examples/compare`, which renders the same compiled
-form through all three adapters; use it to see a change in every renderer
+form through both adapters; use it to see a change in every renderer
 at once.
 
 Inside the workspace, the package's `exports` point at `src/`, so the
@@ -46,15 +46,26 @@ Read [docs/architecture.md](docs/architecture.md) first. In short:
 - **Fixtures are shared.** New behaviour gets a case in
   `packages/fixtures` so every adapter's tests see it.
 
-## Adding a field type
+## Adding or changing a field type
 
-1. Add the mapping to `SUPPORTED_FIELD_TYPES` and `compileField` in
-   `src/to-json-schema.ts`, with any new validation rules in `RULE_KEYWORDS`.
-2. Teach each adapter the presentation it needs, if any.
-3. Extend the contact or messy fixture, then the compiler, AJV and render
-   tests.
-4. Move the type from "planned" to "supported" in
-   `docs/compatibility.md` and update `docs/json-schema-contract.md`.
+Every built-in type but `file` compiles; a change is more likely than an
+addition. The steps are the same either way.
+
+1. Establish the value contract first: what the native input submits, what
+   AJV's format (if any) accepts, and where they differ. Write the
+   submissions into `packages/fixtures/src/field-types.ts` (or a new
+   fixture) as `{data, verdict}` before touching the compiler.
+2. Add or change the mapping in `src/to-json-schema.ts`
+   (`SUPPORTED_FIELD_TYPES`, `compileField`, `RULE_KEYWORDS` or
+   `LOSSY_RULES`). A rule Draft 7 cannot carry gets a
+   `lossy-validation-rule` diagnostic, never a validator-specific keyword.
+3. Teach each adapter the presentation it needs, if any; the source type in
+   `src/internal/fields.ts` is usually enough.
+4. Extend the compiler, AJV and render tests, and check the verdicts in
+   `test/parity.test.ts` across all three validators; they must agree.
+5. Update the status in `docs/compatibility.md` (supported / supported
+   with lossy rule / unsupported), `docs/json-schema-contract.md`, and the
+   adapter docs' field-type tables.
 
 ## Tests
 

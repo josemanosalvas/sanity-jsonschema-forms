@@ -6,13 +6,17 @@ import type {FormToolkitForm} from '../types'
 
 /**
  * What adapters need that JSON Schema cannot carry: which input the editor
- * chose (textarea and text share one schema) and its placeholder.
+ * chose (textarea and text share one schema, so do the string types with
+ * a pattern) and its placeholder.
  */
 export interface PresentationField {
   name: string
   type: SupportedFieldType
   placeholder?: string
 }
+
+/** No text input to show a placeholder in; the compiler reports these as `ignored-placeholder`. */
+const NO_PLACEHOLDER: ReadonlySet<SupportedFieldType> = new Set<SupportedFieldType>(['checkbox', 'color', 'hidden', 'radio', 'range'])
 
 const trimmed = (value: unknown): string | undefined => {
   if (typeof value !== 'string') {
@@ -40,7 +44,7 @@ export const presentationFields = (form: FormToolkitForm, schema: JSONSchema7): 
       continue
     }
     seen.add(name)
-    const placeholder = trimmed(field.options?.placeholder)
+    const placeholder = NO_PLACEHOLDER.has(type) ? undefined : trimmed(field.options?.placeholder)
     out.push(placeholder === undefined ? {name, type} : {name, placeholder, type})
   }
   return out

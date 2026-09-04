@@ -20,9 +20,7 @@
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sanity-form-fixtures": "workspace:*",
-    "sanity-jsonschema-forms": "workspace:*",
-    "survey-core": "3.0.3",
-    "survey-react-ui": "3.0.3"
+    "sanity-jsonschema-forms": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

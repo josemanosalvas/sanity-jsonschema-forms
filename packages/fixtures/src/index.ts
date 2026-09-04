@@ -1,4 +1,5 @@
 export {contactForm} from './contact'
+export {fieldTypeEdgesForm, fieldTypesForm, fieldTypesSubmissions} from './field-types'
 export {messyForm} from './messy'
 export {namesakeForm} from './namesakes'
 export {contactSubmissions, type Submission} from './submissions'

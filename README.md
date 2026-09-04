@@ -11,7 +11,6 @@ flowchart LR
   compile --> out["{ schema, messages, diagnostics }"]
   out --> rjsf["sanity-jsonschema-forms/rjsf"] --> RJSF["react-jsonschema-form"]
   out --> jsonforms["sanity-jsonschema-forms/jsonforms"] --> JF["JSON Forms"]
-  out --> surveyjs["sanity-jsonschema-forms/surveyjs"] --> SJ["SurveyJS"]
 ```
 
 The JSON Schema is the contract. It is [JSON Schema Draft 7](https://json-schema.org/draft-07)
@@ -53,6 +52,16 @@ installed. `diagnostics` lists every field, rule or value the compiler could
 not carry, with its position in the source document; the compiler never
 throws on content.
 
+Fifteen of form-toolkit's sixteen built-in field types compile. Where the
+Studio can author a rule that JSON Schema Draft 7 cannot carry without a
+validator extension (a date bound, a range step that does not count from
+zero), the field compiles and the rule is reported as lossy. `file` is
+deferred and reported as unsupported: form-toolkit defines no JSON
+representation of a submitted file, and choosing one is a submission
+contract of its own.
+[docs/compatibility.md](docs/compatibility.md) gives each type its status
+and the reasoning.
+
 Then one of:
 
 ```tsx
@@ -73,15 +82,6 @@ const {schema, uischema, translate, initialData} = toJsonFormsProps(form, compil
 <JsonForms schema={schema} uischema={uischema} data={initialData} i18n={{translate}} renderers={vanillaRenderers} cells={vanillaCells} />
 ```
 
-```tsx
-import {Model} from 'survey-core'
-import {Survey} from 'survey-react-ui'
-import {toSurveyJsProps} from 'sanity-jsonschema-forms/surveyjs'
-
-const {surveyJson} = toSurveyJsProps(form, compiled)
-<Survey model={new Model(surveyJson)} />
-```
-
 And on the server:
 
 ```ts
@@ -100,23 +100,23 @@ const isValidSubmission = (submission: unknown) => ajv.validate(schema, submissi
   there is no intermediate form model.
 - [docs/json-schema-contract.md](docs/json-schema-contract.md): exactly what
   the schema and the message map contain, and why Draft 7.
-- [docs/compatibility.md](docs/compatibility.md): versions tested, supported
-  and planned field types, diagnostic codes.
+- [docs/compatibility.md](docs/compatibility.md): versions tested, every
+  field type's status and why, per-renderer control support, diagnostic
+  codes.
 - [docs/adapters/](docs/adapters): per-library usage and the quirks each
   adapter handles.
-
 ## Repository
 
 ```
 packages/sanity-jsonschema-forms/  the package
 packages/fixtures/                 private: form documents and submissions used by tests
-examples/compare/                  one compiled form rendered by all three adapters
+examples/compare/                  one compiled form rendered by both adapters
 docs/
 ```
 
 ```bash
 pnpm install
-pnpm test      # compiler, plain AJV, RJSF, JSON Forms and SurveyJS renders
+pnpm test      # compiler, plain AJV, RJSF and JSON Forms renders, validator parity
 pnpm verify    # everything CI runs: lint, typecheck, test, build, example, publint
 pnpm dev       # examples/compare on http://localhost:5174
 ```

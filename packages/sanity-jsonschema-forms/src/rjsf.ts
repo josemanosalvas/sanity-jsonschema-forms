@@ -13,10 +13,27 @@ export interface RjsfProps {
   transformErrors: (errors: RJSFValidationError[]) => RJSFValidationError[]
 }
 
+/** Source type → RJSF widget name. */
 const WIDGETS: Partial<Record<string, string>> = {
+  color: 'color',
+  date: 'date',
   email: 'email',
+  hidden: 'hidden',
   radio: 'radio',
+  range: 'range',
   textarea: 'textarea',
+  url: 'uri',
+}
+
+/**
+ * Source type → native `<input type>` on RJSF's text widget, which hands
+ * the value through untouched. RJSF's own `DateTimeWidget` converts to UTC
+ * and its `TimeWidget` appends seconds.
+ */
+const INPUT_TYPES: Partial<Record<string, string>> = {
+  'datetime-local': 'datetime-local',
+  tel: 'tel',
+  time: 'time',
 }
 
 /**
@@ -36,7 +53,11 @@ export const toRjsfProps = (form: FormToolkitForm, compiled: ToJsonSchemaResult)
     if (widget !== undefined) {
       ui['ui:widget'] = widget
     }
-    if (field.placeholder !== undefined && field.type !== 'radio' && field.type !== 'checkbox') {
+    const inputType = INPUT_TYPES[field.type]
+    if (inputType !== undefined) {
+      ui['ui:options'] = {inputType}
+    }
+    if (field.placeholder !== undefined) {
       ui['ui:placeholder'] = field.placeholder
     }
     // @rjsf/shadcn 6.8.0's RadioWidget hands the real value to the Radix
