@@ -1,11 +1,11 @@
-import type {FormToolkitForm} from '../../src'
+import type {FormDataProps} from '@sanity/form-toolkit/form-renderer'
 
 /**
  * Content an adapter meets in practice: unsupported types, custom types,
  * half-filled fields, bad operands, duplicates. Every field here should
  * produce a diagnostic rather than a throw.
  */
-export const messyForm: FormToolkitForm = {
+export const messyForm: FormDataProps = {
   title: '  ',
   id: {current: 'messy'},
   fields: [

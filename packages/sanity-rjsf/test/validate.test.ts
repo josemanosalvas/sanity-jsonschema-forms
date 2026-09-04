@@ -2,7 +2,7 @@ import validator from '@rjsf/validator-ajv8'
 import {describe, expect, test} from 'vitest'
 
 import {toRjsf} from '../src'
-import {contactForm} from './fixtures/contact'
+import {contactForm} from 'sanity-form-fixtures'
 
 /**
  * Runs the compiled schema through the validator RJSF ships, so the mapping is

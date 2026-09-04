@@ -1,24 +1,24 @@
 {
-  "name": "sanity-rjsf",
+  "name": "sanity-json-schema",
   "version": "0.0.0",
-  "description": "Compile forms authored with @sanity/form-toolkit into RJSF JSON Schema + uiSchema.",
-  "keywords": [
-    "sanity",
-    "form-toolkit",
-    "rjsf",
-    "react-jsonschema-form",
-    "json-schema"
-  ],
+  "description": "Compile @sanity/form-toolkit forms to standards-oriented JSON Schema, with thin RJSF and JSON Forms presentation adapters.",
+  "keywords": ["sanity", "form-toolkit", "json-schema", "rjsf", "jsonforms"],
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./rjsf": {
+      "types": "./dist/rjsf.d.ts",
+      "default": "./dist/rjsf.js"
+    },
+    "./jsonforms": {
+      "types": "./dist/jsonforms.d.ts",
+      "default": "./dist/jsonforms.js"
     },
     "./package.json": "./package.json"
   },
@@ -28,16 +28,23 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "dependencies": {
+    "@types/json-schema": "^7.0.15"
+  },
   "peerDependencies": {
+    "@jsonforms/core": "3.8.0",
     "@rjsf/utils": "^6.8.0",
     "@sanity/form-toolkit": "^3.0.0"
   },
   "peerDependenciesMeta": {
-    "@sanity/form-toolkit": {
-      "optional": true
-    }
+    "@jsonforms/core": { "optional": true },
+    "@rjsf/utils": { "optional": true },
+    "@sanity/form-toolkit": { "optional": true }
   },
   "devDependencies": {
+    "@jsonforms/core": "3.8.0",
+    "@jsonforms/react": "3.8.0",
+    "@jsonforms/vanilla-renderers": "3.8.0",
     "@rjsf/core": "^6.8.0",
     "@rjsf/shadcn": "^6.8.0",
     "@rjsf/utils": "^6.8.0",
@@ -47,10 +54,13 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
+    "ajv": "8.20.0",
+    "ajv-formats": "2.1.1",
     "jsdom": "^30.0.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "sanity-form-fixtures": "workspace:*",
+    "sanity-rjsf": "workspace:*",
     "tsdown": "^0.23.0",
     "typescript": "^5.9.3",
     "vitest": "^5.0.0"

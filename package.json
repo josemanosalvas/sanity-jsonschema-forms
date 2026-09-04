@@ -6,10 +6,11 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "pnpm -r --filter sanity-rjsf build",
-    "test": "pnpm -r --filter sanity-rjsf test",
+    "build": "pnpm -r --filter \"./packages/*\" build",
+    "test": "pnpm -r --filter \"./packages/*\" test",
     "typecheck": "pnpm -r typecheck",
-    "dev": "pnpm --filter rjsf-shadcn-example dev"
+    "dev": "pnpm --filter rjsf-shadcn-example dev",
+    "dev:compare": "pnpm --filter compare-example dev"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

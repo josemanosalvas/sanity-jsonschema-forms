@@ -1,8 +1,7 @@
 import {describe, expect, test} from 'vitest'
 
 import {toRjsf} from '../src'
-import {contactForm} from './fixtures/contact'
-import {messyForm} from './fixtures/messy'
+import {contactForm, messyForm} from 'sanity-form-fixtures'
 
 describe('toRjsf: contact form (every supported type once)', () => {
   const {schema, uiSchema, diagnostics} = toRjsf(contactForm)

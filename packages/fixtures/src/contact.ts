@@ -1,11 +1,11 @@
-import type {FormToolkitForm} from '../../src'
+import type {FormDataProps} from '@sanity/form-toolkit/form-renderer'
 
 /**
  * A contact form as a `@sanity/form-toolkit` `form` document comes back from
  * GROQ (`*[_type == "form" && id.current == $id][0]`), exercising every
  * supported field type and every supported validation rule once.
  */
-export const contactForm: FormToolkitForm = {
+export const contactForm: FormDataProps = {
   title: 'Contact us',
   id: {current: 'contact'},
   submitButton: {text: 'Send message', position: 'right'},

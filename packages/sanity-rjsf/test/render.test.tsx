@@ -5,7 +5,7 @@ import {cleanup, render} from '@testing-library/react'
 import {afterEach, describe, expect, test} from 'vitest'
 
 import {toRjsf} from '../src'
-import {contactForm} from './fixtures/contact'
+import {contactForm} from 'sanity-form-fixtures'
 
 afterEach(cleanup)
 
