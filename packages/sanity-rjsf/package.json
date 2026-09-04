@@ -10,6 +10,11 @@
     "json-schema"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/josemanosalvas/sanity-jsonschema-forms.git",
+    "directory": "packages/sanity-rjsf"
+  },
   "type": "module",
   "sideEffects": false,
   "files": [

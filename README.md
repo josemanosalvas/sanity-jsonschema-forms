@@ -1,9 +1,12 @@
-# sanity-rjsf (spikes)
+# sanity-jsonschema-forms
 
-Two spikes on rendering forms authored with
-[`@sanity/form-toolkit`](https://www.npmjs.com/package/@sanity/form-toolkit)
-through schema-driven form libraries, without a second form model in between.
-Both are experimental and unpublished.
+Experimental standards-based form authoring for Sanity using
+[`@sanity/form-toolkit`](https://www.npmjs.com/package/@sanity/form-toolkit),
+JSON Schema, and adapters for schema-driven form libraries. Nothing here is
+published; the repository is a sequence of spikes, each preserved by a tag.
+
+Repository: https://github.com/josemanosalvas/sanity-jsonschema-forms
+(formerly `sanity-rjsf`).
 
 **Spike 1** (`sanity-rjsf`, tag `rjsf-spike-v1`, frozen) compiled straight to
 RJSF and found the mapping mostly direct, with a few RJSF-specific compromises.
@@ -50,6 +53,8 @@ themes, state and validation.
 ## Run
 
 ```bash
+git clone https://github.com/josemanosalvas/sanity-jsonschema-forms.git
+cd sanity-jsonschema-forms
 pnpm install
 pnpm test          # both packages: compile output, AJV, RJSF and JSON Forms renders (jsdom), parity
 pnpm build         # both packages' dist
