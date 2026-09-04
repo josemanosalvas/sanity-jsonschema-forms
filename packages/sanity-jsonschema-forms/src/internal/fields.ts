@@ -1,4 +1,4 @@
-import type {JSONSchema7} from 'json-schema'
+import type {JSONSchema7, JSONSchema7Definition} from 'json-schema'
 
 import type {SupportedFieldType} from '../to-json-schema'
 import {isSupportedType} from '../to-json-schema'
@@ -22,6 +22,38 @@ const trimmed = (value: unknown): string | undefined => {
   return text.length === 0 ? undefined : text
 }
 
+/**
+ * Whether a compiled property can have come from a field of this type. The
+ * compiler drops a choice field with no choices before it claims the name, so
+ * a later field may reuse it; matching on shape keeps the dropped field from
+ * lending its presentation to the one that was kept.
+ */
+const shapeMatches = (type: SupportedFieldType, property: JSONSchema7Definition | undefined): boolean => {
+  if (typeof property !== 'object' || property === null) {
+    return false
+  }
+  switch (type) {
+    case 'select':
+    case 'radio': {
+      return Array.isArray(property.oneOf)
+    }
+    case 'checkbox': {
+      return property.type === 'boolean' || property.type === 'array'
+    }
+    case 'number': {
+      return property.type === 'number'
+    }
+    case 'text':
+    case 'textarea':
+    case 'email': {
+      return property.type === 'string' && property.oneOf === undefined
+    }
+    default: {
+      return false
+    }
+  }
+}
+
 /** The source fields the compiler kept, in schema order. */
 export const presentationFields = (form: FormToolkitForm, schema: JSONSchema7): PresentationField[] => {
   const properties = schema.properties ?? {}
@@ -33,7 +65,7 @@ export const presentationFields = (form: FormToolkitForm, schema: JSONSchema7): 
     if (name === undefined || type === undefined || !isSupportedType(type)) {
       continue
     }
-    if (!Object.hasOwn(properties, name) || seen.has(name)) {
+    if (!Object.hasOwn(properties, name) || seen.has(name) || !shapeMatches(type, properties[name])) {
       continue
     }
     seen.add(name)

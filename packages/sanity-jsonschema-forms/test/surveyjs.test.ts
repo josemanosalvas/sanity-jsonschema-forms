@@ -119,11 +119,19 @@ describe('SurveyJS presentation adapter', () => {
       'unlabeled',
       'badRules',
       'badDefault',
+      'empty',
       'dupChoices',
       'radioPh',
       'groupDefault',
       'boolRules',
     ])
+    // `empty` is first a select with no choices (dropped), then a textarea (kept).
+    expect(messy.elements.find((q) => q.name === 'empty')).toStrictEqual({
+      name: 'empty',
+      placeholder: 'Write instead',
+      title: 'Empty again',
+      type: 'comment',
+    })
     expect(messy.elements.at(-1)).toMatchObject({
       isRequired: true,
       type: 'boolean',

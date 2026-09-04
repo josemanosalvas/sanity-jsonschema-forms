@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import {and, rankWith, schemaMatches, uiTypeIs} from '@jsonforms/core'
-import type {ControlProps, JsonSchema, RankedTester} from '@jsonforms/core'
+import type {ControlElement, ControlProps, JsonSchema, RankedTester, VerticalLayout} from '@jsonforms/core'
 import {JsonForms, withJsonFormsControlProps} from '@jsonforms/react'
 import {vanillaCells, vanillaRenderers} from '@jsonforms/vanilla-renderers'
 import {cleanup, fireEvent, render, waitFor} from '@testing-library/react'
-import {contactForm} from 'sanity-form-fixtures'
+import {contactForm, messyForm} from 'sanity-form-fixtures'
 import {afterEach, describe, expect, test} from 'vitest'
 
 import {toJsonSchema} from '../src'
@@ -68,6 +68,17 @@ describe('JSON Forms presentation adapter', () => {
     })
     expect(submitText).toBe('Send message')
     expect(initialData).toStrictEqual({contactMethod: 'email', partySize: 2})
+  })
+
+  test('takes presentation from the field the compiler kept, not a dropped namesake', () => {
+    // `empty` is first a select with no choices (dropped), then a textarea (kept).
+    const messy = toJsonFormsProps(messyForm, toJsonSchema(messyForm)).uischema as VerticalLayout
+    expect(messy.elements.find((e) => (e as ControlElement).scope === '#/properties/empty')).toStrictEqual({
+      i18n: 'empty',
+      options: {multi: true, placeholder: 'Write instead'},
+      scope: '#/properties/empty',
+      type: 'Control',
+    })
   })
 
   test('translate answers error keys and passes everything else through', () => {

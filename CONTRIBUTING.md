@@ -3,7 +3,7 @@
 ## Setup
 
 Development needs Node 22.12 or later and pnpm 10 or later. The published
-package itself runs on Node 20 or later; the stricter development floor
+package itself runs on Node 22 or later; the stricter development floor
 comes from the build and test tooling.
 
 ```bash

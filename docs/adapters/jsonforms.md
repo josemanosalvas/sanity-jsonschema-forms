@@ -9,10 +9,10 @@ import {toJsonFormsProps} from 'sanity-jsonschema-forms/jsonforms'
 const compiled = toJsonSchema(form)
 const {schema, uischema, translate, initialData, submitText} = toJsonFormsProps(form, compiled)
 
-<JsonForms schema={schema} uischema={uischema} data={initialData} renderers={renderers} cells={vanillaCells} i18n={{translate}} />
+<JsonForms schema={schema} uischema={uischema} data={initialData} renderers={vanillaRenderers} cells={vanillaCells} i18n={{translate}} />
 ```
 
-Peer: `@jsonforms/core` 3.8.0 (runtime: `createDefaultValue`). Tested with
+Peer: `@jsonforms/core` `^3.8.0` (runtime: `createDefaultValue`). Tested with
 `@jsonforms/*` 3.8.0 and the vanilla renderer set.
 
 ## What it returns

@@ -2,7 +2,7 @@
 import {Form} from '@rjsf/shadcn'
 import validator from '@rjsf/validator-ajv8'
 import {cleanup, fireEvent, render} from '@testing-library/react'
-import {contactForm} from 'sanity-form-fixtures'
+import {contactForm, messyForm} from 'sanity-form-fixtures'
 import {afterEach, describe, expect, test, vi} from 'vitest'
 
 import {toJsonSchema} from '../src'
@@ -40,6 +40,12 @@ describe('RJSF presentation adapter', () => {
       'ui:submitButtonOptions': {submitText: 'Send message'},
     })
     expect(formProps).toStrictEqual({experimental_defaultFormStateBehavior: {constAsDefaults: 'never'}})
+  })
+
+  test('takes presentation from the field the compiler kept, not a dropped namesake', () => {
+    // `empty` is first a select with no choices (dropped), then a textarea (kept).
+    const messy = toRjsfProps(messyForm, toJsonSchema(messyForm)).uiSchema
+    expect(messy.empty).toStrictEqual({'ui:placeholder': 'Write instead', 'ui:widget': 'textarea'})
   })
 
   test('renders labels from oneOf titles without pre-selecting anything', () => {
