@@ -115,15 +115,71 @@ const isCheckboxGroup = (field: FormToolkitField): boolean => (field.choices ?? 
 /** `checkbox` is overloaded: no choices means one boolean, choices mean a multi-select. */
 type CompiledType = Exclude<SupportedFieldType, 'checkbox'> | 'boolean' | 'multiselect'
 
-const compiledType = (field: FormToolkitField): CompiledType | undefined => {
-  const type = trimmed(field.type)
-  if (type === undefined || !isSupportedType(type)) {
-    return undefined
-  }
+const compiledType = (type: SupportedFieldType, field: FormToolkitField): CompiledType => {
   if (type === 'checkbox') {
     return isCheckboxGroup(field) ? 'multiselect' : 'boolean'
   }
   return type
+}
+
+/** A field the compiler accepts on its own merits; only a name clash with an earlier field can still drop it. */
+export interface AcceptedField {
+  accepted: true
+  name: string
+  /** The `type` the editor chose; adapters need it where two types share one schema. */
+  sourceType: SupportedFieldType
+  type: CompiledType
+}
+
+export interface DroppedField {
+  accepted: false
+  code: DiagnosticCode
+  message: string
+  /** The trimmed `name`, when the field had one; the diagnostic carries it. */
+  name: string | undefined
+}
+
+/**
+ * Judges a field on its own: type, name, choices. Name clashes depend on
+ * the fields before it, so the caller decides those. `toJsonSchema()` and
+ * `presentationFields()` both go through here, which is what keeps them
+ * agreeing on which of two same-named fields survived.
+ */
+export const classifyField = (field: FormToolkitField): AcceptedField | DroppedField => {
+  const sourceType = trimmed(field.type)
+  const name = trimmed(field.name)
+  if (sourceType === undefined || !isFormToolkitType(sourceType)) {
+    return {
+      accepted: false,
+      code: 'unknown-field-type',
+      message:
+        sourceType === undefined
+          ? 'The field declares no type and was dropped.'
+          : `"${sourceType}" is not a field type @sanity/form-toolkit defines (custom types registered with formSchema({fields}) are opaque to this compiler), so the field was dropped.`,
+      name,
+    }
+  }
+  if (!isSupportedType(sourceType)) {
+    return {
+      accepted: false,
+      code: 'unsupported-field-type',
+      message: `"${sourceType}" is not supported yet (supported: ${SUPPORTED_FIELD_TYPES.join(', ')}), so the field was dropped.`,
+      name,
+    }
+  }
+  if (name === undefined || !FIELD_NAME_PATTERN.test(name) || RESERVED_NAMES.has(name)) {
+    return {accepted: false, code: 'invalid-field-name', message: `The field has no usable name ("${name ?? ''}") and was dropped.`, name}
+  }
+  const type = compiledType(sourceType, field)
+  if ((type === 'select' || type === 'radio' || type === 'multiselect') && !isCheckboxGroup(field)) {
+    return {
+      accepted: false,
+      code: 'missing-choices',
+      message: `"${name}" offers no choices, so nothing could be selected; the field was dropped.`,
+      name,
+    }
+  }
+  return {accepted: true, name, sourceType, type}
 }
 
 const applicableRules = (field: FormToolkitField): readonly string[] => {
@@ -382,51 +438,18 @@ export const toJsonSchema = (form: FormToolkitForm): ToJsonSchemaResult => {
       diagnostics.add('error', 'unknown-field-type', path, 'The array member is not a field object and was dropped.')
       continue
     }
-    const sourceType = trimmed(field.type)
-    const name = trimmed(field.name)
-    if (sourceType === undefined || !isFormToolkitType(sourceType)) {
-      diagnostics.add(
-        'error',
-        'unknown-field-type',
-        path,
-        sourceType === undefined
-          ? 'The field declares no type and was dropped.'
-          : `"${sourceType}" is not a field type @sanity/form-toolkit defines (custom types registered with formSchema({fields}) are opaque to this compiler), so the field was dropped.`,
-        name,
-      )
+    const verdict = classifyField(field)
+    if (!verdict.accepted) {
+      diagnostics.add('error', verdict.code, path, verdict.message, verdict.name)
       continue
     }
-    const type = compiledType(field)
-    if (type === undefined) {
-      diagnostics.add(
-        'error',
-        'unsupported-field-type',
-        path,
-        `"${sourceType}" is not supported yet (supported: ${SUPPORTED_FIELD_TYPES.join(', ')}), so the field was dropped.`,
-        name,
-      )
-      continue
-    }
-    if (name === undefined || !FIELD_NAME_PATTERN.test(name) || RESERVED_NAMES.has(name)) {
-      diagnostics.add('error', 'invalid-field-name', path, `The field has no usable name ("${name ?? ''}") and was dropped.`, name)
-      continue
-    }
+    const {name, type} = verdict
     if (Object.hasOwn(properties, name)) {
       diagnostics.add(
         'error',
         'duplicate-field-name',
         path,
         `"${name}" is already used by an earlier field, so the later field was dropped.`,
-        name,
-      )
-      continue
-    }
-    if ((type === 'select' || type === 'radio' || type === 'multiselect') && !isCheckboxGroup(field)) {
-      diagnostics.add(
-        'error',
-        'missing-choices',
-        path,
-        `"${name}" offers no choices, so nothing could be selected; the field was dropped.`,
         name,
       )
       continue

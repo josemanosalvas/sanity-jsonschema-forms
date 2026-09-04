@@ -2,7 +2,7 @@
 import {Form} from '@rjsf/shadcn'
 import validator from '@rjsf/validator-ajv8'
 import {cleanup, fireEvent, render} from '@testing-library/react'
-import {contactForm, messyForm} from 'sanity-form-fixtures'
+import {contactForm, messyForm, namesakeForm} from 'sanity-form-fixtures'
 import {afterEach, describe, expect, test, vi} from 'vitest'
 
 import {toJsonSchema} from '../src'
@@ -45,6 +45,17 @@ describe('RJSF presentation adapter', () => {
   test('takes presentation from the field the compiler kept, not a dropped namesake', () => {
     const messy = toRjsfProps(messyForm, toJsonSchema(messyForm)).uiSchema
     expect(messy.empty).toStrictEqual({'ui:placeholder': 'Write instead', 'ui:widget': 'textarea'})
+  })
+
+  test('takes radio/select and placeholder from the kept namesake even when both are choice fields', () => {
+    const namesakes = toRjsfProps(namesakeForm, toJsonSchema(namesakeForm)).uiSchema
+    expect(namesakes).toStrictEqual({
+      radioThenRadio: {'ui:optionValueFormat': 'realValue', 'ui:widget': 'radio'},
+      radioThenSelect: {'ui:placeholder': 'Pick one'},
+      selectThenRadio: {'ui:optionValueFormat': 'realValue', 'ui:widget': 'radio'},
+      selectThenSelect: {'ui:placeholder': 'Pick one'},
+      'ui:order': ['selectThenRadio', 'radioThenSelect', 'selectThenSelect', 'radioThenRadio'],
+    })
   })
 
   test('renders labels from oneOf titles without pre-selecting anything', () => {
