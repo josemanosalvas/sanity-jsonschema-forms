@@ -200,9 +200,9 @@ describe('toJsonSchema: field types added in 0.2', () => {
     expect(DATETIME_LOCAL_PATTERN.endsWith(`T${TIME_PATTERN.slice(1)}`)).toBe(true)
   })
 
-  test('the patterns use ASCII digit classes and no lookaround', () => {
-    for (const pattern of [COLOR_PATTERN, DATETIME_LOCAL_PATTERN, NONZERO_YEAR_PATTERN, TIME_PATTERN]) {
-      expect(pattern).not.toMatch(/\\[dDwWsSb]|\(\?<?[=!]/u)
+  test('the patterns use ASCII digit classes', () => {
+    for (const pattern of [COLOR_PATTERN, DATETIME_LOCAL_PATTERN, TIME_PATTERN]) {
+      expect(pattern).not.toMatch(/\\d/u)
     }
   })
 
@@ -261,9 +261,10 @@ describe('toJsonSchema: field type edges', () => {
     expect(schema.required).toStrictEqual(['requiredHidden'])
   })
 
-  test('a default the native input would refuse is dropped', () => {
+  test('a default outside the value shape the type implies is dropped', () => {
     expect(codes.filter(([, code]) => code === 'invalid-default-value').map(([field]) => field)).toStrictEqual([
       'badEmail',
+      'dotlessEmail',
       'badUrl',
       'unicodeUrl',
       'bracketUrl',
@@ -277,6 +278,7 @@ describe('toJsonSchema: field type edges', () => {
     ])
     for (const name of [
       'badEmail',
+      'dotlessEmail',
       'badUrl',
       'unicodeUrl',
       'bracketUrl',

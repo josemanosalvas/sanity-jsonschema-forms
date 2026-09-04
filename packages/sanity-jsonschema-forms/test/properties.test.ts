@@ -93,15 +93,36 @@ const form: Arbitrary<FormToolkitForm> = record(
 const ajv = new Ajv({allErrors: true})
 addFormats(ajv)
 
-const RENDERER_OR_EXTENSION = /"ui:|errorMessage|\$id|enumNames|formatMinimum|formatMaximum|formatExclusive|\$data/u
+const FORBIDDEN_KEYS = new Set([
+  'errorMessage',
+  '$id',
+  'enumNames',
+  'formatMinimum',
+  'formatMaximum',
+  'formatExclusiveMinimum',
+  'formatExclusiveMaximum',
+  '$data',
+])
+
+/** Keys anywhere in the schema that belong to a renderer or a validator extension; values are not inspected. */
+const forbiddenKeys = (node: unknown): string[] => {
+  if (typeof node !== 'object' || node === null) {
+    return []
+  }
+  return Object.entries(node).flatMap(([key, value]) => [
+    ...(FORBIDDEN_KEYS.has(key) || key.startsWith('ui:') ? [key] : []),
+    ...forbiddenKeys(value),
+  ])
+}
 
 describe('toJsonSchema over arbitrary forms', () => {
   test('never throws on content, and is a pure function of its input', () => {
     assert(
       property(form, (input) => {
+        const before = JSON.stringify(input)
         const once = toJsonSchema(input)
-        const twice = toJsonSchema(structuredClone(input))
-        expect(twice).toStrictEqual(once)
+        expect(JSON.stringify(input)).toBe(before)
+        expect(toJsonSchema(input)).toStrictEqual(once)
       }),
     )
   })
@@ -113,7 +134,7 @@ describe('toJsonSchema over arbitrary forms', () => {
         expect(schema.$schema).toBe('http://json-schema.org/draft-07/schema#')
         expect(ajv.validateSchema(schema as SchemaObject)).toBe(true)
         expect(() => ajv.compile(schema as SchemaObject)).not.toThrow()
-        expect(JSON.stringify(schema)).not.toMatch(RENDERER_OR_EXTENSION)
+        expect(forbiddenKeys(schema)).toStrictEqual([])
       }),
     )
   })

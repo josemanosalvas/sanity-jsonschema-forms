@@ -39,7 +39,7 @@ form would collide.
 | --- | --- | --- |
 | `text` | `{type: "string"}` | |
 | `textarea` | `{type: "string"}` | indistinguishable from `text` in the schema; the input choice is presentation |
-| `email` | `{type: "string", format: "email"}` | |
+| `email` | `{type: "string", format: "email"}` | ajv-formats requires a dot in the domain, the native input does not; see [compatibility.md](compatibility.md) |
 | `url` | `{type: "string", format: "uri"}` | RFC 3986 URI: absolute, scheme required, printable ASCII. Narrower than the native input, which also accepts unencoded non-ASCII; see [compatibility.md](compatibility.md) |
 | `tel` | `{type: "string"}` | no value contract beyond an authored `pattern`; the input type is presentation |
 | `hidden` | `{type: "string", default}` | the value is the default; see "Required" |

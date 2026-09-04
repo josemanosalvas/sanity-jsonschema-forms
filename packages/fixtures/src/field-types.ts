@@ -135,6 +135,8 @@ export const fieldTypesSubmissions = {
 export const fieldTypeEdgesForm: FormDataProps = {
   fields: [
     {label: 'Email', name: 'badEmail', options: {defaultValue: 'not-an-email'}, type: 'email'},
+    // The native input accepts a domain without a dot; ajv-formats does not.
+    {label: 'Email', name: 'dotlessEmail', options: {defaultValue: 'a@b'}, type: 'email'},
     {label: 'Website', name: 'badUrl', options: {defaultValue: 'example.com'}, type: 'url'},
     {label: 'Website', name: 'unicodeUrl', options: {defaultValue: 'https://例え.jp'}, type: 'url'},
     // The WHATWG parser takes brackets in a query; RFC 3986 and `format: uri` do not.

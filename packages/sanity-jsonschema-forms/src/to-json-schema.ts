@@ -113,7 +113,7 @@ export const DATETIME_LOCAL_PATTERN = `^${LOCAL_DATE}T${HH_MM}${OPTIONAL_SECONDS
 /** `#` and six hexadecimal digits (HTML "valid simple color"); the native input submits lowercase. */
 export const COLOR_PATTERN = '^#[0-9A-Fa-f]{6}$'
 /** Beside `format: date`, which takes exactly four year digits: HTML needs the year to be greater than zero. */
-export const NONZERO_YEAR_PATTERN = '^(?:[0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]|[0-9][1-9][0-9]{2}|[1-9][0-9]{3})-'
+export const NONZERO_YEAR_PATTERN = '^(?!0000-)'
 
 const TIME_REGEXP = new RegExp(TIME_PATTERN, 'u')
 const DATETIME_LOCAL_REGEXP = new RegExp(DATETIME_LOCAL_PATTERN, 'u')

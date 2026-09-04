@@ -15,8 +15,11 @@ All notable changes to `sanity-jsonschema-forms`. Semantic versioning; until
   could start a form invalid under its own `format: email`. It is now
   checked with the grammar ajv-formats uses and dropped with
   `invalid-default-value`, like a bad `url` default.
-- The compiler's patterns use `[0-9]` instead of `\d` and no lookahead;
-  `NONZERO_YEAR_PATTERN` now also requires four year digits before the `-`.
+- `email` is "supported, narrower values": ajv-formats' `format: email`
+  requires a dot in the domain and a native input does not, so `a@b` is
+  rejected and dropped as a default. Documented and pinned.
+- `TIME_PATTERN` and `DATETIME_LOCAL_PATTERN` use `[0-9]` instead of `\d`
+  and no lookahead. Same meaning: `\d` is ASCII in JavaScript.
 
 ## 0.2.0 (2026-09-04)
 
