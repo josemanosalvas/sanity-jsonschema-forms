@@ -54,13 +54,6 @@ describe('toJsonSchema: contact form', () => {
     })
   })
 
-  test('contains nothing renderer-specific and no validator extension', () => {
-    for (const form of [contactForm, messyForm, namesakeForm, fieldTypesForm, fieldTypeEdgesForm]) {
-      const text = JSON.stringify(toJsonSchema(form).schema)
-      expect(text).not.toMatch(/"ui:|errorMessage|\$id|enumNames|formatMinimum|formatMaximum|formatExclusive|\$data/u)
-    }
-  })
-
   test('collects the authored messages beside the schema', () => {
     expect(messages).toStrictEqual({
       consent: {const: 'This box must be checked.'},
@@ -77,21 +70,6 @@ describe('toJsonSchema: contact form', () => {
 
   test('reports only the submit position as lossy', () => {
     expect(diagnostics.map((d) => d.code)).toStrictEqual(['lossy-submit-position'])
-  })
-
-  test('diagnostics name no renderer', () => {
-    for (const form of [contactForm, messyForm, fieldTypesForm, fieldTypeEdgesForm]) {
-      for (const d of toJsonSchema(form).diagnostics) {
-        expect(d.message).not.toMatch(/rjsf|json forms|surveyjs|adapter/iu)
-      }
-    }
-  })
-
-  test('is deterministic and does not mutate its input', () => {
-    const before = JSON.stringify(contactForm)
-    const again = toJsonSchema(contactForm)
-    expect(JSON.stringify(again.schema)).toBe(JSON.stringify(schema))
-    expect(JSON.stringify(contactForm)).toBe(before)
   })
 })
 
@@ -194,18 +172,6 @@ describe('toJsonSchema: field types added in 0.2', () => {
     })
   })
 
-  test('the temporal and colour patterns are the exported constants', () => {
-    expect(COLOR_PATTERN).toBe('^#[0-9A-Fa-f]{6}$')
-    expect(TIME_PATTERN).toBe('^(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9](?:\\.[0-9]{1,3})?)?$')
-    expect(DATETIME_LOCAL_PATTERN.endsWith(`T${TIME_PATTERN.slice(1)}`)).toBe(true)
-  })
-
-  test('the patterns use ASCII digit classes', () => {
-    for (const pattern of [COLOR_PATTERN, DATETIME_LOCAL_PATTERN, TIME_PATTERN]) {
-      expect(pattern).not.toMatch(/\\d/u)
-    }
-  })
-
   test('the datetime-local pattern follows the HTML date rules: leap years, year > 0, four or more year digits', () => {
     const local = new RegExp(DATETIME_LOCAL_PATTERN, 'u')
     const accepted = [
@@ -215,6 +181,9 @@ describe('toJsonSchema: field types added in 0.2', () => {
       '12024-02-29T00:00',
       '0001-01-01T00:00',
       '12026-09-04T18:30:15.5',
+      '00001-01-01T00:00',
+      '10000-02-29T12:00',
+      '00000400-02-29T12:00',
     ]
     const rejected = [
       '2025-02-29T00:00',
@@ -224,6 +193,8 @@ describe('toJsonSchema: field types added in 0.2', () => {
       '00000-01-01T00:00',
       '999-01-01T00:00',
       '2026-04-31T00:00',
+      '00000-02-29T00:00',
+      `${'1'.repeat(50_000)}-02-29T12:00`,
     ]
     expect(accepted.filter((v) => !local.test(v))).toStrictEqual([])
     expect(rejected.filter((v) => local.test(v))).toStrictEqual([])

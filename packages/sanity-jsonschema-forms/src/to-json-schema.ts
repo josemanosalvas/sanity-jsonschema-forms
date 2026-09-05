@@ -1,5 +1,7 @@
 import type {JSONSchema7} from 'json-schema'
 
+import {classifyField, FORM_TOOLKIT_FIELD_TYPES, trimmed} from './internal/field'
+import type {CompiledType} from './internal/field'
 import type {
   Diagnostic,
   DiagnosticCode,
@@ -12,53 +14,6 @@ import type {
   MessageMap,
   ToJsonSchemaResult,
 } from './types'
-
-/**
- * Every field type the `formSchema` Studio plugin offers (3.0.17), with the
- * validation rule types the Studio lets an editor attach to each. Copied from
- * the plugin's `validationTypesByFieldType`, which it does not export.
- */
-export const FORM_TOOLKIT_FIELD_TYPES = {
-  checkbox: ['minSelectedCount', 'maxSelectedCount'],
-  color: [],
-  date: ['minDate', 'maxDate'],
-  'datetime-local': ['minDate', 'maxDate'],
-  email: ['pattern'],
-  file: ['maxSize', 'fileType'],
-  hidden: [],
-  number: ['min', 'max'],
-  radio: [],
-  range: ['min', 'max', 'step'],
-  select: [],
-  tel: ['pattern'],
-  text: ['minLength', 'maxLength', 'pattern'],
-  textarea: ['minLength', 'maxLength'],
-  time: [],
-  url: ['pattern'],
-} as const satisfies Record<string, readonly string[]>
-
-type FormToolkitFieldType = keyof typeof FORM_TOOLKIT_FIELD_TYPES
-
-/** Every type but `file`: form-toolkit defines no JSON submission representation of one; see docs/compatibility.md. */
-export const SUPPORTED_FIELD_TYPES = [
-  'text',
-  'textarea',
-  'email',
-  'url',
-  'tel',
-  'hidden',
-  'number',
-  'range',
-  'checkbox',
-  'select',
-  'radio',
-  'date',
-  'datetime-local',
-  'time',
-  'color',
-] as const satisfies readonly FormToolkitFieldType[]
-
-export type SupportedFieldType = (typeof SUPPORTED_FIELD_TYPES)[number]
 
 /** form-toolkit rule type → JSON Schema keyword (also AJV's error `keyword`). */
 const RULE_KEYWORDS = {
@@ -74,13 +29,7 @@ const RULE_KEYWORDS = {
 
 type KeywordRuleType = keyof typeof RULE_KEYWORDS
 
-/**
- * Rules Draft 7 cannot carry: a date bound needs `formatMinimum`/`formatMaximum`,
- * an ajv-formats extension. Checked, then dropped with `lossy-validation-rule`.
- */
-const LOSSY_RULES = ['minDate', 'maxDate'] as const
-
-type LossyRuleType = (typeof LOSSY_RULES)[number]
+const isKeywordRule = (value: string): value is KeywordRuleType => Object.hasOwn(RULE_KEYWORDS, value)
 
 const FORM_TOOLKIT_RULES: ReadonlySet<string> = new Set(Object.values(FORM_TOOLKIT_FIELD_TYPES).flat())
 
@@ -99,9 +48,9 @@ const HH_MM = '(?:[01][0-9]|2[0-3]):[0-5][0-9]'
 const OPTIONAL_SECONDS = '(?::[0-5][0-9](?:\\.[0-9]{1,3})?)?'
 const NONZERO_MULTIPLE_OF_4 = '(?:0[48]|[2468][048]|[13579][26])'
 /** HTML "valid date string": a year of four or more digits greater than zero, and a day the month has, leap years included. */
-const YEAR = '(?:[1-9][0-9]{3,}|0[1-9][0-9]{2,}|00[1-9][0-9]+|000[1-9][0-9]*|0{4,}[1-9][0-9]*)'
+const YEAR = '(?=[0-9]*[1-9])[0-9]{4,}'
 /** Divisible by 4 but not by 100 (last two digits), or by 400 (ends in 00 after digits divisible by 4). */
-const LEAP_YEAR = `(?:[0-9]{2,}${NONZERO_MULTIPLE_OF_4}|[0-9]*${NONZERO_MULTIPLE_OF_4}00|[0-9]*[1-9][0-9]*0000)`
+const LEAP_YEAR = `(?=[0-9]*[1-9])(?:[0-9]{2,}${NONZERO_MULTIPLE_OF_4}|[0-9]*${NONZERO_MULTIPLE_OF_4}00|[0-9]*0000)`
 const MONTH_DAY_EXCEPT_LEAP_DAY =
   '(?:(?:0[13578]|1[02])-(?:0[1-9]|[12][0-9]|3[01])|(?:0[469]|11)-(?:0[1-9]|[12][0-9]|30)|02-(?:0[1-9]|1[0-9]|2[0-8]))'
 const LOCAL_DATE = `(?:${YEAR}-${MONTH_DAY_EXCEPT_LEAP_DAY}|${LEAP_YEAR}-02-29)`
@@ -150,14 +99,6 @@ const isUri = (value: string): boolean => URI_REGEXP.test(value) && URL.canParse
 const EMAIL_REGEXP =
   /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/iu
 
-const FIELD_NAME_PATTERN = /^[a-zA-Z][a-zA-Z0-9_-]*$/u
-const RESERVED_NAMES = new Set(Object.getOwnPropertyNames(Object.prototype))
-
-const isFormToolkitType = (value: string): value is FormToolkitFieldType => Object.hasOwn(FORM_TOOLKIT_FIELD_TYPES, value)
-export const isSupportedType = (value: string): value is SupportedFieldType => (SUPPORTED_FIELD_TYPES as readonly string[]).includes(value)
-const isKeywordRule = (value: string): value is KeywordRuleType => Object.hasOwn(RULE_KEYWORDS, value)
-const isLossyRule = (value: string): value is LossyRuleType => (LOSSY_RULES as readonly string[]).includes(value)
-
 /** Whether AJV will accept `pattern`; it compiles patterns with the `u` flag. */
 const isValidPattern = (pattern: string): boolean => {
   try {
@@ -165,14 +106,6 @@ const isValidPattern = (pattern: string): boolean => {
   } catch {
     return false
   }
-}
-
-const trimmed = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') {
-    return undefined
-  }
-  const text = value.trim()
-  return text.length === 0 ? undefined : text
 }
 
 class Diagnostics {
@@ -186,99 +119,14 @@ interface FieldContext {
   path: string
   name: string
   field: FormToolkitField
+  type: CompiledType
   diagnostics: Diagnostics
   messages: MessageMap
 }
 
-const isCheckboxGroup = (field: FormToolkitField): boolean => (field.choices ?? []).some((choice) => trimmed(choice?.value) !== undefined)
-
-/** `checkbox` is overloaded: no choices means one boolean, choices mean a multi-select. */
-type CompiledType = Exclude<SupportedFieldType, 'checkbox'> | 'boolean' | 'multiselect'
-
-const compiledType = (type: SupportedFieldType, field: FormToolkitField): CompiledType => {
-  if (type === 'checkbox') {
-    return isCheckboxGroup(field) ? 'multiselect' : 'boolean'
-  }
-  return type
-}
-
-export interface AcceptedField {
-  accepted: true
-  name: string
-  /** The editor's `type`; textarea/text and radio/select share a schema. */
-  sourceType: SupportedFieldType
-  type: CompiledType
-}
-
-export interface DroppedField {
-  accepted: false
-  code: DiagnosticCode
-  message: string
-  name: string | undefined
-}
-
-/**
- * Accepts or drops a field on its type, name and choices. Duplicate names
- * depend on the fields before it and are the caller's decision. Shared by
- * `toJsonSchema` and `presentationFields` so both keep the same field.
- */
-export const classifyField = (field: FormToolkitField): AcceptedField | DroppedField => {
-  const sourceType = trimmed(field.type)
-  const name = trimmed(field.name)
-  if (sourceType === undefined || !isFormToolkitType(sourceType)) {
-    return {
-      accepted: false,
-      code: 'unknown-field-type',
-      message:
-        sourceType === undefined
-          ? 'The field declares no type and was dropped.'
-          : `"${sourceType}" is not a field type @sanity/form-toolkit defines (custom types registered with formSchema({fields}) are opaque to this compiler), so the field was dropped.`,
-      name,
-    }
-  }
-  if (!isSupportedType(sourceType)) {
-    return {
-      accepted: false,
-      code: 'unsupported-field-type',
-      message:
-        sourceType === 'file'
-          ? 'form-toolkit defines a native file input but no JSON representation of the submitted file, and choosing one (a data URL, an upload reference) would be a submission contract of this package\'s own, so "file" is not compiled and the field was dropped; its maxSize and fileType rules with it.'
-          : `"${sourceType}" is not supported (supported: ${SUPPORTED_FIELD_TYPES.join(', ')}), so the field was dropped.`,
-      name,
-    }
-  }
-  if (name === undefined || !FIELD_NAME_PATTERN.test(name) || RESERVED_NAMES.has(name)) {
-    return {accepted: false, code: 'invalid-field-name', message: `The field has no usable name ("${name ?? ''}") and was dropped.`, name}
-  }
-  const type = compiledType(sourceType, field)
-  if ((type === 'select' || type === 'radio' || type === 'multiselect') && !isCheckboxGroup(field)) {
-    return {
-      accepted: false,
-      code: 'missing-choices',
-      message: `"${name}" offers no choices, so nothing could be selected; the field was dropped.`,
-      name,
-    }
-  }
-  return {accepted: true, name, sourceType, type}
-}
-
-const applicableRules = (field: FormToolkitField): readonly string[] => {
-  const type = trimmed(field.type)
-  if (type === undefined || !isFormToolkitType(type)) {
-    return []
-  }
-  if (type === 'checkbox' && !isCheckboxGroup(field)) {
-    return []
-  }
-  return FORM_TOOLKIT_FIELD_TYPES[type]
-}
-
 const recordMessage = (ctx: FieldContext, keyword: MessageKeyword, message: string): void => {
-  ctx.messages[ctx.name] = {...ctx.messages[ctx.name], [keyword]: message}
+  ;(ctx.messages[ctx.name] ??= {})[keyword] = message
 }
-
-const isTemporalOperand = (field: FormToolkitField, operand: string): boolean =>
-  field.type === 'datetime-local' ? DATETIME_LOCAL_REGEXP.test(operand) : isCalendarDate(operand)
 
 /** The HTML step base: `min` if present, else the default value, else 0. */
 const stepBase = (schema: JSONSchema7): {base: number; source: string} => {
@@ -348,7 +196,12 @@ const applyStep = (schema: JSONSchema7, ctx: FieldContext, label: string, operan
 }
 
 const applyRules = (schema: JSONSchema7, ctx: FieldContext): void => {
-  const {diagnostics, path, name, field} = ctx
+  const {diagnostics, path, name, field, type} = ctx
+  if (field.validation !== undefined && field.validation !== null && !Array.isArray(field.validation)) {
+    diagnostics.add('warning', 'invalid-validation-rule', path, 'Validation must be an array; its rules were dropped.', name)
+    return
+  }
+  const allowed = type === 'boolean' ? [] : (FORM_TOOLKIT_FIELD_TYPES[type === 'multiselect' ? 'checkbox' : type] as readonly string[])
   const rules: readonly (FormToolkitValidationRule | null | undefined)[] = field.validation ?? []
   let step: {label: string; operand: string; message: string | undefined} | undefined
   for (const [index, rule] of rules.entries()) {
@@ -364,7 +217,7 @@ const applyRules = (schema: JSONSchema7, ctx: FieldContext): void => {
       )
       continue
     }
-    if (!applicableRules(field).includes(ruleType)) {
+    if (!allowed.includes(ruleType)) {
       diagnostics.add(
         'warning',
         'inapplicable-validation-rule',
@@ -380,8 +233,8 @@ const applyRules = (schema: JSONSchema7, ctx: FieldContext): void => {
       continue
     }
     const message = trimmed(rule?.message)
-    if (isLossyRule(ruleType)) {
-      if (isTemporalOperand(field, operand)) {
+    if (ruleType === 'minDate' || ruleType === 'maxDate') {
+      if (type === 'datetime-local' ? DATETIME_LOCAL_REGEXP.test(operand) : isCalendarDate(operand)) {
         diagnostics.add(
           'warning',
           'lossy-validation-rule',
@@ -448,6 +301,8 @@ const applyRules = (schema: JSONSchema7, ctx: FieldContext): void => {
     ;(schema as Record<string, unknown>)[keyword] = value
     if (message !== undefined) {
       recordMessage(ctx, keyword, message)
+    } else if (ctx.messages[name] !== undefined) {
+      delete ctx.messages[name][keyword]
     }
   }
   if (step !== undefined) {
@@ -514,8 +369,8 @@ const STRING_DEFAULTS: Partial<Record<CompiledType, {accepts: (value: string) =>
   url: {accepts: isUri, reason: 'is not an absolute URI as RFC 3986 writes one'},
 }
 
-const compileField = (type: CompiledType, ctx: FieldContext): JSONSchema7 => {
-  const {field, diagnostics, path, name} = ctx
+const compileField = (ctx: FieldContext): JSONSchema7 => {
+  const {field, diagnostics, path, name, type} = ctx
   const label = trimmed(field.label)
   if (label === undefined && type !== 'hidden') {
     diagnostics.add('info', 'missing-label', path, `"${name}" has no label, so its name is shown instead.`, name)
@@ -659,7 +514,14 @@ export const toJsonSchema = (form: FormToolkitForm): ToJsonSchemaResult => {
   const properties: Record<string, JSONSchema7> = {}
   const required: string[] = []
 
-  const fields: readonly (FormToolkitField | null | undefined)[] = form.fields ?? []
+  if (form === null || typeof form !== 'object' || Array.isArray(form)) {
+    diagnostics.add('error', 'invalid-form', 'form', 'Expected a form document object.')
+    return {diagnostics: diagnostics.list, messages, schema: {$schema: JSON_SCHEMA_DRAFT_7, properties, type: 'object'}}
+  }
+  if (form.fields !== undefined && form.fields !== null && !Array.isArray(form.fields)) {
+    diagnostics.add('error', 'invalid-form', 'form', 'Fields must be an array; no fields were compiled.')
+  }
+  const fields: readonly (FormToolkitField | null | undefined)[] = Array.isArray(form.fields) ? form.fields : []
   for (const [index, field] of fields.entries()) {
     const path = `fields[${index}]`
     if (field === null || typeof field !== 'object') {
@@ -682,7 +544,7 @@ export const toJsonSchema = (form: FormToolkitForm): ToJsonSchemaResult => {
       )
       continue
     }
-    properties[name] = compileField(type, {diagnostics, field, messages, name, path})
+    properties[name] = compileField({diagnostics, field, messages, name, path, type})
     if (field.required === true) {
       required.push(name)
     }
@@ -699,12 +561,7 @@ export const toJsonSchema = (form: FormToolkitForm): ToJsonSchemaResult => {
   }
   schema.properties = properties
   if (form.submitButton?.position !== undefined) {
-    diagnostics.add(
-      'info',
-      'lossy-submit-position',
-      'form',
-      `JSON Schema has no concept of submit-button alignment, so position "${form.submitButton.position}" was not compiled; the renderer's theme decides.`,
-    )
+    diagnostics.add('info', 'lossy-submit-position', 'form', 'Submit-button alignment is presentation and is not compiled.')
   }
 
   return {diagnostics: diagnostics.list, messages, schema}

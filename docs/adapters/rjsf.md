@@ -1,7 +1,7 @@
 # `sanity-jsonschema-forms/rjsf`
 
 ```tsx
-import Form from '@rjsf/shadcn'          // or any RJSF theme
+import {Form} from '@rjsf/shadcn'          // or any RJSF theme
 import validator from '@rjsf/validator-ajv8'
 import {toJsonSchema} from 'sanity-jsonschema-forms'
 import {toRjsfProps} from 'sanity-jsonschema-forms/rjsf'
@@ -60,7 +60,7 @@ the first choice, which lets a required select pass untouched; with
 ## Errors
 
 An off-list value fails every `oneOf` branch `const` and then the `oneOf`,
-so RJSF shows n+1 errors for one bad value. Only tampering can produce it.
+so RJSF shows n+1 errors for one bad value. Stale saved data can also contain choices an editor has since removed.
 The compiler's own patterns (`datetime-local`, `time`, `color`) have no
 authored message, so their errors read as AJV's "must match pattern"; a
 native input makes them unreachable in the browser.

@@ -1,6 +1,6 @@
 {
   "name": "sanity-jsonschema-forms",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Compile @sanity/form-toolkit forms to JSON Schema, with adapters for RJSF and JSON Forms.",
   "keywords": [
     "form-toolkit",
@@ -56,7 +56,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "publint": "publint --pack pnpm --strict"
+    "publint": "publint --pack pnpm --strict",
+    "test:unit": "vitest run --exclude 'test/*.test.tsx'"
   },
   "dependencies": {
     "@types/json-schema": "^7.0.15"

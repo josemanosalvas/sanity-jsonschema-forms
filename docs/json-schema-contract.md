@@ -9,29 +9,17 @@ Verified against `@sanity/form-toolkit` 3.0.17, plain `ajv` 8.20 with
 const {schema, messages, diagnostics} = toJsonSchema(form)
 ```
 
-- `schema` is [JSON Schema Draft 7](https://json-schema.org/draft-07), typed as `JSONSchema7` from `@types/json-schema`. It declares its dialect (`$schema: "http://json-schema.org/draft-07/schema#"`, exported as `JSON_SCHEMA_DRAFT_7`) and validates on its own with any validator that supports that draft. Draft 7 lets a validator treat `format` as an annotation; every verdict in this document assumes AJV 8 with `ajv-formats`, which asserts it. It contains no `ui:*` key, no `errorMessage`, no `$id`, and no validator extension such as `formatMinimum`; a test checks every fixture for these.
+- `schema` is [JSON Schema Draft 7](https://json-schema.org/draft-07), typed as `JSONSchema7` from `@types/json-schema`. It declares its dialect (`$schema: "http://json-schema.org/draft-07/schema#"`, exported as `JSON_SCHEMA_DRAFT_7`) and validates on its own with any validator that supports that draft. Draft 7 lets a validator treat `format` as an annotation; every verdict in this document assumes AJV 8 with `ajv-formats`, which asserts it. It contains no `ui:*` key, no `errorMessage`, no `$id`, and no validator extension such as `formatMinimum`.
 - `messages` is `Record<field, Record<keyword, text>>`: the error messages editors wrote, keyed by the AJV keyword whose failure they describe.
 - `diagnostics` lists everything that did not map one-to-one, in source order; codes are stable and listed in [compatibility.md](compatibility.md).
 
 ## Why Draft 7
 
-JSON Schema's current release is [2020-12](https://json-schema.org/draft/2020-12),
-two releases after Draft 7. The schema targets Draft 7 because it is what
-every consumer validates with unless told otherwise: AJV's default
-`Ajv` class, `@rjsf/validator-ajv8` and JSON Forms' built-in AJV all speak
-Draft 7, and `@types/json-schema` has a `JSONSchema7` type and none for a
-later draft. Targeting 2020-12 would make every adapter configure a
-different validator for no gain: the keywords this schema uses (`type`,
-`properties`, `required`, `oneOf`, `const`, `title`, `default`, `format`,
-`pattern`, `minLength`, `maxLength`, `minimum`, `maximum`, `multipleOf`,
-`items`, `uniqueItems`, `minItems`, `maxItems`) mean the same in both. A
-consumer that wants a later dialect can replace `$schema`; nothing else
-changes.
-
-The `$schema` is declared so the document is self-describing rather than
-relying on the consumer being configured for the right draft. `$id` is
-not, because AJV caches compiled schemas by `$id` and recompiling the same
-form would collide.
+AJV's default class, RJSF's validator and JSON Forms' built-in AJV all
+consume Draft 7. Its keywords cover the compiler's current output, so a
+newer dialect would add configuration without adding expressiveness here.
+`$schema` declares the dialect; the compiler omits `$id` so independently
+compiled form revisions do not collide in a validator's schema registry.
 
 ## Field types
 
@@ -70,8 +58,7 @@ as a default and would pre-select the first option, so its adapter passes
 form. That is the adapter's problem, not the contract's.
 
 Cost: an off-list value fails every branch `const` and then the `oneOf`,
-so AJV reports n+1 errors for one bad value. Only tampering can produce an
-off-list value, since every widget offers the choices only.
+so AJV reports n+1 errors for one bad value. Saved data can also become off-list after an editor removes a choice.
 
 Choices are normalised: an option without a value is dropped, a repeated
 value is dropped (`warning invalid-choice`), an empty label falls back to
@@ -91,7 +78,7 @@ a default; the contract keeps the plain form and leaves that concern to the
 adapter of the renderer that needs it.
 
 A required `hidden` field with no default is `required` and nothing else.
-The compiler does not invent a value: it reports
+The compiler reports
 `warning missing-default-value`, and the host either seeds the value or
 drops `required`. (A native hidden input would submit an empty string and
 skip constraint validation; JSON Schema `required` has no such exemption.)
@@ -107,8 +94,7 @@ with the grammar ajv-formats uses for `format: uri` rather than the
 WHATWG parser behind the native input (a default must satisfy both), an
 email address as ajv-formats checks `format: email` for `email`.
 Anything that violates the type-implied value shape is dropped with
-`warning invalid-default-value`; a test validates every default that
-survives against its own property schema. Authored rules are not checked
+`warning invalid-default-value`; tests check defaults against their type-implied shape. Authored rules are not checked
 against defaults, for any type, so a `number` default of `0` under an
 authored minimum of `1` starts invalid; nor is `required`, so a required
 lone checkbox with a stored default of `false` starts unticked and
@@ -171,13 +157,16 @@ produce, not an arbitrary payload.
 | `$id` | nowhere | AJV caches by `$id`; recompiling the same form would collide (`$schema` is declared, see above) |
 | descriptions, conditions, pages | nowhere | form-toolkit cannot author them |
 
-## What each adapter needs beyond the schema
+## Submission boundaries
 
-Both adapters (RJSF, JSON Forms) read `form.fields` again through one internal helper,
-`presentationFields(form, schema)`, which returns for every property in the
-schema the source `type` and `placeholder` and nothing else. 0.2 added
-eight source types to that `type` and no new fact: a `string` with a
-pattern is a `tel`, a `time` or a `color` only by its source type, and
-that is all an adapter asks. That helper is the entire "intermediate
-model" shared between renderers; see [architecture.md](architecture.md)
-for why it stays that small.
+`required` checks property presence. A required string can still be empty
+unless `minLength` or another constraint rejects it. Extra object properties
+are allowed because the compiler does not emit `additionalProperties: false`.
+Applications needing a closed payload contract must choose that policy before
+using the schema for both rendering and server validation.
+
+Inspect diagnostics before enabling a form. A dropped field or rule is absent
+from validation; a syntactically valid schema does not imply a complete form.
+Malformed documents or field arrays yield `invalid-form`; malformed choices
+drop the field, and malformed validation arrays drop the rules. This recovery
+applies to JSON content, not arbitrary JavaScript objects with throwing getters.

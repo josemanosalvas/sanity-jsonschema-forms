@@ -1,49 +1,17 @@
 // @vitest-environment jsdom
-import {and, rankWith, schemaMatches, uiTypeIs} from '@jsonforms/core'
-import type {ControlElement, ControlProps, JsonSchema, RankedTester, VerticalLayout} from '@jsonforms/core'
-import {JsonForms, withJsonFormsControlProps} from '@jsonforms/react'
+import type {ControlElement, VerticalLayout} from '@jsonforms/core'
+import {JsonForms} from '@jsonforms/react'
 import {vanillaCells, vanillaRenderers} from '@jsonforms/vanilla-renderers'
 import {cleanup, fireEvent, render, waitFor} from '@testing-library/react'
 import {contactForm, fieldTypesForm, messyForm, namesakeForm} from 'sanity-form-fixtures'
 import {afterEach, describe, expect, test} from 'vitest'
 
+import {CheckboxGroupControl, checkboxGroupTester} from '../../../examples/compare/src/checkbox-group-control'
 import {toJsonSchema} from '../src'
 import {toJsonFormsProps} from '../src/jsonforms'
 import {query} from './dom'
 
-/** The vanilla renderers have no control for an array of enums; the example app carries the same one. */
-const CheckboxGroup = withJsonFormsControlProps(({data, handleChange, path, label, schema, errors}: ControlProps) => {
-  const items = schema.items as JsonSchema
-  const options = (items.oneOf ?? []).map((o) => ({label: (o as JsonSchema).title ?? '', value: String((o as JsonSchema).const)}))
-  const selected: string[] = Array.isArray(data) ? data : []
-  return (
-    <fieldset>
-      <legend>{label}</legend>
-      {options.map((o) => (
-        <label key={o.value}>
-          <input
-            type="checkbox"
-            value={o.value}
-            checked={selected.includes(o.value)}
-            onChange={(e) => handleChange(path, e.target.checked ? [...selected, o.value] : selected.filter((v) => v !== o.value))}
-          />
-          {o.label}
-        </label>
-      ))}
-      {errors && <span className="validation">{errors}</span>}
-    </fieldset>
-  )
-})
-const checkboxGroupTester: RankedTester = rankWith(
-  5,
-  and(
-    uiTypeIs('Control'),
-    schemaMatches(
-      (s) => s.type === 'array' && s.uniqueItems === true && typeof s.items === 'object' && Array.isArray((s.items as JsonSchema).oneOf),
-    ),
-  ),
-)
-const renderers = [...vanillaRenderers, {renderer: CheckboxGroup, tester: checkboxGroupTester}]
+const renderers = [...vanillaRenderers, {renderer: CheckboxGroupControl, tester: checkboxGroupTester}]
 
 describe('JSON Forms presentation adapter', () => {
   afterEach(cleanup)

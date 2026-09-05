@@ -3,6 +3,18 @@
 All notable changes to `sanity-jsonschema-forms`. Semantic versioning; until
 `1.0`, breaking changes bump the minor version.
 
+## 0.2.2 (2026-09-05)
+
+- Recover from malformed form, field, choice and validation containers with
+  diagnostics; add `invalid-form` for invalid documents and field arrays.
+- Clear stale messages when a later constraint has no authored message;
+  normalize field types before checking date bounds.
+- Remove overlapping repetitions in the datetime-local year pattern.
+- Keep compiler code out of adapter imports and remove the JSON Forms
+  adapter's runtime dependency on `@jsonforms/core` (types-only peer remains).
+- Add focused verification commands and isolated packed-export checks; remove
+  duplicate test cases and the copied checkbox-group test renderer.
+
 ## 0.2.1 (2026-09-05)
 
 - `test/properties.test.ts`: fast-check invariants over arbitrary form

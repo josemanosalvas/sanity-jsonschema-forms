@@ -24,6 +24,9 @@ import {toJsonFormsProps} from 'sanity-jsonschema-forms/jsonforms'
 - `messages` carries the error messages editors wrote, keyed by field and AJV keyword; each adapter delivers them its own way.
 - `diagnostics` lists everything the compiler could not carry. It never throws on content.
 
+Inspect diagnostics before accepting submissions: dropped fields and lossy
+rules are not enforced by the generated schema.
+
 Fifteen of form-toolkit's sixteen built-in field types compile; `file` is
 deferred until a submission representation for it is settled. A rule
 Draft 7 cannot carry (a date bound,
@@ -33,7 +36,8 @@ a validator extension.
 Using the root entry needs no renderer dependencies; the adapters' peers are
 optional. The form document is typed structurally, so `@sanity/form-toolkit`
 need not be installed where the form is rendered. `./rjsf` needs
-`@rjsf/utils` (types only), `./jsonforms` uses `@jsonforms/core` at runtime.
+`@rjsf/utils` (types only), `./jsonforms` needs `@jsonforms/core` (types only). Neither adapter imports
+a renderer at runtime.
 
 Documentation, examples and the design record:
 https://github.com/josemanosalvas/sanity-jsonschema-forms

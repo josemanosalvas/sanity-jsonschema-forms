@@ -1,8 +1,8 @@
 import type {JSONSchema7} from 'json-schema'
 
-import type {SupportedFieldType} from '../to-json-schema'
-import {classifyField} from '../to-json-schema'
 import type {FormToolkitForm} from '../types'
+import type {SupportedFieldType} from './field'
+import {classifyField, trimmed} from './field'
 
 /**
  * What adapters need that JSON Schema cannot carry: which input the editor
@@ -18,20 +18,12 @@ export interface PresentationField {
 /** No text input to show a placeholder in; the compiler reports these as `ignored-placeholder`. */
 const NO_PLACEHOLDER: ReadonlySet<SupportedFieldType> = new Set<SupportedFieldType>(['checkbox', 'color', 'hidden', 'radio', 'range'])
 
-const trimmed = (value: unknown): string | undefined => {
-  if (typeof value !== 'string') {
-    return undefined
-  }
-  const text = value.trim()
-  return text.length === 0 ? undefined : text
-}
-
 /** The source fields the compiler kept, in schema order, decided by the compiler's own check. */
 export const presentationFields = (form: FormToolkitForm, schema: JSONSchema7): PresentationField[] => {
   const properties = schema.properties ?? {}
   const seen = new Set<string>()
   const out: PresentationField[] = []
-  for (const field of form.fields ?? []) {
+  for (const field of Array.isArray(form?.fields) ? form.fields : []) {
     if (field === null || typeof field !== 'object') {
       continue
     }
