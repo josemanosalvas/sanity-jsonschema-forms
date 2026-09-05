@@ -22,5 +22,7 @@ export default defineConfig({
   rules: {
     // The compiler's switch over field types is one function on purpose.
     complexity: 'off',
+    // Schema and message maps have dynamic keyword keys.
+    'typescript/no-dynamic-delete': 'off',
   },
 })

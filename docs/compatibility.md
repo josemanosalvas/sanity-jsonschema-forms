@@ -127,26 +127,10 @@ carries the authored rules, not the widget's defaults.
 
 ### Why `file` is deferred
 
-`@sanity/form-toolkit`'s renderer emits a native `<input type="file">` and
-its documented native usage posts `multipart/form-data`; it defines no JSON
-representation of a submitted file. Each candidate suits one runtime and
-not the others:
-
-| representation | fits | does not fit |
-| --- | --- | --- |
-| data URL (`format: data-url`) | RJSF's file widget | the server (a base64 body in JSON) |
-| base64 string | any JSON validator | the browser without a custom control in every renderer |
-| `File` object or multipart body | native forms | JSON Schema, which cannot describe either |
-| uploaded asset reference (`{id, name, size, type}`) | a Sanity or S3 upload flow | any renderer without a bespoke uploader |
-
-Adapters could normalize every renderer to one of these, an upload
-reference say. What stops it is not the renderers but the source:
-form-toolkit defines none of them, so choosing one would make this
-package the owner of a submission and upload contract (where the bytes
-go, what the reference means, who checks size and type) rather than a
-compiler of form-toolkit's semantics. That is a design step of its own.
-`file` stays dropped with `error unsupported-field-type`, and
-`maxSize`/`fileType` with it, until that contract exists.
+form-toolkit defines a native file input but no JSON upload representation.
+A host must choose between a data URL, multipart upload, or asset reference,
+and define upload authorization, size and type checks. The compiler drops
+`file` and its rules until such a contract exists.
 
 ## Validation rules
 
@@ -160,21 +144,22 @@ compiler of form-toolkit's semantics. That is a design step of its own.
 ## Diagnostics
 
 `toJsonSchema` never throws on content. Codes are stable; new ones may be
-added, none renamed. 0.2 added `lossy-validation-rule` and
-`missing-default-value`.
+added, none renamed. Malformed JSON containers are diagnosed as well as
+incomplete form-toolkit documents.
 
 | code | severity | means |
 | --- | --- | --- |
+| `invalid-form` | error | non-object document or non-array fields; no fields compiled |
 | `unsupported-field-type` | error | `file`; field dropped |
 | `unknown-field-type` | error | type absent or not one form-toolkit defines; field dropped |
 | `invalid-field-name` | error | missing, malformed or reserved name; field dropped |
 | `duplicate-field-name` | error | later field with a name already used; dropped |
 | `missing-choices` | error | choice field with no usable choice; dropped |
 | `missing-label` | info | name used as title (not reported for `hidden`, which shows none) |
-| `invalid-choice` | warning | choice without value or with a repeated value; choice dropped |
+| `invalid-choice` | warning, error | invalid or repeated choice dropped; non-array choices drop the field with an error |
 | `unsupported-validation-rule` | warning | rule type form-toolkit does not define; rule dropped |
 | `inapplicable-validation-rule` | warning | rule type the Studio does not offer for this field type; dropped |
-| `invalid-validation-rule` | warning | operand missing or unparsable; rule dropped |
+| `invalid-validation-rule` | warning | operand missing or unparsable, or validation is not an array; rule(s) dropped |
 | `lossy-validation-rule` | warning, info | rule understood but not expressible in Draft 7 (`minDate`, `maxDate`, a misaligned or fractional `step`); dropped from the schema. `info` for `step: any`, which loses nothing |
 | `invalid-default-value` | warning | default not a number / not a choice / not `true`/`false` / not the field's value shape; dropped |
 | `ignored-default-value` | info | default on a checkbox group |

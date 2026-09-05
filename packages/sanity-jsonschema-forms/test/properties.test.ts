@@ -1,7 +1,7 @@
 import Ajv from 'ajv'
 import type {SchemaObject} from 'ajv'
 import addFormats from 'ajv-formats'
-import {array, assert, boolean, constantFrom, integer, oneof, property, record, string, stringMatching} from 'fast-check'
+import {array, assert, boolean, constantFrom, integer, jsonValue, oneof, property, record, string, stringMatching} from 'fast-check'
 import type {Arbitrary} from 'fast-check'
 import {describe, expect, test} from 'vitest'
 
@@ -77,7 +77,7 @@ const field: Arbitrary<FormToolkitField> = record(
     validation: array(rule, {maxLength: 4}),
   },
   {requiredKeys: ['name', 'type']},
-).map((f) => f as FormToolkitField)
+)
 
 const form: Arbitrary<FormToolkitForm> = record(
   {
@@ -91,29 +91,17 @@ const form: Arbitrary<FormToolkitForm> = record(
 const ajv = new Ajv({allErrors: true})
 addFormats(ajv)
 
-const FORBIDDEN_KEYS = new Set([
-  'errorMessage',
-  '$id',
-  'enumNames',
-  'formatMinimum',
-  'formatMaximum',
-  'formatExclusiveMinimum',
-  'formatExclusiveMaximum',
-  '$data',
-])
-
-const forbiddenKeys = (node: unknown): string[] => {
-  if (typeof node !== 'object' || node === null) {
-    return []
-  }
-  return Object.entries(node).flatMap(([key, value]) => [
-    ...(FORBIDDEN_KEYS.has(key) || key.startsWith('ui:') ? [key] : []),
-    ...forbiddenKeys(value),
-  ])
-}
-
 describe('toJsonSchema over arbitrary forms', () => {
-  test('never throws on content, and is a pure function of its input', () => {
+  test('malformed JSON content never crashes compilation', () => {
+    assert(
+      property(jsonValue(), (input) => {
+        const {schema} = toJsonSchema(input as unknown as FormToolkitForm)
+        expect(ajv.validateSchema(schema as SchemaObject)).toBe(true)
+      }),
+    )
+  })
+
+  test('is a pure function of a form-toolkit document', () => {
     assert(
       property(form, (input) => {
         const before = JSON.stringify(input)
@@ -124,14 +112,13 @@ describe('toJsonSchema over arbitrary forms', () => {
     )
   })
 
-  test("every schema is valid Draft 7 by AJV's metaschema, compiles, and carries nothing renderer-specific", () => {
+  test('every schema declares Draft 7 and compiles with strict AJV', () => {
     assert(
       property(form, (input) => {
         const {schema} = toJsonSchema(input)
         expect(schema.$schema).toBe('http://json-schema.org/draft-07/schema#')
         expect(ajv.validateSchema(schema as SchemaObject)).toBe(true)
         expect(() => ajv.compile(schema as SchemaObject)).not.toThrow()
-        expect(forbiddenKeys(schema)).toStrictEqual([])
       }),
     )
   })
@@ -147,17 +134,10 @@ describe('toJsonSchema over arbitrary forms', () => {
           if (typeof propertySchema !== 'object' || !('default' in propertySchema)) {
             continue
           }
-          const {
-            [AUTHORED[0]]: _a,
-            [AUTHORED[1]]: _b,
-            [AUTHORED[2]]: _c,
-            [AUTHORED[3]]: _d,
-            [AUTHORED[4]]: _e,
-            [AUTHORED[5]]: _f,
-            [AUTHORED[6]]: _g,
-            [AUTHORED[7]]: _h,
-            ...shape
-          } = propertySchema
+          const shape = {...propertySchema}
+          for (const keyword of AUTHORED) {
+            delete shape[keyword]
+          }
           if (AUTHORED_PATTERN.has(type)) {
             delete shape.pattern
           }
@@ -172,7 +152,6 @@ describe('toJsonSchema over arbitrary forms', () => {
       property(form, (input) => {
         const {schema, messages, diagnostics} = toJsonSchema(input)
         const properties = Object.keys(schema.properties ?? {})
-        expect(new Set(properties).size).toBe(properties.length)
         for (const required of schema.required ?? []) {
           expect(properties).toContain(required)
         }

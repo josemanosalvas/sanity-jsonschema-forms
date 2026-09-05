@@ -1,9 +1,13 @@
 # sanity-jsonschema-forms
 
-Standards-based form authoring for Sanity. Editors build a form in Sanity
-Studio with [`@sanity/form-toolkit`](https://www.npmjs.com/package/@sanity/form-toolkit);
-`sanity-jsonschema-forms` compiles that document into JSON Schema and ships thin
-adapters for schema-driven form libraries.
+Compile forms authored with [`@sanity/form-toolkit`](https://www.npmjs.com/package/@sanity/form-toolkit)
+into JSON Schema Draft 7. Render them with RJSF or JSON Forms, and validate
+submissions against the same schema on the server.
+
+Use this when editors manage forms in Sanity and your application already
+uses a schema-driven renderer or needs a portable validation contract.
+For a simple React form, form-toolkit's own renderer may be enough. This
+package does not provide submission storage, uploads, or a Studio builder.
 
 ```mermaid
 flowchart LR
@@ -13,19 +17,14 @@ flowchart LR
   out --> jsonforms["sanity-jsonschema-forms/jsonforms"] --> JF["JSON Forms"]
 ```
 
-The JSON Schema is the contract. It is [JSON Schema Draft 7](https://json-schema.org/draft-07)
-and says so in its `$schema`, so it validates on its own with any validator
-that supports that draft, every adapter consumes it unchanged, and the server
-validates submissions against it whatever rendered the form.
-
 ## Install
 
 ```bash
 pnpm add sanity-jsonschema-forms
 ```
 
-Then the form library of your choice. Using the root entry needs no renderer
-dependencies; each adapter's peer is optional and listed in [docs/adapters](docs/adapters).
+Then the form library of your choice. The compiler and adapters have no runtime renderer
+dependencies; adapter peers supply types. See [docs/adapters](docs/adapters).
 
 ## Use
 
@@ -42,30 +41,21 @@ const form = await client.fetch(
   {id: 'contact'},
 )
 
+if (!form) throw new Error('Form not found')
 const compiled = toJsonSchema(form)
 const {schema, messages, diagnostics} = compiled
 ```
 
-`form` is the document as `@sanity/form-toolkit` stores it. The package
-types it structurally, so the frontend does not need `@sanity/form-toolkit`
-installed. `diagnostics` lists every field, rule or value the compiler could
-not carry, with its position in the source document; the compiler never
-throws on content.
-
-Fifteen of form-toolkit's sixteen built-in field types compile. Where the
-Studio can author a rule that JSON Schema Draft 7 cannot carry without a
-validator extension (a date bound, a range step that does not count from
-zero), the field compiles and the rule is reported as lossy. `file` is
-deferred and reported as unsupported: form-toolkit defines no JSON
-representation of a submitted file, and choosing one is a submission
-contract of its own.
-[docs/compatibility.md](docs/compatibility.md) gives each type its status
-and the reasoning.
+The input is structurally typed, so frontends do not need form-toolkit
+installed. Inspect `diagnostics` before using the schema: malformed fields
+are dropped, `file` is unsupported, and date bounds or some range steps
+cannot be represented. Reject error diagnostics and explicitly handle lossy
+rules before accepting submissions. See [compatibility](docs/compatibility.md).
 
 Then one of:
 
 ```tsx
-import Form from '@rjsf/shadcn' // or any RJSF theme
+import {Form} from '@rjsf/shadcn' // or any RJSF theme
 import validator from '@rjsf/validator-ajv8'
 import {toRjsfProps} from 'sanity-jsonschema-forms/rjsf'
 
@@ -90,21 +80,17 @@ import addFormats from 'ajv-formats'
 
 const ajv = new Ajv({allErrors: true})
 addFormats(ajv)
-const isValidSubmission = (submission: unknown) => ajv.validate(schema, submission)
+const isValidSubmission = ajv.compile(schema)
+// Reuse isValidSubmission(submission) for this form revision.
 ```
 
 ## Documentation
 
-- [docs/architecture.md](docs/architecture.md): the decisions. The contract,
-  the compiler output, what adapters may do, server-side validation, and why
-  there is no intermediate form model.
-- [docs/json-schema-contract.md](docs/json-schema-contract.md): exactly what
-  the schema and the message map contain, and why Draft 7.
-- [docs/compatibility.md](docs/compatibility.md): versions tested, every
-  field type's status and why, per-renderer control support, diagnostic
-  codes.
-- [docs/adapters/](docs/adapters): per-library usage and the quirks each
-  adapter handles.
+- [Architecture](docs/architecture.md): code boundaries and scope.
+- [Contract](docs/json-schema-contract.md): values, defaults, rules and messages.
+- [Compatibility](docs/compatibility.md): supported types, losses and diagnostics.
+- [Adapters](docs/adapters): renderer setup and limitations.
+
 ## Repository
 
 ```
@@ -116,8 +102,8 @@ docs/
 
 ```bash
 pnpm install
-pnpm test      # compiler, plain AJV, RJSF and JSON Forms renders, validator parity
-pnpm verify    # everything CI runs: lint, typecheck, test, build, example, publint
+pnpm verify:quick # lint, types, tests without jsdom
+pnpm verify       # full CI gate, including renders and packed-package imports
 pnpm dev       # examples/compare on http://localhost:5174
 ```
 

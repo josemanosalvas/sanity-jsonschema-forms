@@ -12,7 +12,7 @@ const {schema, uischema, translate, initialData, submitText} = toJsonFormsProps(
 <JsonForms schema={schema} uischema={uischema} data={initialData} renderers={vanillaRenderers} cells={vanillaCells} i18n={{translate}} />
 ```
 
-Peer: `@jsonforms/core` `^3.8.0` (runtime: `createDefaultValue`). Tested with
+Peer: `@jsonforms/core` `^3.8.0` (types only). Tested with
 `@jsonforms/*` 3.8.0 and the vanilla renderer set.
 
 ## What it returns
@@ -49,7 +49,7 @@ Peer: `@jsonforms/core` `^3.8.0` (runtime: `createDefaultValue`). Tested with
   other key or labels blank out; `translate` does.
 - **The vanilla renderer set has no control for an array of enums**, so a
   checkbox group renders as "unknown". `examples/compare/src/checkbox-group-control.tsx`
-  is a 40-line renderer with a tester you can register through `renderers`.
+  provides a renderer and tester to register through `renderers`.
 - **Required errors** sit on the object and use JSON Forms' wording ("is a
   required property"); form-toolkit has no message for "required".
 - Validation runs on every change. Use `validationMode="ValidateAndHide"`

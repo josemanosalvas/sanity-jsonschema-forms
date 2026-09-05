@@ -1,6 +1,6 @@
 import type {ControlElement, JsonSchema7, Translator, UISchemaElement, VerticalLayout} from '@jsonforms/core'
-import {createDefaultValue} from '@jsonforms/core'
 
+import {trimmed} from './internal/field'
 import {presentationFields} from './internal/fields'
 import type {FormToolkitForm, MessageKeyword, ToJsonSchemaResult} from './types'
 
@@ -76,8 +76,13 @@ export const toJsonFormsProps = (form: FormToolkitForm, compiled: ToJsonSchemaRe
     return messages[field]?.[keyword as MessageKeyword] ?? defaultMessage
   }) as Translator
 
-  const initialData = createDefaultValue(schema as JsonSchema7, schema as JsonSchema7) as Record<string, unknown>
-  const submitText = form.submitButton?.text?.trim()
+  const initialData: Record<string, unknown> = {}
+  for (const [name, property] of Object.entries(schema.properties ?? {})) {
+    if (typeof property === 'object' && property.default !== undefined) {
+      initialData[name] = structuredClone(property.default)
+    }
+  }
+  const submitText = trimmed(form?.submitButton?.text)
   const base = {initialData, schema: schema as JsonSchema7, translate, uischema}
   return submitText ? {...base, submitText} : base
 }

@@ -13,9 +13,13 @@
     "build": "pnpm --filter sanity-jsonschema-forms build",
     "build:example": "pnpm --filter compare-example build",
     "publint": "pnpm --filter sanity-jsonschema-forms publint",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm build:example && pnpm publint",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:package && pnpm build:example && pnpm publint",
     "dev": "pnpm --filter compare-example dev",
-    "release": "pnpm verify && pnpm --filter sanity-jsonschema-forms publish"
+    "release": "pnpm verify && pnpm --filter sanity-jsonschema-forms publish",
+    "test:unit": "pnpm --filter sanity-jsonschema-forms test:unit",
+    "test:watch": "pnpm --filter sanity-jsonschema-forms test:watch",
+    "verify:quick": "pnpm lint && pnpm typecheck && pnpm test:unit",
+    "test:package": "pnpm build && node scripts/check-package.mjs"
   },
   "devDependencies": {
     "oxfmt": "^0.66.0",

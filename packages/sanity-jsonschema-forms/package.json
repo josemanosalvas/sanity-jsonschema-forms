@@ -56,7 +56,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "publint": "publint --pack pnpm --strict"
+    "publint": "publint --pack pnpm --strict",
+    "test:unit": "vitest run --exclude 'test/*.test.tsx'"
   },
   "dependencies": {
     "@types/json-schema": "^7.0.15"

@@ -1,5 +1,6 @@
 import type {Experimental_DefaultFormStateBehavior, RJSFSchema, RJSFValidationError, UiSchema} from '@rjsf/utils'
 
+import {trimmed} from './internal/field'
 import {presentationFields} from './internal/fields'
 import type {FormToolkitForm, MessageKeyword, ToJsonSchemaResult} from './types'
 
@@ -72,7 +73,7 @@ export const toRjsfProps = (form: FormToolkitForm, compiled: ToJsonSchemaResult)
     order.push(field.name)
   }
   uiSchema['ui:order'] = order
-  const submitText = form.submitButton?.text?.trim()
+  const submitText = trimmed(form?.submitButton?.text)
   if (submitText) {
     uiSchema['ui:submitButtonOptions'] = {submitText}
   }

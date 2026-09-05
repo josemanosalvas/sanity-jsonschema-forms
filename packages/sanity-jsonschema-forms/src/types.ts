@@ -42,6 +42,7 @@ export type DiagnosticSeverity = 'error' | 'warning' | 'info'
 
 /** Stable vocabulary; add codes, never rename them. */
 export type DiagnosticCode =
+  | 'invalid-form'
   | 'unsupported-field-type'
   | 'unknown-field-type'
   | 'invalid-field-name'
