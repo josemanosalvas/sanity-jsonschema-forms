@@ -3,7 +3,7 @@
 All notable changes to `sanity-jsonschema-forms`. Semantic versioning; until
 `1.0`, breaking changes bump the minor version.
 
-## Unreleased
+## 0.2.2 (2026-09-05)
 
 - Recover from malformed form, field, choice and validation containers with
   diagnostics; add `invalid-form` for invalid documents and field arrays.
